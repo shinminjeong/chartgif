@@ -1,0 +1,46 @@
+{% load staticfiles %}
+<html>
+<head>
+  <script src="{% static 'js/svg.min.js' %}"></script>
+  <script src="{% static 'js/jquery.min.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <title>Chartgif</title>
+</head>
+<body>
+  <div>Chartgif -- World Life Expectancy vs Income</div>
+  <div id="myChart"></div>
+  <input type="range" class="slider" name="mySlider" id=mySlider min="1800" max="2018" value="1800"></input>
+  <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
+</body>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-contour.v1.min.js"></script>
+<script src="{% static 'js/scatter.js' %}"></script>
+<script>
+var data_plot = {{data|safe}};
+var data_population = {{population|safe}};
+var data_continent = {{continent|safe}};
+var chart = new ScatterPlot("myChart");
+chart.initChart(data_plot, data_population, data_continent);
+
+var el, newPoint;
+$('input[type=range]').on('input', function () {
+  $(this).trigger('change');
+});
+$("input[type='range']").change(function() {
+  el = $(this);
+  width = el.width()-50;
+  newPoint = (el.val() - el.attr("min")) / (el.attr("max") - el.attr("min"));
+  // console.log(newPoint, el.val())
+  el.next("output")
+    .css({
+     marginLeft: 10 + width * newPoint,
+    })
+    .text(el.val());
+  chart.updateChart(el.val());
+})
+// Fake a change to position bubble at page load
+.trigger('change');
+</script>
+</html>
