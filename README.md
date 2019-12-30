@@ -11,7 +11,7 @@ This app is built on python 3.7.
 git clone git@github.com:shinminjeong/chartgif.git
 
 # Go to the project directory
-cd Chartgif
+cd chartgif
 
 # Install packages
 pip install -r requirements.txt
