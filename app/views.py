@@ -1,4 +1,4 @@
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.template import Context
 from django.template.context_processors import csrf
