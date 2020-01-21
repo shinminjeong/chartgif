@@ -2,23 +2,23 @@ var xScale, yScale, radius;
 var margin = {top: 30, right: 50, bottom: 40, left:40};
 var width, height, continentMap;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
-// var color = d3.scaleOrdinal(d3.schemeCategory20);
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
+var gcolor = d3.scaleOrdinal(d3.schemeCategory10);
 var bubble_g;
 
 class ScatterPlot {
 
   constructor(div_id) {
     width = document.getElementById(div_id).offsetWidth - margin.left - margin.right;
-    height = 700 - margin.top - margin.bottom;
+    height = 800 - margin.top - margin.bottom;
     this.div_id = div_id;
 
-    xScale = d3.scaleLog().range([0, width]).domain([250, 128000]);
+    xScale = d3.scaleLog().range([0, width]).domain([250, 256000]);
     yScale = d3.scaleLinear().range([height, 0]).domain([15, 95]);
     radius = d3.scaleSqrt().range([2,15]).domain([10, 10000]);
   }
 
-  initChart(data2d, population, continent) {
+  initChart(data2d, population, continent, group) {
     var year = "1800";
 
     this.svg = d3.select("#"+this.div_id)
@@ -45,7 +45,8 @@ class ScatterPlot {
           "name": this.countries[index],
           "x": data2d[year+"_x"][index],
           "y": data2d[year+"_y"][index],
-          "population": population[year][index]/50000
+          "population": population[year][index]/50000,
+          "group": (group? group[this.countries[index]] : -1)
         })
       }
     }
@@ -57,7 +58,7 @@ class ScatterPlot {
       .attr('class', 'x axis')
       .call(d3.axisBottom(xScale)
         .tickFormat(d3.format(".2s"))
-        .tickValues([500, 1000, 2000, 4000, 8000, 16000, 32000, 64000])
+        .tickValues([500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000])
       );
 
     this.svg.append('g')
@@ -65,7 +66,7 @@ class ScatterPlot {
       .call(d3.axisBottom(xScale)
         .tickSize(height)
         .tickFormat("")
-        .tickValues([500, 1000, 2000, 4000, 8000, 16000, 32000, 64000])
+        .tickValues([500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000])
       );
 
     // y-axis is translated to (0,0)
@@ -131,17 +132,33 @@ class ScatterPlot {
         .attr('class', 'bubble')
         .attr('cx', function(d){return xScale(d.x);})
         .attr('cy', function(d){ return yScale(d.y); })
-        .attr('r', function(d){ return radius(d.population); })
+        .attr('r', function(d){ return radius(d.population)*1.3+1; })
         .style('stroke', 'black')
         .style('stroke-width', 0.5)
         .style('fill', function(d){
-          return color[continent.indexOf(continentMap[d.id])];
+          if (d.group == -1) return color[continent.indexOf(continentMap[d.id])];
+          else return gcolor(d.group);
         })
         .on("mouseover", function(d) {
-          $("text#"+d.id+".bubble-label")[0].style="visibility: visible";
+          console.log("mouseover", d, d.group)
+          if (d.group == -1) {
+            $("text#"+d.id+".bubble-label")[0].style="visibility: visible";
+          } else {
+            var labels = $("text.bubble-label.g"+d.group);
+            for (var l in labels) {
+              labels[l].style ="visibility: visible"
+            }
+          }
         })
         .on("mouseout", function(d) {
-          $("text#"+d.id+".bubble-label")[0].style="visibility: hidden"
+          if (d.group == -1) {
+            $("text#"+d.id+".bubble-label")[0].style="visibility: hidden";
+          } else {
+            var labels = $("text.bubble-label.g"+d.group);
+            for (var l in labels) {
+              labels[l].style ="visibility: hidden"
+            }
+          }
         })
       // .transition()
       //   .duration(1000)
@@ -153,7 +170,7 @@ class ScatterPlot {
         .data(data)
       .enter().append('text')
         .attr('id', function(d){return d.id;})
-        .attr('class', 'bubble-label')
+        .attr('class', function(d){ return 'bubble-label g'+d.group; })
         .attr('x', function(d){return xScale(d.x);})
         .attr('y', function(d){ return yScale(d.y); })
         .text(function(d){ return d.name; })

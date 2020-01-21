@@ -19,5 +19,7 @@ from . import views
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    url(r'^$', views.main, name='main')
+    url(r'^$', views.main, name='main'),
+    url(r'^position$', views.position, name='position'),
+    url(r'^distance$', views.distance, name='distance')
 ]
