@@ -6,10 +6,10 @@ from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.conf import settings
 
-import os, csv, json
+import os, sys, csv, json
 import pandas as pd
 import numpy as np
-from .utils import cluster_Kmeans, avg_distance
+from .utils import *
 
 file_income = "app/static/data/income_per_person_gdppercapita_ppp_inflation_adjusted.csv"
 file_lifeexp = "app/static/data/life_expectancy_years.csv"
@@ -47,8 +47,8 @@ def position(request):
     print("k = ", K)
 
     years = [str(y) for y in range(1800, 2019)]
-    df_income = pd.read_csv(file_income)[['country']+years]
-    df_lifexp = pd.read_csv(file_lifeexp)[['country']+years]
+    df_income = pd.read_csv(file_income)[['country']+years].dropna()
+    df_lifexp = pd.read_csv(file_lifeexp)[['country']+years].dropna()
     map = pd.merge(df_income, df_lifexp, on='country', how='inner')
     # print(map.head())
     countries = map['country'].tolist()
@@ -56,15 +56,18 @@ def position(request):
 
     df_population = pd.read_csv(file_population)[['country']+years]
     df_population_2 = df_population.loc[df_population['country'].isin(countries)].reset_index()
-    # print("df_population", len(df_population))
-    # print(countries == df_population['country'].tolist())
-
     df_continent = pd.read_csv(file_continent)
     df_continent = df_continent.loc[df_continent['country'].isin(countries)].reset_index()
+    # print("df_population", len(df_population))
     # print("df_continent", len(df_continent))
     # print(countries == df_continent['country'].tolist())
 
-    values = map.drop(columns='country').fillna(0)
+    values = map.drop(columns='country').fillna(-1)
+    for y in years:
+        # gap between each ticks
+        # X-axis = 10 (10log2(income))
+        # Y-axis = 10 (life expectancy)
+        values['{}_x'.format(y)] = scale_income(values['{}_x'.format(y)])
     X = values.to_numpy()
     n, m = X.shape
     # X = np.reshape(X, (n, 2, int(m/2)))
@@ -72,13 +75,21 @@ def position(request):
     cluster, _, trans = cluster_Kmeans(X, K);
     # print(cluster, _, trans)
     # print(len(cluster), len(countries))
-    kgroups = {k:cluster[i][0] for i, k in enumerate(countries)}
-    # print(kgroups)
+    kgroups = {k:{"index": i, "group": cluster[i][0]} for i, k in enumerate(countries)}
+    # print(cluster)
+
+    # calculate min/max for each group
+    G, minmax = minmax_for_group(years, K, kgroups, values)
+    clusterinfo = {
+        "K": K,
+        "minmax": minmax
+    }
 
     return render(request, "group.html", {
         "data": map.to_json(),
         "population": df_population_2.to_json(),
         "continent": df_continent.to_json(),
+        "clusterinfo": clusterinfo,
         "kgroup": kgroups,
     })
 

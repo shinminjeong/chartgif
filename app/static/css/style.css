@@ -1,3 +1,7 @@
+body {
+	padding: 20px;
+}
+
 .grid line {
 	opacity: 0.2;
 }

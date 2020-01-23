@@ -3,7 +3,6 @@ var margin = {top: 30, right: 50, bottom: 40, left:40};
 var width, height, continentMap;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
-var gcolor = d3.scaleOrdinal(d3.schemeCategory10);
 var bubble_g;
 
 class ScatterPlot {
@@ -46,7 +45,7 @@ class ScatterPlot {
           "x": data2d[year+"_x"][index],
           "y": data2d[year+"_y"][index],
           "population": population[year][index]/50000,
-          "group": (group? group[this.countries[index]] : -1)
+          "group": (group? group[this.countries[index]]["group"] : -1)
         })
       }
     }
