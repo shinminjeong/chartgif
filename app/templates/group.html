@@ -10,9 +10,49 @@
   <title>Chartgif</title>
 </head>
 <body>
-  <div>Chartgif -- World Life Expectancy vs Income</div>
   <div class="row">
-    <div class="col-md-10">
+    <div class="col-md-2">
+      <div style="border-bottom: 1px solid #ccc;">
+        Chartgif <br/>
+        World Life Expectancy vs Income
+      </div>
+      <form action="/">
+        <div style="padding-top: 30px;">
+          (1) Generate embedding<br>
+          <div style="padding-left: 20px;">
+            <input type="checkbox" id="chbox_x" name="X" value="income" {% if "X" in selectedAxis %} checked {% endif %}> Income (X)<br>
+            <input type="checkbox" id="chbox_y" name="Y" value="lifexp" {% if "Y" in selectedAxis %} checked {% endif %}> Life Expectancy (Y)<br>
+            <input type="checkbox" id="chbox_s" name="S" value="popula" {% if "S" in selectedAxis %} checked {% endif %}> Population (S)<br>
+            <input type="checkbox" id="chbox_d" name="D" value="distance" disabled> Distance (D)<br>
+          </div>
+        </div>
+        <div>
+          V = <br>
+          <div style="padding-left: 20px; font-family: Times;">
+            <table>
+              <tr>
+                <td style="text-align:right; font-size: 40px">[</td>
+                <td style="text-align:center">
+                  <div id="embvector">
+                  </div>
+                </td>
+                <td style="text-align:left; font-size: 40px">]</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div style="padding-top: 30px;">
+          (2) Cluster points<br>
+          <div style="padding-left: 20px;">
+            The number of cluster: <input type="number" name="K" min="1" max="20" value="5">
+          </div>
+        </div>
+        <div style="padding-top: 30px;">
+          <input class="btn btn-primary" style="width:100%" type="submit" value="Colour clusters" />
+        </div>
+      </form>
+    </div>
+    <div class="col-md-8">
       <div id="myChart"></div>
       <input type="range" class="slider" name="mySlider" id=mySlider min="1800" max="2018" value="1800"></input>
       <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
@@ -28,7 +68,7 @@
 <script src="https://d3js.org/d3-contour.v1.min.js"></script>
 <script src="{% static 'js/scatter.js' %}"></script>
 <script>
-var gcolor = d3.scaleOrdinal(d3.schemeCategory10);
+var gcolor = d3.scaleOrdinal(d3.schemeCategory20);
 
 var data_plot = {{data|safe}};
 var data_population = {{population|safe}};
@@ -41,6 +81,13 @@ chart.initChart(data_plot, data_population, data_continent, data_group);
 
 var el, newPoint;
 var infodiv = document.getElementById("clusterinfo");
+function kFormatter(num) {
+    if (Math.abs(num) > 999999)
+      return Math.sign(num)*((Math.abs(num)/1000000).toFixed(1)) + 'M'
+    if (Math.abs(num) > 999)
+      return Math.sign(num)*((Math.abs(num)/1000).toFixed(1)) + 'K'
+    return Math.sign(num)*Math.abs(num)
+}
 function updateClusterinfo(year) {
   infodiv.innerHTML="<div>Year = " + year + "</div><br>";
   var numGroup = cluster_info["K"];
@@ -49,11 +96,37 @@ function updateClusterinfo(year) {
   for (var g = 0; g < numGroup; g++) {
     infodiv.innerHTML += "<div>"
     infodiv.innerHTML += "<span class='badge' style='background-color:"+gcolor(g)+"'>Group " + g + "</span><br>";
-    infodiv.innerHTML += "X: " + minmax[g][year]["minx"] + "~" + minmax[g][year]["maxx"] + "<br>";
-    infodiv.innerHTML += "Y: " + minmax[g][year]["miny"] + "~" + minmax[g][year]["maxy"] + "<br>";
+    for (var a in minmax[g][year]) {
+      infodiv.innerHTML += a + ": " + kFormatter(minmax[g][year][a]["min"]) + "~" + kFormatter(minmax[g][year][a]["max"]) + "<br>";
+    }
     infodiv.innerHTML += "</div>"
   }
 }
+
+var selections = {};
+var chboxes = document.querySelectorAll("input[type='checkbox']");
+var embvector = document.getElementById("embvector");
+for (var i = 0; i < chboxes.length; i++) {
+  selections[chboxes[i].id] = chboxes[i].checked
+  chboxes[i].addEventListener("click", chboxOnChange);
+}
+function chboxOnChange(e) {
+  if (e.target.checked) {
+    selections[e.target.id] = true;
+  } else {
+    selections[e.target.id] = false;
+  }
+  changeEmbedding();
+}
+function changeEmbedding() {
+  console.log(selections);
+  embvector.innerHTML = "";
+  if (selections["chbox_x"]) embvector.innerHTML += "x_0, x_1, x_2 ... , x_n <br>";
+  if (selections["chbox_y"]) embvector.innerHTML += "y_0, y_1, y_2 ... , y_n <br>";
+  if (selections["chbox_s"]) embvector.innerHTML += "s_0, s_1, s_2 ... , s_n <br>";
+
+}
+changeEmbedding();
 
 $('input[type=range]').on('input', function () {
   $(this).trigger('change');

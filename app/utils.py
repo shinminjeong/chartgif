@@ -18,17 +18,20 @@ def cluster_Kmeans(X, num):
         dist.append(trans[i][labels[i]])
     return list(zip(labels, dist)), num, trans
 
-def minmax_for_group(years, K, kgroups, values):
-    minmax = {g:{y:{"minx": 0, "maxx": 0, "miny": 0, "maxy": 0} for y in years} for g in range(0, K)}
+def minmax_for_group(years, K, kgroups, selectedAxis, values):
+    print(selectedAxis)
+    minmax = {g:{y:{a:{"min": 0, "max": 0} for a in selectedAxis} for y in years} for g in range(0, K)}
     G = {g:[] for g in range(0, K)}
     for cname, cv in kgroups.items():
         G[cv["group"]].append(cv["index"])
     for y in years:
         for cgroup, cindex in G.items():
-            minmax[cgroup][y]["minx"] = descale_income(min(values.loc[cindex][y+"_x"]))
-            minmax[cgroup][y]["maxx"] = descale_income(max(values.loc[cindex][y+"_x"]))
-            minmax[cgroup][y]["miny"] = min(values.loc[cindex][y+"_y"])
-            minmax[cgroup][y]["maxy"] = max(values.loc[cindex][y+"_y"])
+            for a in selectedAxis:
+                minmax[cgroup][y][a]["min"] = min(values.loc[cindex][y+"_{}".format(a.lower())])
+                minmax[cgroup][y][a]["max"] = max(values.loc[cindex][y+"_{}".format(a.lower())])
+                if "X" == a:
+                    minmax[cgroup][y][a]["min"] = descale_income(minmax[cgroup][y][a]["min"])
+                    minmax[cgroup][y][a]["max"] = descale_income(minmax[cgroup][y][a]["max"])
     # print(minmax)
     return G, minmax
 

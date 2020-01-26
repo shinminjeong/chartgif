@@ -1,5 +1,5 @@
 var xScale, yScale, radius;
-var margin = {top: 30, right: 50, bottom: 40, left:40};
+var margin = {top: 10, right: 10, bottom: 40, left:40};
 var width, height, continentMap;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
@@ -19,6 +19,8 @@ class ScatterPlot {
 
   initChart(data2d, population, continent, group) {
     var year = "1800";
+    if (group.length == 0)
+      group = undefined;
 
     this.svg = d3.select("#"+this.div_id)
       .append('svg')
@@ -44,7 +46,7 @@ class ScatterPlot {
           "name": this.countries[index],
           "x": data2d[year+"_x"][index],
           "y": data2d[year+"_y"][index],
-          "population": population[year][index]/50000,
+          "population": population[year][index]/40000,
           "group": (group? group[this.countries[index]]["group"] : -1)
         })
       }
@@ -128,37 +130,20 @@ class ScatterPlot {
         .data(data)
       .enter().append('circle')
         .attr('id', function(d){return d.id;})
-        .attr('class', 'bubble')
+        .attr('class', function(d){ return 'bubble g'+d.group; })
         .attr('cx', function(d){return xScale(d.x);})
         .attr('cy', function(d){ return yScale(d.y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1; })
         .style('stroke', 'black')
         .style('stroke-width', 0.5)
         .style('fill', function(d){
+          // console.log(d.group);
           if (d.group == -1) return color[continent.indexOf(continentMap[d.id])];
           else return gcolor(d.group);
         })
-        .on("mouseover", function(d) {
-          console.log("mouseover", d, d.group)
-          if (d.group == -1) {
-            $("text#"+d.id+".bubble-label")[0].style="visibility: visible";
-          } else {
-            var labels = $("text.bubble-label.g"+d.group);
-            for (var l in labels) {
-              labels[l].style ="visibility: visible"
-            }
-          }
-        })
-        .on("mouseout", function(d) {
-          if (d.group == -1) {
-            $("text#"+d.id+".bubble-label")[0].style="visibility: hidden";
-          } else {
-            var labels = $("text.bubble-label.g"+d.group);
-            for (var l in labels) {
-              labels[l].style ="visibility: hidden"
-            }
-          }
-        })
+        .on("mouseover", mouseOverBubbles)
+        .on("click", clickBubbles)
+        .on("mouseout", mouseOutBubbles)
       // .transition()
       //   .duration(1000)
       //   .attr("cx", function(d){return xScale(d.x);})
@@ -170,10 +155,64 @@ class ScatterPlot {
       .enter().append('text')
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble-label g'+d.group; })
-        .attr('x', function(d){return xScale(d.x);})
+        .attr('x', function(d){return xScale(d.x)-20;})
         .attr('y', function(d){ return yScale(d.y); })
         .text(function(d){ return d.name; })
-        .style('visibility', 'hidden');
+        .style('visibility', 'hidden')
+        .on("mouseover", mouseOverBubbles)
+        .on("click", clickBubbles)
+        .on("mouseout", mouseOutBubbles);
+  }
+}
+
+function mouseOverBubbles(d) {
+  d3.select(this).style("cursor", "pointer");
+  if (d.group == -1) {
+    $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
+  } else {
+    dimAllBubbles(0.1);
+    var circles = $("circle.bubble.g"+d.group);
+    for (var l in circles) {
+      if (circles[l].style) circles[l].style.opacity = 1;
+    }
+    $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
+  }
+}
+
+function mouseOutBubbles(d) {
+  d3.select(this).style("cursor", "");
+  if (d.group == -1) {
+    $("text#"+d.id+".bubble-label")[0].style.visibility="hidden";
+  } else {
+    dimAllBubbles(1);
+    var labels = $("text.bubble-label.g"+d.group);
+    for (var l in labels) {
+      if (labels[l].style) labels[l].style.visibility = "hidden"
+    }
+  }
+}
+
+function clickBubbles(d){
+  d3.select(this).style("cursor", "pointer");
+  if (d.group == -1) {
+    $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
+  } else {
+    dimAllBubbles(0.1);
+    var circles = $("circle.bubble.g"+d.group);
+    for (var l in circles) {
+      if (circles[l].style) circles[l].style.opacity = 1;
+    }
+    var labels = $("text.bubble-label.g"+d.group);
+    for (var l in labels) {
+      if (labels[l].style) labels[l].style.visibility = "visible";
+    }
+  }
+}
+
+function dimAllBubbles(dimlevel) {
+  var bubbles = $("circle.bubble");
+  for (var l in bubbles) {
+    if (bubbles[l].style) bubbles[l].style.opacity = ""+dimlevel;
   }
 }
 
