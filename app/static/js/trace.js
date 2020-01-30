@@ -64,7 +64,7 @@ class TraceChart {
       .enter().append("path")
         .attr("class", "trace")
         .attr("d", drawCluster)
-        .style("opacity", 0.1)
+        .style("opacity", 0.01)
         .style("fill", function(d) { return gcolor(d.group); });
   }
 }
