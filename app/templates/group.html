@@ -77,6 +77,7 @@
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="https://d3js.org/d3-contour.v1.min.js"></script>
 <script src="{% static 'js/scatter.js' %}"></script>
+<script src="{% static 'js/trace.js' %}"></script>
 <script>
 var gcolor = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -98,22 +99,40 @@ function kFormatter(num) {
       return Math.sign(num)*((Math.abs(num)/1000).toFixed(1)) + 'K'
     return Math.sign(num)*Math.abs(num)
 }
-function updateClusterinfo(year) {
-  infodiv.innerHTML="<div>Year = " + year + "</div><br>";
+function initClusterinfo() {
+  infodiv.innerHTML="<div>Year = <span id='infoCurYear'>" + curYear + "</span></div><br>";
   var numGroup = cluster_info["K"];
   var minmax = cluster_info["minmax"];
-
   for (var g = 0; g < numGroup; g++) {
     infodiv.innerHTML += "<div>"
-    infodiv.innerHTML += "<span class='badge' style='background-color:"+gcolor(g)+"'>Group " + g + "</span><br>";
-    for (var a in minmax[g][year]) {
-      infodiv.innerHTML += a + ": " + kFormatter(minmax[g][year][a]["min"]) + "~" + kFormatter(minmax[g][year][a]["max"]) + "<br>";
-    }
+    infodiv.innerHTML += "<span class='badge' style='margin-top:10px;width:50%;background-color:"+gcolor(g)+"'>Group " + g + "</span><br>";
+    infodiv.innerHTML += "<div style='padding-left:10px'><span id='infoMinMax_"+g+"'></span></div>"
+    infodiv.innerHTML += "<div id='trace_chart_" + g + "'></div>"
     infodiv.innerHTML += "</div>"
   }
+  drawTraceCharts(numGroup);
 }
+function updateClusterinfo(year) {
+  var info_year = document.getElementById("infoCurYear");
+  info_year.innerHTML = year;
 
-
+  var numGroup = cluster_info["K"];
+  var minmax = cluster_info["minmax"];
+  for (var g = 0; g < numGroup; g++) {
+    var info_minmax = document.getElementById("infoMinMax_"+g);
+    info_minmax.innerHTML = "";
+    for (var a in minmax[g][year]) {
+      info_minmax.innerHTML += a + ": " + kFormatter(minmax[g][year][a]["min"]) + "~" + kFormatter(minmax[g][year][a]["max"]) + "<br>";
+    }
+  }
+}
+function drawTraceCharts(numGroup) {
+  var trace_chart = {};
+  for (var g = 0; g < numGroup; g++) {
+    trace_chart[g] = new TraceChart("trace_chart_", g);
+    trace_chart[g].draw(data_plot, data_population, data_continent, data_group);
+  }
+}
 
 var selections = {};
 var embchboxes = document.querySelectorAll("input.emb");
@@ -139,18 +158,20 @@ function changeEmbedding() {
 
 }
 changeEmbedding();
+initClusterinfo();
 
 var curYear = 1800;
+var maxYear = 2018;
 var timer = undefined;
 var flagConvexHulls = false;
 var playon = document.querySelectorAll("input#switchPlay");
 playon[0].addEventListener("change", function(e) {
   // console.log("playon", e.target.checked, curYear);
-  if (e.target.checked) {
+  if (e.target.checked && curYear < maxYear) {
     timer = setInterval(function() {
       curYear += 1;
       // console.log("update", curYear);
-      if (curYear > 2017) {
+      if (curYear >= maxYear) {
         clearInterval(timer);
       }
       changeSlider($("input[type='range']"), curYear, true);

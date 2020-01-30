@@ -172,6 +172,7 @@ class ScatterPlot {
           .data(convexHulls(data, getGroup, hullOffset))
         .enter().append("path")
           .attr("class", "hull")
+          .attr("id", function(d) { return d.group; })
           .attr("d", drawCluster)
           .style("opacity", 0.2)
           .style("fill", function(d) { return gcolor(d.group); });
@@ -219,11 +220,13 @@ function mouseOverBubbles(d) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   } else {
     dimAllBubbles(0.1);
+    dimAllCvxHulls(0.01);
     var circles = $("circle.bubble.g"+d.group);
     for (var l in circles) {
       if (circles[l].style) circles[l].style.opacity = 1;
     }
-    $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
+    if ($("path#"+d.group+".hull")[0].style) $("path#"+d.group+".hull")[0].style.opacity=0.2;
+    if ($("text#"+d.id+".bubble-label")[0].style) $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   }
 }
 
@@ -233,6 +236,7 @@ function mouseOutBubbles(d) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="hidden";
   } else {
     dimAllBubbles(1);
+    dimAllCvxHulls(0.2);
     var labels = $("text.bubble-label.g"+d.group);
     for (var l in labels) {
       if (labels[l].style) labels[l].style.visibility = "hidden"
@@ -246,6 +250,7 @@ function clickBubbles(d){
     $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   } else {
     dimAllBubbles(0.1);
+    dimAllCvxHulls(0.01);
     var circles = $("circle.bubble.g"+d.group);
     for (var l in circles) {
       if (circles[l].style) circles[l].style.opacity = 1;
@@ -261,6 +266,12 @@ function dimAllBubbles(dimlevel) {
   var bubbles = $("circle.bubble");
   for (var l in bubbles) {
     if (bubbles[l].style) bubbles[l].style.opacity = ""+dimlevel;
+  }
+}
+function dimAllCvxHulls(dimlevel) {
+  var cvxhulls = $("path.hull");
+  for (var l in cvxhulls) {
+    if (cvxhulls[l].style) cvxhulls[l].style.opacity = ""+dimlevel;
   }
 }
 
