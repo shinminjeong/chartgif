@@ -56,7 +56,7 @@ class TraceChart {
     var allyears = [];
     for (var i in years) {
       var data = this.data[years[i]];
-      allyears = allyears.concat(traceHulls(data, getGroup, 0))
+      allyears = allyears.concat(traceHulls(data, getGroup, 2))
     }
 
     tracehull[this.g_id] = this.trace_g.selectAll("path.trace")
