@@ -3,13 +3,14 @@ var margin = {top: 10, right: 10, bottom: 40, left:40};
 var width, height, continentMap;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
-var bubble_g;
+var bubble_g, hull;
+var hullOffset = 10;
 
 class ScatterPlot {
 
   constructor(div_id) {
     width = document.getElementById(div_id).offsetWidth - margin.left - margin.right;
-    height = 800 - margin.top - margin.bottom;
+    height = 760 - margin.top - margin.bottom;
     this.div_id = div_id;
 
     xScale = d3.scaleLog().range([0, width]).domain([250, 256000]);
@@ -84,6 +85,8 @@ class ScatterPlot {
         .ticks(10)
       );
 
+    this.hull_g = this.svg.append('g');
+
     // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
     this.svg.append('text')
       .attr('x', 10)
@@ -121,10 +124,10 @@ class ScatterPlot {
 
   }
 
-  updateChart(year) {
+  updateChart(year, flagConvexHulls) {
     bubble_g.selectAll("*").remove();
 
-    // console.log("updateChart", year);
+    // console.log("updateChart", year, flagConvexHulls);
     var data = this.data[year];
     var bubble = bubble_g.selectAll('.bubble')
         .data(data)
@@ -162,7 +165,52 @@ class ScatterPlot {
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles);
+
+    this.hull_g.selectAll("path.hull").remove();
+    if (flagConvexHulls) {
+      hull = this.hull_g.selectAll("path.hull")
+          .data(convexHulls(data, getGroup, hullOffset))
+        .enter().append("path")
+          .attr("class", "hull")
+          .attr("d", drawCluster)
+          .style("opacity", 0.2)
+          .style("fill", function(d) { return gcolor(d.group); });
+    }
   }
+}
+
+function getGroup(n) { return n.group; }
+
+function convexHulls(nodes, index, offset) {
+  // console.log("convexHulls")
+  var hulls = {};
+
+  // create point sets
+  for (var k=0; k<nodes.length; ++k) {
+    var n = nodes[k];
+    if (n.size) continue;
+    var i = getGroup(n),
+        l = hulls[i] || (hulls[i] = []);
+    var rOffset = radius(n.population)*1.3+1;
+    l.push([xScale(n.x)-rOffset-offset, yScale(n.y)-rOffset-offset]);
+    l.push([xScale(n.x)-rOffset-offset, yScale(n.y)+rOffset+offset]);
+    l.push([xScale(n.x)+rOffset+offset, yScale(n.y)-rOffset-offset]);
+    l.push([xScale(n.x)+rOffset+offset, yScale(n.y)+rOffset+offset]);
+  }
+  // console.log(hulls)
+  // create convex hulls
+  var hullset = [];
+  for (i in hulls) {
+    hullset.push({group: i, path: d3.polygonHull(hulls[i])});
+  }
+
+  return hullset;
+}
+
+function drawCluster(d) {
+  if (isNaN(d.path[0][0])) return "";
+  var curve = d3.line().curve(d3.curveCardinalClosed.tension(0.8));
+  return curve(d.path);
 }
 
 function mouseOverBubbles(d) {

@@ -142,6 +142,7 @@ changeEmbedding();
 
 var curYear = 1800;
 var timer = undefined;
+var flagConvexHulls = false;
 var playon = document.querySelectorAll("input#switchPlay");
 playon[0].addEventListener("change", function(e) {
   // console.log("playon", e.target.checked, curYear);
@@ -157,6 +158,12 @@ playon[0].addEventListener("change", function(e) {
   } else {
     if (timer) clearInterval(timer);
   }
+});
+var hullon = document.querySelectorAll("input#switchHull");
+hullon[0].addEventListener("change", function(e) {
+  console.log("hullon", e.target.checked);
+  flagConvexHulls = e.target.checked;
+  chart.updateChart(curYear, flagConvexHulls);
 });
 
 
@@ -183,7 +190,7 @@ function changeSlider(el, curYear, play) {
   if (play) {
     el.val(curYear);
   }
-  chart.updateChart(curYear);
+  chart.updateChart(curYear, flagConvexHulls);
   updateClusterinfo(curYear);
 }
 </script>
