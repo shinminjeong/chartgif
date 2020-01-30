@@ -9,7 +9,7 @@ def avg_distance(X, p):
     return d
 
 def cluster_Kmeans(X, num):
-    kmeans = KMeans(n_clusters=num)
+    kmeans = KMeans(n_clusters=num, random_state=0)
     trans = kmeans.fit_transform(X)
     labels = kmeans.labels_
     centers = kmeans.cluster_centers_
