@@ -20,10 +20,10 @@
         <div style="padding-top: 30px;">
           (1) Generate embedding<br>
           <div style="padding-left: 20px;">
-            <input type="checkbox" id="chbox_x" name="X" value="income" {% if "X" in selectedAxis %} checked {% endif %}> Income (X)<br>
-            <input type="checkbox" id="chbox_y" name="Y" value="lifexp" {% if "Y" in selectedAxis %} checked {% endif %}> Life Expectancy (Y)<br>
-            <input type="checkbox" id="chbox_s" name="S" value="popula" {% if "S" in selectedAxis %} checked {% endif %}> Population (S)<br>
-            <input type="checkbox" id="chbox_d" name="D" value="distance" disabled> Distance (D)<br>
+            <input class="emb" type="checkbox" id="chbox_x" name="X" value="income" {% if "X" in selectedAxis %} checked {% endif %}> Income (X)<br>
+            <input class="emb" type="checkbox" id="chbox_y" name="Y" value="lifexp" {% if "Y" in selectedAxis %} checked {% endif %}> Life Expectancy (Y)<br>
+            <input class="emb" type="checkbox" id="chbox_s" name="S" value="popula" {% if "S" in selectedAxis %} checked {% endif %}> Population (S)<br>
+            <input class="emb" type="checkbox" id="chbox_d" name="D" value="distance" disabled> Distance (D)<br>
           </div>
         </div>
         <div>
@@ -51,6 +51,16 @@
           <input class="btn btn-primary" style="width:100%" type="submit" value="Colour clusters" />
         </div>
       </form>
+      <div>
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="switchPlay">
+          <label class="custom-control-label" for="switchPlay">Play</label>
+        </div>
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="switchHull">
+          <label class="custom-control-label" for="switchHull">Draw hull</label>
+        </div>
+      </div>
     </div>
     <div class="col-md-8">
       <div id="myChart"></div>
@@ -103,12 +113,14 @@ function updateClusterinfo(year) {
   }
 }
 
+
+
 var selections = {};
-var chboxes = document.querySelectorAll("input[type='checkbox']");
+var embchboxes = document.querySelectorAll("input.emb");
 var embvector = document.getElementById("embvector");
-for (var i = 0; i < chboxes.length; i++) {
-  selections[chboxes[i].id] = chboxes[i].checked
-  chboxes[i].addEventListener("click", chboxOnChange);
+for (var i = 0; i < embchboxes.length; i++) {
+  selections[embchboxes[i].id] = embchboxes[i].checked
+  embchboxes[i].addEventListener("click", chboxOnChange);
 }
 function chboxOnChange(e) {
   if (e.target.checked) {
@@ -128,24 +140,51 @@ function changeEmbedding() {
 }
 changeEmbedding();
 
+var curYear = 1800;
+var timer = undefined;
+var playon = document.querySelectorAll("input#switchPlay");
+playon[0].addEventListener("change", function(e) {
+  // console.log("playon", e.target.checked, curYear);
+  if (e.target.checked) {
+    timer = setInterval(function() {
+      curYear += 1;
+      // console.log("update", curYear);
+      if (curYear > 2017) {
+        clearInterval(timer);
+      }
+      changeSlider($("input[type='range']"), curYear, true);
+    }, 200);
+  } else {
+    if (timer) clearInterval(timer);
+  }
+});
+
+
 $('input[type=range]').on('input', function () {
   $(this).trigger('change');
 });
 $("input[type='range']").change(function() {
   el = $(this);
+  curYear  = parseInt(el.val());
+  changeSlider(el, curYear, false);
+})
+// Fake a change to position bubble at page load
+.trigger('change');
+
+function changeSlider(el, curYear, play) {
   width = el.width()-50;
-  newPoint = (el.val() - el.attr("min")) / (el.attr("max") - el.attr("min"));
+  newPoint = (curYear - el.attr("min")) / (el.attr("max") - el.attr("min"));
   // console.log(newPoint, el.val())
   el.next("output")
     .css({
      marginLeft: 10 + width * newPoint,
     })
-    .text(el.val());
-  chart.updateChart(el.val());
-
-  updateClusterinfo(el.val());
-})
-// Fake a change to position bubble at page load
-.trigger('change');
+    .text(curYear);
+  if (play) {
+    el.val(curYear);
+  }
+  chart.updateChart(curYear);
+  updateClusterinfo(curYear);
+}
 </script>
 </html>
