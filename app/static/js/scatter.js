@@ -219,14 +219,15 @@ function mouseOverBubbles(d) {
   if (d.group == -1) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   } else {
+    console.log("mouseOverBubbles", d.id)
     dimAllBubbles(0.1);
     dimAllCvxHulls(0.01);
     var circles = $("circle.bubble.g"+d.group);
     for (var l in circles) {
       if (circles[l].style) circles[l].style.opacity = 1;
     }
-    if ($("path#"+d.group+".hull")[0].style) $("path#"+d.group+".hull")[0].style.opacity=0.2;
-    if ($("text#"+d.id+".bubble-label")[0].style) $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
+    if ($("path#"+d.group+".hull")[0]) $("path#"+d.group+".hull")[0].style.opacity=0.2;
+    if ($("text#"+d.id+".bubble-label")[0]) $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   }
 }
 
