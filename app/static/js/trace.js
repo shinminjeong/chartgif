@@ -7,8 +7,8 @@ class TraceChart {
   constructor(div_form, g_id) {
     this.div_id = div_form + g_id;
     this.g_id = g_id;
-    trace_width = 150;
-    trace_height = 80;
+    trace_width = document.getElementById(this.div_id).offsetWidth;
+    trace_height = trace_width*0.8;
 
     t_xScale = d3.scaleLog().range([0, trace_width]).domain([250, 256000]);
     t_yScale = d3.scaleLinear().range([trace_height, 0]).domain([15, 95]);

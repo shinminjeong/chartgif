@@ -44,7 +44,7 @@
         <div style="padding-top: 30px;">
           (2) Cluster points<br>
           <div style="padding-left: 20px;">
-            The number of cluster: <input type="number" name="K" min="1" max="20" value="5">
+            The number of cluster: <input type="number" name="K" min="1" max="20" value="8">
           </div>
         </div>
         <div style="padding-top: 30px;">
@@ -69,7 +69,7 @@
     </div>
     <div class="col-md-2">
       Cluster information
-      <div id="clusterinfo"></div>
+      <div id="clusterinfo" class="row"></div>
     </div>
 </body>
 
@@ -100,15 +100,21 @@ function kFormatter(num) {
     return Math.sign(num)*Math.abs(num)
 }
 function initClusterinfo() {
-  infodiv.innerHTML="<div>Year = <span id='infoCurYear'>" + curYear + "</span></div><br>";
+  var div_year = document.createElement("div");
+  div_year.innerHTML="Year = <span id='infoCurYear'>" + curYear + "</span><br>";
+  div_year.classList.add("col-md-12");
+  infodiv.appendChild(div_year);
+
   var numGroup = cluster_info["K"];
   var minmax = cluster_info["minmax"];
   for (var g = 0; g < numGroup; g++) {
-    infodiv.innerHTML += "<div>"
-    infodiv.innerHTML += "<span class='badge' style='margin-top:10px;width:50%;background-color:"+gcolor(g)+"'>Group " + g + "</span><br>";
-    infodiv.innerHTML += "<div style='padding-left:10px'><span id='infoMinMax_"+g+"'></span></div>"
-    infodiv.innerHTML += "<div id='trace_chart_" + g + "'></div>"
-    infodiv.innerHTML += "</div>"
+    var div_group = document.createElement("div");
+    div_group.style = "padding: 10px";
+    div_group.classList.add("col-md-6");
+    div_group.innerHTML += "<span class='badge' style='width:100%;background-color:"+gcolor(g)+"'>Group " + g + "</span><br>";
+    div_group.innerHTML += "<div style='padding-left:10px'><span id='infoMinMax_"+g+"'></span></div>"
+    div_group.innerHTML += "<div id='trace_chart_" + g + "'></div>"
+    infodiv.appendChild(div_group);
   }
   drawTraceCharts(numGroup);
 }
