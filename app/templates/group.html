@@ -44,7 +44,7 @@
         <div style="padding-top: 30px;">
           (2) Cluster points<br>
           <div style="padding-left: 20px;">
-            The number of cluster: <input type="number" name="K" min="1" max="20" value="8">
+            The number of cluster: <input type="number" name="K" min="1" max="20" {% if clusterinfo.K %} value={{clusterinfo.K}} {% else %} value="8" {% endif %}>
           </div>
         </div>
         <div style="padding-top: 30px;">
