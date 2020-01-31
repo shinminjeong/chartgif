@@ -86,6 +86,7 @@ var data_population = {{population|safe}};
 var data_continent = {{continent|safe}};
 var data_group = {{kgroup|safe}};
 var cluster_info = {{clusterinfo|safe}};
+var detail_flag = "{{detail_on}}";
 
 var chart = new ScatterPlot("myChart");
 chart.initChart(data_plot, data_population, data_continent, data_group);
@@ -114,6 +115,18 @@ function initClusterinfo() {
     div_group.innerHTML += "<span class='badge' style='width:100%;background-color:"+gcolor(g)+"'>Group " + g + "</span><br>";
     div_group.innerHTML += "<div style='padding-left:10px'><span id='infoMinMax_"+g+"'></span></div>"
     div_group.innerHTML += "<div id='trace_chart_" + g + "'></div>"
+
+    if (detail_flag == "True") {
+      var div_group_detail = document.createElement("div");
+      div_group_detail.style = "font-size: 8px";
+      for (var c in data_group) {
+        if (data_group[c]["group"] == g) {
+          console.log(c, data_group[c])
+          div_group_detail.innerHTML += c + "<br/>";
+        }
+      }
+      div_group.appendChild(div_group_detail);
+    }
     infodiv.appendChild(div_group);
   }
   drawTraceCharts(numGroup);

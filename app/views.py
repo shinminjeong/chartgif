@@ -44,9 +44,11 @@ def main(request):
             "selectedAxis": selectedAxis,
             "clusterinfo": [],
             "kgroup": [],
+            "detail_on": False
         })
     else:
         K = int(request.GET.get("K"))
+        detail_on = (request.GET.get("detail") == "on")
         print(request.GET)
 
         values = map.drop(columns='country').fillna(-1)
@@ -93,6 +95,7 @@ def main(request):
             "selectedAxis": selectedAxis,
             "clusterinfo": clusterinfo,
             "kgroup": kgroups,
+            "detail_on": detail_on
         })
 
 # def distance(request):
