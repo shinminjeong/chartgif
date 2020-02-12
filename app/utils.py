@@ -1,7 +1,7 @@
 import os, sys
 import numpy as np
 from sklearn import cluster, covariance, manifold
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AffinityPropagation, MeanShift
 from scipy.spatial.distance import euclidean
 
 def avg_distance(X, p):
@@ -13,10 +13,28 @@ def cluster_Kmeans(X, num):
     trans = kmeans.fit_transform(X)
     labels = kmeans.labels_
     centers = kmeans.cluster_centers_
-    dist = []
-    for i in range(len(labels)):
-        dist.append(trans[i][labels[i]])
-    return list(zip(labels, dist)), num, trans
+    return labels, num, trans
+
+def cluster_AP(X):
+    af = AffinityPropagation(damping=0.97).fit(X)
+    cluster_centers_indices = af.cluster_centers_indices_
+    labels = af.labels_
+    afmatrix = -af.affinity_matrix_
+    centers = af.cluster_centers_
+    n_clusters = len(cluster_centers_indices)
+    print("AP] Estimated number of clusters: %d" % (n_clusters))
+    return labels, n_clusters, afmatrix
+
+
+def cluster_MeanShift(X):
+    clustering = MeanShift().fit(X)
+    labels = clustering.labels_
+    cluster_centers = clustering.cluster_centers_
+    labels_unique = np.unique(labels)
+    n_clusters = len(labels_unique)
+    print("MeanShift] Estimated number of clusters: %d" % (n_clusters))
+    return labels, n_clusters, cluster_centers
+
 
 def minmax_for_group(years, K, kgroups, selectedAxis, values):
     print(selectedAxis)
@@ -33,6 +51,27 @@ def minmax_for_group(years, K, kgroups, selectedAxis, values):
                     minmax[cgroup][y][a]["min"] = descale_income(minmax[cgroup][y][a]["min"])
                     minmax[cgroup][y][a]["max"] = descale_income(minmax[cgroup][y][a]["max"])
     # print(minmax)
+    return G, minmax
+
+
+def minmax_for_group_slice(years, K, kgroups, selectedAxis, values):
+    print(selectedAxis)
+    minmax = {y:{g:{a:{"min": 0, "max": 0} for a in selectedAxis} for g in range(0, K[y])} for y in years}
+    G = {y:{g:[] for g in range(0, K[y])} for y in years}
+    for y, value in kgroups.items():
+        for cname, cv in value.items():
+            G[y][cv["group"]].append(cv["index"])
+
+    print(G.keys())
+    print(minmax.keys())
+    for y in years:
+        for cgroup, cindex in G[y].items():
+            for a in selectedAxis:
+                minmax[y][cgroup][a]["min"] = min(values.loc[cindex][y+"_{}".format(a.lower())])
+                minmax[y][cgroup][a]["max"] = max(values.loc[cindex][y+"_{}".format(a.lower())])
+                if "X" == a:
+                    minmax[y][cgroup][a]["min"] = descale_income(minmax[y][cgroup][a]["min"])
+                    minmax[y][cgroup][a]["max"] = descale_income(minmax[y][cgroup][a]["max"])
     return G, minmax
 
 def scale_income(x):
