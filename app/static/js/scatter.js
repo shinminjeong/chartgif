@@ -5,15 +5,17 @@ var hullOffset = 10;
 
 class ScatterPlot {
 
-  constructor(div_id) {
-    this.margin = {top: 10, right: 10, bottom: 40, left:40};
-    this.width = document.getElementById(div_id).offsetWidth - this.margin.left - this.margin.right;
-    this.height = this.width;
+  constructor(div_id, w, h) {
+    this.margin = {top: 5, right: 10, bottom: 40, left:40};
+    this.width = w - this.margin.left - this.margin.right;
+    this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
 
     xScale = d3.scaleLog().range([0, this.width]).domain([250, 256000]);
-    yScale = d3.scaleLinear().range([this.height, 0]).domain([15, 95]);
+    yScale = d3.scaleLinear().range([this.height, 0]).domain([0, 95]);
     radius = d3.scaleSqrt().range([2,15]).domain([10, 10000]);
+
+    this.bubble = {};
   }
 
   initChart(data2d, population, continent, group) {
@@ -37,6 +39,7 @@ class ScatterPlot {
     this.data = {}
     for (var i in this.years) {
       var year = this.years[i];
+      var pre_year = this.years[i > 0? i-1:0];
       this.data[year] = [];
       for (var index in this.countries) {
         // console.log(index, this.countries[index], this.continentMap[index])
@@ -46,6 +49,9 @@ class ScatterPlot {
           "x": data2d[year+"_x"][index],
           "y": data2d[year+"_y"][index],
           "population": population[year][index]/40000,
+          "pre_x": data2d[pre_year+"_x"][index],
+          "pre_y": data2d[pre_year+"_y"][index],
+          "pre_population": population[pre_year][index]/40000,
           "group": (group? group[this.countries[index]]["group"] : -1)
         })
       }
@@ -117,12 +123,13 @@ class ScatterPlot {
       .style('text-anchor', 'end')
       .text(function(d){ return d; });
 
+    this.bubble_trace_g = this.svg.append('g');
+    this.bubble_shadow_g = this.svg.append('g');
     this.bubble_g = this.svg.append('g');
-
   }
 
   updateChart(year, swtvalues) {
-    this.bubble_g.selectAll("*").remove();
+    this.clearFocus();
     var data = this.data[year];
 
     var flagTrace = swtvalues["trace"],
@@ -153,7 +160,7 @@ class ScatterPlot {
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles)
       // .transition()
-      //   .duration(1000)
+      //   .duration(100)
       //   .attr("cx", function(d){return xScale(d.x);})
       //   .attr("cy", function(d){ return yScale(d.y); })
       //   .attr('r', function(d){ return radius(d.population); })
@@ -212,46 +219,80 @@ class ScatterPlot {
     }
   }
 
-  updateFocus(years, swtvalues) {
+  clearFocus() {
+    this.bubble_g.selectAll("*").remove();
+    this.bubble_shadow_g.selectAll("*").remove();
+    this.bubble_trace_g.selectAll("*").remove();
+  }
+
+  updateFocus(y, years, swtvalues) {
     this.bubble_g.selectAll("*").remove();
     this.trace_path_g.selectAll("circle.tbubble").remove();
 
     console.log("focusYears", years);
-    var bubble = {}
-    for (var y = 0; y < years.length; y++) {
-      var year = years[y];
-      var data = this.data[year];
+    // for (var y = 0; y < years.length; y++) {
+    var year = years[y];
+    var data = this.data[year];
 
-      bubble[y] = this.bubble_g.append("g").selectAll('.bubble')
-          .data(data)
-        .enter().append('circle')
-          // .attr('id', function(d){return d.id;})
-          .attr('class', function(d){ return 'bubble g'+d.group; })
-          .attr('cx', function(d){return xScale(d.x);})
-          .attr('cy', function(d){ return yScale(d.y); })
-          .attr('r', function(d){ return radius(d.population)*1.3+1; })
-          .style('stroke', 'black')
-          .style('stroke-width', 0.5)
-          .style('opacity', 0.3)
-          .style('fill', function(d){
-            // console.log(d.group);
-            if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
-            else return gcolor(d.group);
-          })
-          .style('visibility', function(d) {
-            // console.log(d.group, swtvalues["groups"]);
-            if (swtvalues["groups"][d.group]) return 'visible';
-            else return 'hidden';
-          })
-          .on("mouseover", mouseOverBubbles)
-          .on("click", clickBubbles)
-          .on("mouseout", mouseOutBubbles)
-        // .transition()
-        //   .duration(1000)
-        //   .attr("cx", function(d){return xScale(d.x);})
-        //   .attr("cy", function(d){ return yScale(d.y); })
-        //   .attr('r', function(d){ return radius(d.population); })
-    }
+    this.bubble_trace_g.append("g").selectAll('.bubble_trace')
+        .data(data)
+      .enter().append("line")
+        .attr("x1", d => xScale(d.pre_x))
+        .attr("y1", d => yScale(d.pre_y))
+        .attr("x2", d => xScale(d.pre_x))
+        .attr("y2", d => yScale(d.pre_y))
+        .attr("stroke", d => gcolor(d.group))
+        .attr("stroke-width", d => radius(d.pre_population)*2.6+2)
+        .style('opacity', 0.2)
+        .style('visibility', function(d) {
+          if (swtvalues["groups"][d.group]) return 'visible';
+          else return 'hidden';
+        })
+      .transition()
+        .duration(1000)
+        .attr("x2", d => xScale(d.x))
+        .attr("y2", d => yScale(d.y))
+
+    this.bubble_shadow_g.append("g").selectAll('.bubble_shadow')
+        .data(data)
+      .enter().append('circle')
+        .attr('class', function(d){ return 'bubble_shadow g'+d.group; })
+        .attr('cx', function(d){return xScale(d.pre_x);})
+        .attr('cy', function(d){ return yScale(d.pre_y); })
+        .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
+        .style('stroke', 'black')
+        .style('stroke-width', 0.5)
+        .style('opacity', (y+1)/years.length)
+        .style('fill', d => gcolor(d.group))
+        .style('visibility', function(d) {
+          if (swtvalues["groups"][d.group]) return 'visible';
+          else return 'hidden';
+        })
+
+    var moving_bubble = this.bubble_g.selectAll('.bubble')
+        .data(data)
+      .enter().append('circle')
+        .attr('class', function(d){ return 'bubble g'+d.group; })
+        .attr('cx', function(d){return xScale(d.pre_x);})
+        .attr('cy', function(d){ return yScale(d.pre_y); })
+        .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
+        .style('stroke', 'black')
+        .style('stroke-width', 0.5)
+        .style('fill', function(d){
+          if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
+          else return gcolor(d.group);
+        })
+        .style('visibility', function(d) {
+          if (swtvalues["groups"][d.group]) return 'visible';
+          else return 'hidden';
+        })
+      .transition()
+        .duration(1000)
+        .attr("cx", function(d){return xScale(d.x);})
+        .attr("cy", function(d){ return yScale(d.y); })
+        .attr('r', function(d){ return radius(d.population)*1.3+1; })
+
+    // }
     this.bubble_g.selectAll('.bubble-label')
         .data(data)
       .enter().append('text')

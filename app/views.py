@@ -9,7 +9,6 @@ from django.conf import settings
 import os, sys, csv, json
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import normalize
 from .utils import *
 
 file_income = "app/static/data/income_per_person_gdppercapita_ppp_inflation_adjusted.csv"
@@ -45,15 +44,16 @@ def main(request):
 
     # calculate average velocity/acceleration
     avg_v = {}
-    avg_a = {}
-    for group_index in [0, 1, 2, 3]:
+    groups = [0, 1, 2, 3]
+    for group_index in groups:
         cset = [v["index"] for k, v in kgroups.items() if v["group"] == group_index] # X value
-        X = values.iloc[cset, :]
+        X = values.iloc[cset, :].to_numpy()
         D, minD, maxD = avg_velocity(X, numYears)
         avg_v[group_index] = {}
         for i, a in enumerate(selectedAxis):
             avg_v[group_index][a] = [{"year":int(y), "value":v, "min": m1, "max": m2} for y, v, m1, m2 in zip(years, D.tolist()[i*numYears:(i+1)*numYears], minD.tolist()[i*numYears:(i+1)*numYears], maxD.tolist()[i*numYears:(i+1)*numYears])]
     # print(avg_v)
+    focus_range = get_focus_range(groups, selectedAxis, avg_v);
 
     G, minmax = minmax_for_group(years, K, kgroups, selectedAxis, values)
     clusterinfo = {
@@ -70,7 +70,7 @@ def main(request):
         "clusterinfo": clusterinfo,
         "kgroup": kgroups,
         "avg_velocity": avg_v,
-        "avg_accel": avg_a
+        "focus_range": focus_range
     })
 
 

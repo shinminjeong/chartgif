@@ -1,9 +1,10 @@
 var line_xscale;
 class LineChart {
 
-  constructor(div_id) {
-    this.width = document.getElementById(div_id).offsetWidth-50;
-    this.height = 165;
+  constructor(div_id, w, h) {
+    this.margin = {top: 10, right: 0, bottom: 20, left:40};
+    this.width = document.getElementById(div_id).offsetWidth;
+    this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
     // console.log("lineChart", this.div_id, this.width, this.height);
   }
@@ -138,7 +139,7 @@ function draw_rect_move(e, canvas) {
     setMousePosition(e);
     element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
     // element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
-    element.style.height = rect.height-35;
+    element.style.height = rect.height-30;
     element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x - rect.x + 'px' : mouse.startX - rect.x + 'px';
     // element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y - rect.y + 'px' : mouse.startY - rect.y + 'px';
     element.style.top = 0;
@@ -150,9 +151,9 @@ function draw_rect_click(e, canvas) {
   // console.log("draw_rect_click", rect);
   if (element !== null) {
     names = canvas.id.split("_");
-    left = +element.style.left.split("px")[0]-10;
+    left = +element.style.left.split("px")[0]-left_offset+35;
     width = +element.style.width.split("px")[0];
-    // console.log("canvas - left", left, line_xscale.invert(left));
+    // console.log("canvas - left", left_offset, left, line_xscale.invert(left));
     // console.log("canvas - right", left+width, line_xscale.invert(left+width));
     startYear = Math.floor(line_xscale.invert(left));
     endYear = Math.ceil(line_xscale.invert(left+width));
@@ -184,7 +185,6 @@ function setMousePosition(e) {
     mouse.x = ev.clientX + document.body.scrollLeft;
     mouse.y = ev.clientY + document.body.scrollTop;
   }
-  mouse.x -= 10;
   // console.log(mouse)
 }
 

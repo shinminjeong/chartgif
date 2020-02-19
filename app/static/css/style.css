@@ -10,6 +10,16 @@ body {
   stroke-width: 0;
 }
 
+.group_label {
+	font-size: 12px;
+	padding: 5px 0 0 20px;
+	margin-bottom: -20px;
+	z-index: 2;
+}
+.group_trace {
+	z-index: 1;
+}
+
 .year-background {
 	font-family: monospace;
 	font-size: 200px;

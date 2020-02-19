@@ -1,5 +1,4 @@
 var t_xScale, t_yScale;
-var trace_width, trace_height;
 var tracehull = {};
 var traceline = {};
 
@@ -8,11 +7,11 @@ class TraceChart {
   constructor(div_form, g_id) {
     this.div_id = div_form + g_id;
     this.g_id = g_id;
-    trace_width = document.getElementById(this.div_id).offsetWidth;
-    trace_height = trace_width*0.8;
+    this.trace_width = document.getElementById(this.div_id).offsetWidth;
+    this.trace_height = this.trace_width*0.8;
 
-    t_xScale = d3.scaleLog().range([0, trace_width]).domain([250, 256000]);
-    t_yScale = d3.scaleLinear().range([trace_height, 0]).domain([15, 95]);
+    t_xScale = d3.scaleLog().range([0, this.trace_width]).domain([250, 256000]);
+    t_yScale = d3.scaleLinear().range([this.trace_height, 0]).domain([15, 95]);
   }
 
   draw(data2d, population, continent, group) {
@@ -22,8 +21,8 @@ class TraceChart {
 
     this.svg = d3.select("#"+this.div_id)
       .append('svg')
-      .attr('width', trace_width)
-      .attr('height', trace_height)
+      .attr('width', this.trace_width)
+      .attr('height', this.trace_height)
     .append('g')
       .attr('transform', 'translate(0,0)');
 

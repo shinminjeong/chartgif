@@ -3,9 +3,27 @@ import numpy as np
 from sklearn import cluster, covariance, manifold
 from sklearn.cluster import KMeans, AffinityPropagation, MeanShift
 from scipy.spatial.distance import euclidean
+from sklearn.preprocessing import normalize
+
+
+def get_focus_range(groups, axes, V):
+    # avg_v[group_index(0,1,2,3)][axis("X","Y","S")] = {"year":y, "value":v, "min":m, "max":n}
+    range = {g:[] for g in groups}
+    for g in groups:
+        for a in axes:
+            # print(a, [(v["year"], v["value"]) for v in V[g][a]])
+            minv = min([v["min"] for v in V[g][a]])
+            maxv = max([v["max"] for v in V[g][a]])
+            threshold = (maxv-minv)*0.05
+            print(g, a, (maxv-minv), threshold)
+            print(a, [v["year"] for v in V[g][a] if abs(v["value"]) > threshold])
 
 def avg_velocity(X, len):
     n, m = X.shape
+    # Normalize values by axis
+    for r in range(0, m, len):
+        X[:, r:r+len] = normalize(X[:, r:r+len])
+
     X1 = np.roll(X, 1)
     X1[:, 0] = 0
     diff = X-X1
@@ -15,15 +33,6 @@ def avg_velocity(X, len):
     for i in range(0, m, len):
         avg_d[i] = min_d[i] = max_d[i] = 0
     return avg_d, min_d, max_d
-
-def avg_accel(X, len):
-    m = X.shape[0]
-    X1 = np.roll(X, 1)
-    X1[0] = 0
-    avg_d = X-X1
-    for i in range(0, m, len):
-        avg_d[i] = 0
-    return avg_d
 
 def cluster_Kmeans(X, num):
     kmeans = KMeans(n_clusters=num, random_state=0)
