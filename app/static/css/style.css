@@ -10,6 +10,33 @@ body {
   stroke-width: 0;
 }
 
+.year-background {
+	font-family: monospace;
+	font-size: 200px;
+	position: absolute;
+  z-index: -30;
+  color: #efefef;
+  right: 50px;
+  margin-top: -300px;
+}
+
+.custom-switch-play {
+	width: 42px;
+	height: 42px;
+	background: #007bff;
+	color: #ffffff;
+	border-radius: 12px;
+	border: 0.5 solid #ddd;
+	font-size: 22px;
+	margin: 3px 15px;
+	padding: 10px 12px;
+}
+
+.select_rectangle {
+  border: 1px solid #FF0000;
+  position: absolute;
+}
+
 .slider {
   -webkit-appearance: none;
   width: 100%;
@@ -30,13 +57,13 @@ body {
   appearance: none;
   width: 50px;
   height: 25px;
-  background: #4CAF50;
+  background: #007bff;
   cursor: pointer;
 }
 
 .slider::-moz-range-thumb {
   width: 25px;
   height: 25px;
-  background: #4CAF50;
+  background: #007bff;
   cursor: pointer;
 }

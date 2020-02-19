@@ -1,20 +1,18 @@
 var xScale, yScale, radius;
-var margin = {top: 10, right: 10, bottom: 40, left:40};
-var width, height, continentMap;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
-var bubble_g, hull;
 var hullOffset = 10;
 
 class ScatterPlot {
 
   constructor(div_id) {
-    width = document.getElementById(div_id).offsetWidth - margin.left - margin.right;
-    height = 760 - margin.top - margin.bottom;
+    this.margin = {top: 10, right: 10, bottom: 40, left:40};
+    this.width = document.getElementById(div_id).offsetWidth - this.margin.left - this.margin.right;
+    this.height = this.width;
     this.div_id = div_id;
 
-    xScale = d3.scaleLog().range([0, width]).domain([250, 256000]);
-    yScale = d3.scaleLinear().range([height, 0]).domain([15, 95]);
+    xScale = d3.scaleLog().range([0, this.width]).domain([250, 256000]);
+    yScale = d3.scaleLinear().range([this.height, 0]).domain([15, 95]);
     radius = d3.scaleSqrt().range([2,15]).domain([10, 10000]);
   }
 
@@ -25,23 +23,23 @@ class ScatterPlot {
 
     this.svg = d3.select("#"+this.div_id)
       .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
+      .attr('width', this.width + this.margin.left + this.margin.right)
+      .attr('height', this.height + this.margin.top + this.margin.bottom)
     .append('g')
-      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
 
     this.countries = data2d.country;
-    continentMap = continent.continent;
+    this.continentMap = continent.continent;
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    var years = range(1800, 2019);
+    this.years = range(1800, 2019);
     this.data = {}
-    for (var i in years) {
-      var year = years[i];
+    for (var i in this.years) {
+      var year = this.years[i];
       this.data[year] = [];
       for (var index in this.countries) {
-        // console.log(index, this.countries[index], continentMap[index])
+        // console.log(index, this.countries[index], this.continentMap[index])
         this.data[year].push({
           "id": index,
           "name": this.countries[index],
@@ -52,11 +50,9 @@ class ScatterPlot {
         })
       }
     }
-    // console.log(this.data)
 
-    // adding axes is also simpler now, just translate x-axis to (0,height) and it's alread defined to be a bottom axis.
     this.svg.append('g')
-      .attr('transform', 'translate(0,' + height + ')')
+      .attr('transform', 'translate(0,' + this.height + ')')
       .attr('class', 'x axis')
       .call(d3.axisBottom(xScale)
         .tickFormat(d3.format(".2s"))
@@ -66,7 +62,7 @@ class ScatterPlot {
     this.svg.append('g')
       .attr("class", "grid")
       .call(d3.axisBottom(xScale)
-        .tickSize(height)
+        .tickSize(this.height)
         .tickFormat("")
         .tickValues([500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000])
       );
@@ -80,11 +76,12 @@ class ScatterPlot {
     this.svg.append('g')
       .attr("class", "grid")
       .call(d3.axisLeft(yScale)
-        .tickSize(-width)
+        .tickSize(-this.width)
         .tickFormat("")
         .ticks(10)
       );
 
+    this.trace_path_g = this.svg.append('g');
     this.hull_g = this.svg.append('g');
 
     // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
@@ -95,8 +92,8 @@ class ScatterPlot {
       .text('Life Expectancy');
 
     this.svg.append('text')
-      .attr('x', width)
-      .attr('y', height - 10)
+      .attr('x', this.width)
+      .attr('y', this.height - 10)
       .attr('text-anchor', 'end')
       .attr('class', 'label')
       .text('Income');
@@ -108,28 +105,31 @@ class ScatterPlot {
       .attr('transform', function(d,i){ return 'translate(0,' + i * 20 + ')'; });
 
     legend.append('rect')
-      .attr('x', width)
+      .attr('x', this.width)
       .attr('width', 18)
       .attr('height', 18)
       .style('fill', color);
 
     legend.append('text')
-      .attr('x', width - 6)
+      .attr('x', this.width - 6)
       .attr('y', 9)
       .attr('dy', '.35em')
       .style('text-anchor', 'end')
       .text(function(d){ return d; });
 
-    bubble_g = this.svg.append('g');
+    this.bubble_g = this.svg.append('g');
 
   }
 
-  updateChart(year, flagConvexHulls) {
-    bubble_g.selectAll("*").remove();
+  updateChart(year, swtvalues) {
+    this.bubble_g.selectAll("*").remove();
+    var data = this.data[year];
+
+    var flagTrace = swtvalues["trace"],
+        flagConvexHulls = swtvalues["hull"];
 
     // console.log("updateChart", year, flagConvexHulls);
-    var data = this.data[year];
-    var bubble = bubble_g.selectAll('.bubble')
+    var bubble = this.bubble_g.selectAll('.bubble')
         .data(data)
       .enter().append('circle')
         .attr('id', function(d){return d.id;})
@@ -141,8 +141,13 @@ class ScatterPlot {
         .style('stroke-width', 0.5)
         .style('fill', function(d){
           // console.log(d.group);
-          if (d.group == -1) return color[continent.indexOf(continentMap[d.id])];
+          if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
           else return gcolor(d.group);
+        })
+        .style('visibility', function(d) {
+          // console.log(d.group, swtvalues["groups"]);
+          if (swtvalues["groups"][d.group]) return 'visible';
+          else return 'hidden';
         })
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
@@ -153,7 +158,7 @@ class ScatterPlot {
       //   .attr("cy", function(d){ return yScale(d.y); })
       //   .attr('r', function(d){ return radius(d.population); })
 
-    bubble_g.selectAll('.bubble-label')
+    this.bubble_g.selectAll('.bubble-label')
         .data(data)
       .enter().append('text')
         .attr('id', function(d){return d.id;})
@@ -168,16 +173,98 @@ class ScatterPlot {
 
     this.hull_g.selectAll("path.hull").remove();
     if (flagConvexHulls) {
-      hull = this.hull_g.selectAll("path.hull")
+      this.hull_g.selectAll("path.hull")
           .data(convexHulls(data, getGroup, hullOffset))
         .enter().append("path")
           .attr("class", "hull")
           .attr("id", function(d) { return d.group; })
           .attr("d", drawCluster)
           .style("opacity", 0.2)
-          .style("fill", function(d) { return gcolor(d.group); });
+          .style("fill", function(d) { return gcolor(d.group); })
+          .style('visibility', function(d) {
+            if (swtvalues["groups"][d.group]) return 'visible';
+            else return 'hidden';
+          });
+    }
+
+    this.trace_path_g.selectAll("circle.tbubble").remove();
+    if (flagTrace) {
+      var allyearmeans = [];
+      for (var i in this.years) {
+        var data = this.data[this.years[i]];
+        allyearmeans = allyearmeans.concat(traceMean(this.years[i], data, getGroup))
+      }
+
+      this.trace_path_g.selectAll(".tbubble")
+          .data(allyearmeans)
+        .enter().append("circle")
+          .attr("class", "tbubble")
+          .attr("year", d => d.year)
+          .attr('cx', d => xScale(d.x))
+          .attr('cy', d => yScale(d.y))
+          .attr('r', 1)
+          .style("opacity", 1)
+          .style("fill", function(d) { return gcolor(d.group); })
+          .style('visibility', function(d) {
+            if (swtvalues["groups"][d.group]) return 'visible';
+            else return 'hidden';
+          });
     }
   }
+
+  updateFocus(years, swtvalues) {
+    this.bubble_g.selectAll("*").remove();
+    this.trace_path_g.selectAll("circle.tbubble").remove();
+
+    console.log("focusYears", years);
+    var bubble = {}
+    for (var y = 0; y < years.length; y++) {
+      var year = years[y];
+      var data = this.data[year];
+
+      bubble[y] = this.bubble_g.append("g").selectAll('.bubble')
+          .data(data)
+        .enter().append('circle')
+          // .attr('id', function(d){return d.id;})
+          .attr('class', function(d){ return 'bubble g'+d.group; })
+          .attr('cx', function(d){return xScale(d.x);})
+          .attr('cy', function(d){ return yScale(d.y); })
+          .attr('r', function(d){ return radius(d.population)*1.3+1; })
+          .style('stroke', 'black')
+          .style('stroke-width', 0.5)
+          .style('opacity', 0.3)
+          .style('fill', function(d){
+            // console.log(d.group);
+            if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
+            else return gcolor(d.group);
+          })
+          .style('visibility', function(d) {
+            // console.log(d.group, swtvalues["groups"]);
+            if (swtvalues["groups"][d.group]) return 'visible';
+            else return 'hidden';
+          })
+          .on("mouseover", mouseOverBubbles)
+          .on("click", clickBubbles)
+          .on("mouseout", mouseOutBubbles)
+        // .transition()
+        //   .duration(1000)
+        //   .attr("cx", function(d){return xScale(d.x);})
+        //   .attr("cy", function(d){ return yScale(d.y); })
+        //   .attr('r', function(d){ return radius(d.population); })
+    }
+    this.bubble_g.selectAll('.bubble-label')
+        .data(data)
+      .enter().append('text')
+        .attr('id', function(d){return d.id;})
+        .attr('class', function(d){ return 'bubble-label g'+d.group; })
+        .attr('x', function(d){return xScale(d.x)-20;})
+        .attr('y', function(d){ return yScale(d.y); })
+        .text(function(d){ return d.name; })
+        .style('visibility', 'hidden')
+        .on("mouseover", mouseOverBubbles)
+        .on("click", clickBubbles)
+        .on("mouseout", mouseOutBubbles);
+    }
 }
 
 function getGroup(n) { return n.group; }

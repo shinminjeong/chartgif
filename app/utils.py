@@ -4,9 +4,26 @@ from sklearn import cluster, covariance, manifold
 from sklearn.cluster import KMeans, AffinityPropagation, MeanShift
 from scipy.spatial.distance import euclidean
 
-def avg_distance(X, p):
-    d = [euclidean(X[i], X[i+p]) for i in range(0,len(X)-p, p)]
-    return d
+def avg_velocity(X, len):
+    n, m = X.shape
+    X1 = np.roll(X, 1)
+    X1[:, 0] = 0
+    diff = X-X1
+    avg_d = np.average(diff, axis=0)
+    min_d = np.amin(diff, axis=0)
+    max_d = np.amax(diff, axis=0)
+    for i in range(0, m, len):
+        avg_d[i] = min_d[i] = max_d[i] = 0
+    return avg_d, min_d, max_d
+
+def avg_accel(X, len):
+    m = X.shape[0]
+    X1 = np.roll(X, 1)
+    X1[0] = 0
+    avg_d = X-X1
+    for i in range(0, m, len):
+        avg_d[i] = 0
+    return avg_d
 
 def cluster_Kmeans(X, num):
     kmeans = KMeans(n_clusters=num, random_state=0)

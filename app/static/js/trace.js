@@ -1,6 +1,7 @@
 var t_xScale, t_yScale;
 var trace_width, trace_height;
 var tracehull = {};
+var traceline = {};
 
 class TraceChart {
 
@@ -27,7 +28,7 @@ class TraceChart {
       .attr('transform', 'translate(0,0)');
 
     this.countries = data2d.country;
-    continentMap = continent.continent;
+    this.continentMap = continent.continent;
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
@@ -37,7 +38,7 @@ class TraceChart {
       var year = years[i];
       this.data[year] = [];
       for (var index in this.countries) {
-        // console.log(index, this.countries[index], continentMap[index])
+        // console.log(index, this.countries[index], this.continentMap[index])
         if (group)
         if (group[this.countries[index]]["group"] == this.g_id) {
           this.data[year].push({
@@ -52,7 +53,9 @@ class TraceChart {
       }
     }
 
+    this.trace_path_g = this.svg.append('g');
     this.trace_g = this.svg.append('g');
+
     var allyears = [];
     for (var i in years) {
       var data = this.data[years[i]];
@@ -66,7 +69,47 @@ class TraceChart {
         .attr("d", drawCluster)
         .style("opacity", 0.01)
         .style("fill", function(d) { return gcolor(d.group); });
+
+    var allyearmeans = [];
+    for (var i in years) {
+      var data = this.data[years[i]];
+      allyearmeans = allyearmeans.concat(traceMean(years[i], data, getGroup))
+    }
+    // console.log(allyearmeans)
+
+    traceline[this.g_id] = this.trace_path_g.selectAll(".tbubble")
+        .data(allyearmeans)
+      .enter().append("circle")
+        .attr("class", "tbubble")
+        .attr("year", d => d.year)
+        .attr('cx', d => t_xScale(d.x))
+        .attr('cy', d => t_yScale(d.y))
+        .attr('r', 1)
+        .style("opacity", 1)
+        .style("fill", function(d) { return gcolor(d.group); });
   }
+}
+
+
+const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
+
+function traceMean(year, nodes, index) {
+  // console.log("traceMean")
+  var xs = {}, ys = {};
+  for (var k=0; k<nodes.length; ++k) {
+    var n = nodes[k];
+    var i = getGroup(n),
+        x_arr = xs[i] || (xs[i] = []),
+        y_arr = ys[i] || (ys[i] = []);
+    if (n.size) continue;
+    x_arr.push(n.x);
+    y_arr.push(n.y);
+  }
+  var pathset = [];
+  for (i in xs) {
+    pathset.push({year: year, group: i, x: arrAvg(xs[i]), y: arrAvg(ys[i])});
+  }
+  return pathset;
 }
 
 function traceHulls(nodes, index, offset) {
