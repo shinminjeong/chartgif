@@ -48,8 +48,12 @@
   </div>
   <div class="row">
     <div class="col-md-12">
-      <input type="range" class="slider" name="mySlider" id=mySlider min="1800" max="2018" value="1800"></input>
-      <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
+      <div class="timeline-background" id="timeline-background"></div>
+      <div class="timeline-slider">
+        <input type="range" class="slider" name="mySlider" id=mySlider min="1800" max="2018" value="1800"></input>
+        <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
+      </div>
+      <div class="timeline-frame" id="timeline"></div>
     </div>
   </div>
 </body>
@@ -60,6 +64,7 @@
 <script src="{% static 'js/scatter.js' %}"></script>
 <script src="{% static 'js/trace.js' %}"></script>
 <script src="{% static 'js/line.js' %}"></script>
+<script src="{% static 'js/timeline.js' %}"></script>
 <script>
 var morecolor = d3.scaleOrdinal(d3.schemeCategory10);
 var colorarray = ["#F08391", "#FCEC71", "#AEED6C", "#80DBEB"];
@@ -77,15 +82,22 @@ var data_continent = {{continent|safe}};
 var data_group = {{kgroup|safe}};
 var cluster_info = {{clusterinfo|safe}};
 var data_avg_velocity = {{avg_velocity|safe}};
-// var data_focus_range = {{focus_range|safe}};
+var data_focus_range = {{focus_range|safe}};
 
 var w = document.getElementById("myChart").offsetWidth,
     h = w*0.7;
-var left_offset = 40;
+var label_w = Math.min(200, Math.max(120, w*0.2));
+var left_offset = 25;
 var chart = new ScatterPlot("myChart", w, h);
 chart.initChart(data_plot, data_population, data_continent, data_group);
 
+var timeline_w = document.getElementById("timeline-background").offsetWidth;
+var timeline_h = 300;
+var timeline = new TimeLine("timeline", timeline_w, timeline_h);
+timeline.initChart([1800, 2018]);
+
 var el, newPoint;
+var linecharts_v = {};
 var gname = ["Asia", "Europe", "America", "Africa"];
 var infodiv = document.getElementById("clusterinfo");
 function kFormatter(num) {
@@ -95,6 +107,7 @@ function kFormatter(num) {
       return Math.sign(num)*((Math.abs(num)/1000).toFixed(1)) + 'K'
     return Math.sign(num)*Math.abs(num)
 }
+
 function initClusterinfo() {
   // var div_year = document.createElement("div");
   // div_year.innerHTML="Year = <span id='infoCurYear'>" + curYear + "</span><br>";
@@ -106,36 +119,37 @@ function initClusterinfo() {
   var group_h = h/numGroup+5;
   for (var g = 0; g < numGroup; g++) {
     var div_group = document.createElement("div");
-    // div_group.style = "padding: 10px; min-width:160px; width: 200px; height: 220px;";
-    div_group.style = "padding: 10px; height: "+group_h+"px;";
-    div_group.classList.add("col-md-2");
-    div_group.innerHTML += "<input type='checkbox' class='switchLegend' id='"+gname[g]+"' checked>";
-    div_group.innerHTML += "<span class='badge' style='width:85%;background-color:"+gcolor(g)+"'>" + gname[g] + "</span><br>";
-    div_group.innerHTML += "<div class='group_label'><span id='infoMinMax_"+g+"'></span></div>"
-    div_group.innerHTML += "<div class='group_trace' id='trace_chart_" + g + "'></div>"
+    div_group.style = "display:block; padding: 10px; height: "+group_h+"px;";
+
+    var div_group_label = document.createElement("div");
+    div_group_label.style = "display:inline-block; vertical-align:top; width:"+label_w+"px; height: "+group_h+"px;";
+    div_group_label.innerHTML += "<input type='checkbox' class='switchLegend' id='"+gname[g]+"' checked>";
+    div_group_label.innerHTML += "<span class='badge' style='width:85%;background-color:"+gcolor(g)+"'>" + gname[g] + "</span><br>";
+    div_group_label.innerHTML += "<div class='group_label'><span id='infoMinMax_"+g+"'></span></div>"
+    div_group_label.innerHTML += "<div class='group_trace' id='trace_chart_" + g + "'></div>"
 
     var div_group_timeline = document.createElement("div");
-    div_group_timeline.classList.add("col-md-10");
+    div_group_timeline.style="display:inline-block; position: relative; padding:0; width:"+(w-label_w)+"px; height: "+group_h+"px;";
 
     var div_group_timeline_avg_v = document.createElement("div");
     var div_group_timeline_avg_a = document.createElement("div");
     div_group_timeline_avg_v.id = "lines_v_"+gname[g];
     div_group_timeline_avg_a.id = div_group_timeline_avg_v.id+"_overlay";
-    div_group_timeline_avg_v.style = "width:95%; height: "+group_h+"px; position: absolute; top:20; z-index:0";
-    div_group_timeline_avg_a.style = "width:95%; height: "+group_h+"px; position: absolute; top:20; left: "+left_offset+"; z-index:1";
+    div_group_timeline_avg_v.style = "width:"+(w-label_w)+"px; height: "+group_h+"px; position: absolute; top:10; z-index:0";
+    div_group_timeline_avg_a.style = "width:"+(w-label_w)+"px; height: "+group_h+"px; position: absolute; top:10; left: "+left_offset+"; z-index:1";
     div_group_timeline.appendChild(div_group_timeline_avg_a);
     div_group_timeline.appendChild(div_group_timeline_avg_v);
 
+    div_group.appendChild(div_group_label);
+    div_group.appendChild(div_group_timeline);
     infodiv.appendChild(div_group);
-    infodiv.appendChild(div_group_timeline);
 
-    var linecharts_v = new LineChart(div_group_timeline_avg_v.id, w, group_h, left_offset);
-    linecharts_v.drawChart(data_avg_velocity[g]);
-    // var linecharts_a = new LineChart(div_group_timeline_avg_a.id);
-    // linecharts_a.drawChart(data_avg_accel[g]);
+    linecharts_v[g] = new LineChart(div_group_timeline_avg_v.id, w-label_w, group_h, left_offset);
+    linecharts_v[g].drawChart(data_avg_velocity[g]);
   }
   drawTraceCharts(numGroup);
 }
+
 function updateClusterinfo(year) {
   var info_year = document.getElementById("infoCurYear");
   info_year.innerHTML = year;
@@ -150,6 +164,7 @@ function updateClusterinfo(year) {
     }
   }
 }
+
 function drawTraceCharts(numGroup) {
   var trace_chart = {};
   for (var g = 0; g < numGroup; g++) {
@@ -158,11 +173,42 @@ function drawTraceCharts(numGroup) {
   }
 }
 
+var timeslices = {};
+function initTimeFrame() {
+  for (var g in data_focus_range) {
+    for (var a in data_focus_range[g]) {
+      // console.log(gname[g], a, data_focus_range[g][a])
+      for (var r in data_focus_range[g][a]) {
+        range = data_focus_range[g][a][r]
+        if (range.length  <= 1) continue;
+        drawFrame(range, g, a);
+        draw_rect_input(range, "lines_v_"+gname[g]);
+      }
+    }
+  }
+}
+
+function drawFrame(yrange, group, axis) {
+  // console.log("drawFrame", yrange, group, axis)
+  // axis: X, Y, S or (overlay == input from the linecharts)
+  r = [yrange[0], yrange[yrange.length-1]];
+  for (var i = r[0]; i <= r[1]; i++) {
+    // console.log("addFrame", i, group)
+    if (timeslices[i]) {
+      timeslices[i].push({"g":+group, "until":r[1]});
+    } else {
+      timeslices[i] = [{"g":+group, "until":r[1]}];
+    }
+  }
+  timeline.addFrame(r, +group);
+}
+
 initClusterinfo();
+initTimeFrame();
 
 var curYear = 1800;
 var maxYear = 2018;
-var timer = undefined;
+var play_timer = undefined;
 var flagConvexHulls = false;
 var playon = document.querySelectorAll("input#switchPlay");
 playon[0].addEventListener("change", function(e) {
@@ -174,18 +220,38 @@ playon[0].addEventListener("change", function(e) {
   }
 
   if (e.target.checked && curYear < maxYear) {
-    timer = setInterval(function() {
+    play_timer = setInterval(function() {
       curYear += 1;
       // console.log("update", curYear);
       if (curYear >= maxYear) {
-        clearInterval(timer);
+        clearInterval(play_timer);
       }
-      changeSlider($("input[type='range']"), curYear, true);
+      // changeSlider($("input[type='range']"), curYear, true);
+      traceTimeline(curYear);
     }, 100);
   } else {
-    if (timer) clearInterval(timer);
+    if (play_timer) clearInterval(play_timer);
   }
 });
+
+function traceTimeline(curYear) {
+  if (timeslices[curYear] != undefined) {
+    playon.checked = false;
+    clearInterval(play_timer)
+    console.log("traceTimeline", timeslices[curYear])
+    for (var i = 0; i < timeslices[curYear].length; i++) {
+      var focus_group = +timeslices[curYear][i]["g"];
+      var years = [];
+      for (var y = curYear; y <= timeslices[curYear][i]["until"]; y++) {
+        years.push(y);
+      }
+      focusYears(years, focus_group);
+    }
+  } else {
+    changeSlider($("input[type='range']"), curYear, true, true);
+  }
+}
+
 
 var legendCount = 4;
 var swtvalues = {
@@ -218,15 +284,16 @@ for (var s = 0; s < legendCount; s++) {
 
 var focustimer;
 function focusYears(years, continent) {
+  console.log("focusYears", years, continent)
   swtvalues["trace"] = false;
   swtvalues["hull"] = false;
   swtvalues["groups"][0] = false;
   swtvalues["groups"][1] = false;
   swtvalues["groups"][2] = false;
   swtvalues["groups"][3] = false;
-  swtvalues["groups"][gname.indexOf(continent)] = true;
+  swtvalues["groups"][continent] = true;
 
-  chart.clearFocus();
+  // chart.clearFocus();
   var idx = 0;
   focustimer = setInterval(function() {
     curYear = years[idx];
@@ -235,6 +302,7 @@ function focusYears(years, continent) {
     if (idx >= years.length-1) {
       clearInterval(focustimer);
     }
+    changeSlider($("input[type='range']"), curYear, true, false);
     chart.updateFocus(idx, years, swtvalues);
   }, 1000);
 }
@@ -245,25 +313,29 @@ $('input[type=range]').on('input', function () {
 $("input[type='range']").change(function() {
   el = $(this);
   curYear  = parseInt(el.val());
-  changeSlider(el, curYear, false);
+  changeSlider(el, curYear, false, true);
 })
 // Fake a change to position bubble at page load
 .trigger('change');
 
-function changeSlider(el, curYear, play) {
-  width = el.width()-50;
-  newPoint = (curYear - el.attr("min")) / (el.attr("max") - el.attr("min"));
+function changeSlider(el, curYear, play, update) {
+  width = el.width();
+  newPoint = (curYear-el.attr("min")) / (el.attr("max")-el.attr("min")+1);
   // console.log(newPoint, el.val())
   el.next("output")
     .css({
-     marginLeft: 10 + width * newPoint,
+      "marginLeft": width * newPoint-19,
+      "height": 20,
     })
     .text(curYear);
   if (play) {
     el.val(curYear);
   }
-  chart.updateChart(curYear, swtvalues);
+  if (update) {
+    chart.updateChart(curYear, swtvalues);
+  }
   updateClusterinfo(curYear);
 }
+
 </script>
 </html>

@@ -229,7 +229,6 @@ class ScatterPlot {
     this.bubble_g.selectAll("*").remove();
     this.trace_path_g.selectAll("circle.tbubble").remove();
 
-    console.log("focusYears", years);
     // for (var y = 0; y < years.length; y++) {
     var year = years[y];
     var data = this.data[year];
@@ -292,7 +291,6 @@ class ScatterPlot {
         .attr("cy", function(d){ return yScale(d.y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1; })
 
-    // }
     this.bubble_g.selectAll('.bubble-label')
         .data(data)
       .enter().append('text')

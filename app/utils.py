@@ -8,15 +8,24 @@ from sklearn.preprocessing import normalize
 
 def get_focus_range(groups, axes, V):
     # avg_v[group_index(0,1,2,3)][axis("X","Y","S")] = {"year":y, "value":v, "min":m, "max":n}
-    range = {g:[] for g in groups}
+    range = {g:{} for g in groups}
+    output = {g:{a:[] for a in axes} for g in groups}
+    cont_threshold = 5
     for g in groups:
         for a in axes:
             # print(a, [(v["year"], v["value"]) for v in V[g][a]])
             minv = min([v["min"] for v in V[g][a]])
             maxv = max([v["max"] for v in V[g][a]])
-            threshold = (maxv-minv)*0.05
-            print(g, a, (maxv-minv), threshold)
-            print(a, [v["year"] for v in V[g][a] if abs(v["value"]) > threshold])
+            threshold = (maxv-minv)*0.02
+            range[g][a] = {v["year"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) > threshold}
+            for y, thd in range[g][a].items():
+                if len(output[g][a]) == 0 or y - output[g][a][-1][-1] >= cont_threshold:
+                    output[g][a].append([y])
+                else:
+                    output[g][a][-1].append(y)
+            # print(output[g][a])
+    return output
+
 
 def avg_velocity(X, len):
     n, m = X.shape

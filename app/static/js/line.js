@@ -1,9 +1,10 @@
 var line_xscale;
+var overlay_offset = 4;
 class LineChart {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 10, right: 0, bottom: 20, left:40};
-    this.width = document.getElementById(div_id).offsetWidth;
+    this.margin = {top: 10, right: 30, bottom: 20, left:0};
+    this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
     // console.log("lineChart", this.div_id, this.width, this.height);
@@ -13,10 +14,10 @@ class LineChart {
     // console.log(data);
     var svg = d3.select("#"+this.div_id)
       .append('svg')
-      .attr('width', this.width)
+      .attr('width', this.width+this.margin.right)
       .attr('height', this.height+30)
     .append('g')
-      .attr('transform', 'translate(30,0)');
+      .attr('transform', 'translate('+this.margin.right+',0)');
     var canvas = document.getElementById(this.div_id+"_overlay");
 
     line_xscale = d3.scaleLinear()
@@ -26,7 +27,9 @@ class LineChart {
     svg.append("g")
       .attr("transform", "translate(0," + this.height + ")")
       .attr('class', 'x axis')
-      .call(d3.axisBottom(line_xscale));
+      .call(d3.axisBottom(line_xscale)
+        .tickFormat(d3.format("d"))
+      );
     svg.append('g')
       .attr("class", "grid")
       .call(d3.axisBottom(line_xscale)
@@ -133,6 +136,21 @@ var mouse = {
   startX: 0,
   startY: 0
 };
+function draw_rect_input(range, div_id) {
+  var ys = line_xscale(range[0]-0.5),
+      ye = line_xscale(range[range.length-1]+0.5);
+  // console.log("draw_rect_input", range, ys, ye, div_id);
+  var canvas = document.getElementById(div_id+"_overlay");
+
+  var rect = canvas.getBoundingClientRect();
+  var e = document.createElement('div');
+  e.className = 'select_rectangle'
+  e.style.left = (ys+overlay_offset) + 'px';
+  e.style.top = 0;
+  e.style.width = Math.abs(ye - ys) + 'px';
+  e.style.height = rect.height-30;
+  canvas.appendChild(e)
+}
 function draw_rect_move(e, canvas) {
   var rect = canvas.getBoundingClientRect();
   if (element !== null) {
@@ -151,15 +169,15 @@ function draw_rect_click(e, canvas) {
   // console.log("draw_rect_click", rect);
   if (element !== null) {
     names = canvas.id.split("_");
-    left = +element.style.left.split("px")[0]-left_offset+35;
+    left = +element.style.left.split("px")[0] - overlay_offset;
     width = +element.style.width.split("px")[0];
     // console.log("canvas - left", left_offset, left, line_xscale.invert(left));
     // console.log("canvas - right", left+width, line_xscale.invert(left+width));
     startYear = Math.floor(line_xscale.invert(left));
-    endYear = Math.ceil(line_xscale.invert(left+width));
+    endYear = Math.floor(line_xscale.invert(left+width));
     // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear), (x,i) => i + startYear)
-    focusYears(years, names[2]);
+    drawFrame(years, names[2], names[3]);
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
     element = null;
