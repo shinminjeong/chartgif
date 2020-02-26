@@ -3,7 +3,7 @@ var overlay_offset = 4;
 class LineChart {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 10, right: 30, bottom: 20, left:0};
+    this.margin = {top: 10, right: 10, bottom: 20, left:left_offset};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
@@ -14,10 +14,10 @@ class LineChart {
     // console.log(data);
     var svg = d3.select("#"+this.div_id)
       .append('svg')
-      .attr('width', this.width+this.margin.right)
+      .attr('width', this.width+this.margin.left+this.margin.right)
       .attr('height', this.height+30)
     .append('g')
-      .attr('transform', 'translate('+this.margin.right+',0)');
+      .attr('transform', 'translate('+this.margin.left+',0)');
     var canvas = document.getElementById(this.div_id+"_overlay");
 
     line_xscale = d3.scaleLinear()
@@ -25,7 +25,7 @@ class LineChart {
       .range([ 0, this.width ]);
 
     svg.append("g")
-      .attr("transform", "translate(0," + this.height + ")")
+      .attr("transform", "translate(0,"+ this.height+")")
       .attr('class', 'x axis')
       .call(d3.axisBottom(line_xscale)
         .tickFormat(d3.format("d"))
@@ -41,7 +41,8 @@ class LineChart {
     var y = d3.scaleLinear()
       .domain([0, 1])
       .range([this.height, 0]);
-    svg.append("g").attr("class", "grid")
+    svg.append("g")
+      .attr("class", "grid")
       .call(d3.axisLeft(y)
         .tickFormat("")
         .tickValues([0, 0.25, 0.5, 0.75, 1])
@@ -63,10 +64,19 @@ class LineChart {
       var y_min = data[axis][0].value;
       var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-20*(1-i));
       path_svg.append("rect")
-        .attr("x", line_xscale(1800)-30)
+        .attr("x", function() {
+          var offset = left_offset-15;
+          if (axis == "S") offset = left_offset;
+          return line_xscale(1800)-offset;
+        })
         .attr("y", y_pos-10)
-        .attr("width", 20)
+        .attr("width", function() {
+          if (axis == "S") return left_offset-10;
+          else return left_offset-25;
+        })
         .attr("height", 20)
+        .attr("rx", 5)
+        .attr("ry", 5)
         .attr("class", this.div_id)
         .attr("axis", axis)
         .style("fill", axisColors[i])
@@ -82,12 +92,21 @@ class LineChart {
         .attr("stroke", axisColors[i])
         .attr("stroke-width", 1.5)
       path_svg.append("text")
-        .attr("x", line_xscale(1800)-25)
-        .attr("y", y_pos+6)
-        .text(axis)
+        .attr("x", function() {
+          var offset = left_offset-19;
+          if (axis == "S") offset = left_offset-4;
+          return line_xscale(1800)-offset;
+        })
+        .attr("y", y_pos+4)
+        .text(function() {
+          if (axis == "X") return "Income";
+          if (axis == "Y") return "LifeExp";
+          if (axis == "S") return "Population";
+        })
         .attr("class", this.div_id)
         .attr("axis", axis)
         .style("fill", "#fff")
+        .style("font-size", 10)
         .on("mouseover", mouseOverPaths)
         .on("mouseout", mouseOutPaths)
 
