@@ -68,6 +68,11 @@ body {
 	background-color: #666;
 	opacity: 0.5;
 }
+.time-slice-outer {
+	position: absolute;
+	background-color: #666;
+	opacity: 0.2;
+}
 
 .slider {
   -webkit-appearance: none;

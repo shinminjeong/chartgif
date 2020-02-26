@@ -68,4 +68,22 @@ class TimeLine {
     this.framepanel.appendChild(tframe);
   }
 
+  clearOuterBound() {
+    $("div.time-slice-outer").remove();
+  }
+
+  addOuterBound(yrange) {
+    var y_start = yrange[0],
+        y_end = yrange[yrange.length-1];
+    var s = this.timeScale(y_start),
+        e = this.timeScale(y_end);
+    var slice_h = 30*5;
+    var tframe = document.createElement("div");
+    tframe.className = "time-slice-outer"
+    tframe.style.top = this.margin.top_g;
+    tframe.style.left = this.margin.left+s;
+    tframe.style.width = e-s;
+    tframe.style.height = slice_h;
+    this.framepanel.appendChild(tframe);
+  }
 }

@@ -177,7 +177,7 @@ function draw_rect_click(e, canvas) {
     endYear = Math.floor(line_xscale.invert(left+width));
     // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear), (x,i) => i + startYear)
-    drawFrame(years, names[2], names[3]);
+    drawFrame(years, gname.indexOf(names[2]), names[3]);
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
     element = null;

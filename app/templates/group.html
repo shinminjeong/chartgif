@@ -174,7 +174,12 @@ function drawTraceCharts(numGroup) {
 }
 
 var timeslices = {};
+var yearmap = {};
+var outerbound = {};
 function initTimeFrame() {
+  for (var y = 1800; y <= 2019; y++) {
+    yearmap[y] = [];
+  }
   for (var g in data_focus_range) {
     for (var a in data_focus_range[g]) {
       // console.log(gname[g], a, data_focus_range[g][a])
@@ -194,13 +199,14 @@ function drawFrame(yrange, group, axis) {
   r = [yrange[0], yrange[yrange.length-1]];
   for (var i = r[0]; i <= r[1]; i++) {
     // console.log("addFrame", i, group)
-    if (timeslices[i]) {
-      timeslices[i].push({"g":+group, "until":r[1]});
-    } else {
-      timeslices[i] = [{"g":+group, "until":r[1]}];
+    yearmap[i].push(+group)
+    if (!timeslices[i]) {
+      timeslices[i] = {};
     }
+    timeslices[i] = {"g":[+group], "until":r[1]};
   }
   timeline.addFrame(r, +group);
+  calculateOuterbound();
 }
 
 initClusterinfo();
@@ -219,36 +225,115 @@ playon[0].addEventListener("change", function(e) {
     document.getElementById("play_icon").className = "fa fa-play";
   }
 
-  if (e.target.checked && curYear < maxYear) {
+  var timing = 100;
+  if (play_timer == undefined && e.target.checked && curYear < maxYear) {
     play_timer = setInterval(function() {
       curYear += 1;
-      // console.log("update", curYear);
       if (curYear >= maxYear) {
         clearInterval(play_timer);
       }
-      // changeSlider($("input[type='range']"), curYear, true);
-      traceTimeline(curYear);
-    }, 100);
-  } else {
-    if (play_timer) clearInterval(play_timer);
+      // console.log("original", timing, curYear, maxYear);
+      traceTimeline();
+    }, timing);
+  } else if (play_timer != undefined) {
+    clearInterval(play_timer);
+    play_timer = undefined;
   }
 });
 
-function traceTimeline(curYear) {
-  if (timeslices[curYear] != undefined) {
-    playon.checked = false;
-    clearInterval(play_timer)
-    console.log("traceTimeline", timeslices[curYear])
-    for (var i = 0; i < timeslices[curYear].length; i++) {
-      var focus_group = +timeslices[curYear][i]["g"];
-      var years = [];
-      for (var y = curYear; y <= timeslices[curYear][i]["until"]; y++) {
-        years.push(y);
-      }
-      focusYears(years, focus_group);
+function resetPlaytimer(timing) {
+  curYear -= 1;
+  clearInterval(play_timer);
+  play_timer = setInterval(function() {
+    curYear += 1;
+    if (curYear >= maxYear) {
+      clearInterval(play_timer);
+      play_timer = undefined;
     }
+    // console.log("after reset", timing, curYear, maxYear);
+    traceTimeline();
+  }, timing);
+}
+
+function calculateOuterbound() {
+  outerbound = {};
+  timeline.clearOuterBound();
+  var head_y = -1, tail_y = -1;
+  var groups = [];
+  for (var y in yearmap) {
+    if (yearmap[y].length > 0) {
+      // console.log("-", y, head_y, tail_y)
+      groups = groups.concat(yearmap[y]);
+      if (head_y > 0) {
+        tail_y = y;
+      } else {
+        head_y = tail_y = y;
+      }
+    } else {
+      if (head_y > 0) {
+        // console.log("add", head_y, tail_y)
+        outerbound[+head_y+1] = {
+          "head": +head_y+1,
+          "tail": +tail_y+1,
+          "groups": new Set(groups)
+        }
+        timeline.addOuterBound([head_y, tail_y]);
+      }
+      head_y = tail_y = -1;
+      groups = [];
+    }
+  }
+}
+
+function changeSelectedConts(continents) {
+  swtvalues["trace"] = false;
+  swtvalues["hull"] = false;
+  swtvalues["groups"][0] = false;
+  swtvalues["groups"][1] = false;
+  swtvalues["groups"][2] = false;
+  swtvalues["groups"][3] = false;
+  for (var c = 0; c < continents.length; c++) {
+    swtvalues["groups"][continents[c]] = true;
+  }
+}
+
+var flag_focus = false;
+var focus_index = -1,
+    focus_start = focus_until = -1,
+    focus_groups = [];
+function traceTimeline() {
+  console.log("traceTimeline", curYear, outerbound[curYear], flag_focus, focus_until);
+  var groups = [];
+  if (!flag_focus && outerbound[curYear]) {
+    console.log("start focusing")
+    flag_focus = true;
+    focus_start = outerbound[curYear]["head"]-1;
+    focus_until = outerbound[curYear]["tail"];
+    focus_groups = Array.from(outerbound[curYear]["groups"]);
+    console.log("focus_index == ", focus_index)
+    if (focus_index == -1) {
+      changeSelectedConts([0,1,2,3]);
+      resetPlaytimer(1000);
+    } else {
+      console.log("focus_groups == ", focus_groups, focus_groups[focus_index])
+      changeSelectedConts([focus_groups[focus_index]]);
+      resetPlaytimer(1000);
+    }
+  } else if (flag_focus && curYear == focus_until) {
+    console.log("finish focusing", focus_index, focus_groups)
+    if (focus_index >= focus_groups.length-1) {
+      focus_index = -1;
+      changeSelectedConts([0,1,2,3]);
+      resetPlaytimer(100); // go to the normal pace
+    } else {
+      focus_index += 1;
+      curYear = focus_start;
+    }
+    flag_focus = false;
+    chart.clearFocus();
   } else {
-    changeSlider($("input[type='range']"), curYear, true, true);
+    console.log(curYear, flag_focus);
+    changeSlider($("input[type='range']"), curYear, true, flag_focus);
   }
 }
 
@@ -282,30 +367,6 @@ for (var s = 0; s < legendCount; s++) {
   });
 }
 
-var focustimer;
-function focusYears(years, continent) {
-  console.log("focusYears", years, continent)
-  swtvalues["trace"] = false;
-  swtvalues["hull"] = false;
-  swtvalues["groups"][0] = false;
-  swtvalues["groups"][1] = false;
-  swtvalues["groups"][2] = false;
-  swtvalues["groups"][3] = false;
-  swtvalues["groups"][continent] = true;
-
-  // chart.clearFocus();
-  var idx = 0;
-  focustimer = setInterval(function() {
-    curYear = years[idx];
-    idx += 1;
-    // console.log("update", curYear);
-    if (idx >= years.length-1) {
-      clearInterval(focustimer);
-    }
-    changeSlider($("input[type='range']"), curYear, true, false);
-    chart.updateFocus(idx, years, swtvalues);
-  }, 1000);
-}
 
 $('input[type=range]').on('input', function () {
   $(this).trigger('change');
@@ -313,12 +374,12 @@ $('input[type=range]').on('input', function () {
 $("input[type='range']").change(function() {
   el = $(this);
   curYear  = parseInt(el.val());
-  changeSlider(el, curYear, false, true);
+  changeSlider(el, curYear, false, false);
 })
 // Fake a change to position bubble at page load
 .trigger('change');
 
-function changeSlider(el, curYear, play, update) {
+function changeSlider(el, curYear, play, focus) {
   width = el.width();
   newPoint = (curYear-el.attr("min")) / (el.attr("max")-el.attr("min")+1);
   // console.log(newPoint, el.val())
@@ -331,7 +392,9 @@ function changeSlider(el, curYear, play, update) {
   if (play) {
     el.val(curYear);
   }
-  if (update) {
+  if (focus) {
+    chart.updateFocus(curYear, swtvalues);
+  } else {
     chart.updateChart(curYear, swtvalues);
   }
   updateClusterinfo(curYear);

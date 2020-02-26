@@ -225,12 +225,10 @@ class ScatterPlot {
     this.bubble_trace_g.selectAll("*").remove();
   }
 
-  updateFocus(y, years, swtvalues) {
+  updateFocus(year, swtvalues) {
     this.bubble_g.selectAll("*").remove();
     this.trace_path_g.selectAll("circle.tbubble").remove();
 
-    // for (var y = 0; y < years.length; y++) {
-    var year = years[y];
     var data = this.data[year];
 
     this.bubble_trace_g.append("g").selectAll('.bubble_trace')
@@ -261,7 +259,7 @@ class ScatterPlot {
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', 'black')
         .style('stroke-width', 0.5)
-        .style('opacity', (y+1)/years.length)
+        .style('opacity', 0.2)
         .style('fill', d => gcolor(d.group))
         .style('visibility', function(d) {
           if (swtvalues["groups"][d.group]) return 'visible';
