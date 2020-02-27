@@ -17,6 +17,7 @@ body {
 	z-index: 2;
 }
 .group_trace {
+	margin: -20px;
 	z-index: 1;
 }
 
@@ -43,7 +44,7 @@ body {
 }
 
 .select_rectangle {
-  border: 1px solid #FF0000;
+  border: 1px solid #999;
   position: absolute;
 }
 

@@ -80,6 +80,7 @@ class TraceChart {
         .data(allyearmeans)
       .enter().append("circle")
         .attr("class", "tbubble")
+        .attr("id", d => this.g_id+"_"+d.year)
         .attr("year", d => d.year)
         .attr('cx', d => t_xScale(d.x))
         .attr('cy', d => t_yScale(d.y))

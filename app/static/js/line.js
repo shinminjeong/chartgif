@@ -1,5 +1,4 @@
 var line_xscale;
-var overlay_offset = 4;
 class LineChart {
 
   constructor(div_id, w, h) {
@@ -62,7 +61,7 @@ class LineChart {
         .range([ this.height, 0 ]);
 
       var y_min = data[axis][0].value;
-      var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-20*(1-i));
+      var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-22*(1-i));
       path_svg.append("rect")
         .attr("x", function() {
           var offset = left_offset-15;
@@ -74,7 +73,7 @@ class LineChart {
           if (axis == "S") return left_offset-10;
           else return left_offset-25;
         })
-        .attr("height", 20)
+        .attr("height", 18)
         .attr("rx", 5)
         .attr("ry", 5)
         .attr("class", this.div_id)
@@ -97,7 +96,7 @@ class LineChart {
           if (axis == "S") offset = left_offset-4;
           return line_xscale(1800)-offset;
         })
-        .attr("y", y_pos+4)
+        .attr("y", y_pos+2)
         .text(function() {
           if (axis == "X") return "Income";
           if (axis == "Y") return "LifeExp";
@@ -164,7 +163,7 @@ function draw_rect_input(range, div_id) {
   var rect = canvas.getBoundingClientRect();
   var e = document.createElement('div');
   e.className = 'select_rectangle'
-  e.style.left = (ys+overlay_offset) + 'px';
+  e.style.left = ys + 'px';
   e.style.top = 0;
   e.style.width = Math.abs(ye - ys) + 'px';
   e.style.height = rect.height-30;
@@ -188,7 +187,7 @@ function draw_rect_click(e, canvas) {
   // console.log("draw_rect_click", rect);
   if (element !== null) {
     names = canvas.id.split("_");
-    left = +element.style.left.split("px")[0] - overlay_offset;
+    left = +element.style.left.split("px")[0];
     width = +element.style.width.split("px")[0];
     // console.log("canvas - left", left_offset, left, line_xscale.invert(left));
     // console.log("canvas - right", left+width, line_xscale.invert(left+width));

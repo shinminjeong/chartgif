@@ -276,12 +276,17 @@ class ScatterPlot {
         .style('stroke', 'black')
         .style('stroke-width', 0.5)
         .style('fill', function(d){
-          if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
-          else return gcolor(d.group);
+          if (swtvalues["groups"][d.group]) return gcolor(d.group);
+          else return "#ddd";
+        })
+        .style('opacity', function(d){
+          if (swtvalues["groups"][d.group]) return 1;
+          else return 0.3;
         })
         .style('visibility', function(d) {
-          if (swtvalues["groups"][d.group]) return 'visible';
-          else return 'hidden';
+          return 'visible';
+          // if (swtvalues["groups"][d.group]) return 'visible';
+          // else return 'hidden';
         })
       .transition()
         .duration(1000)
