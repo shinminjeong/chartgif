@@ -59,7 +59,7 @@ class TimeLine {
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
     if (gindex >= 0) {
-      tframe.style = "border: 0.5px solid #666; background-color:"+gcolor(gindex);
+      tframe.style = "border: 0.5px solid #333; background-color:"+gcolor(gindex);
     }
     tframe.style.top = this.margin.top_g+slice_h*(1+gindex);
     tframe.style.left = this.margin.left+s;
@@ -77,7 +77,7 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
-    var slice_h = 30*5;
+    var slice_h = this.height-this.margin.top_g;
     var tframe = document.createElement("div");
     tframe.className = "time-slice-outer"
     tframe.style.top = this.margin.top_g;

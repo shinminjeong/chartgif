@@ -2,7 +2,7 @@ var line_xscale;
 class LineChart {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 10, right: 10, bottom: 20, left:left_offset};
+    this.margin = {top: 5, right: 10, bottom: 25, left:left_offset};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;

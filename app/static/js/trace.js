@@ -9,12 +9,9 @@ class TraceChart {
     this.g_id = g_id;
     this.trace_width = document.getElementById(this.div_id).offsetWidth;
     this.trace_height = this.trace_width*0.8;
-
-    t_xScale = d3.scaleLog().range([0, this.trace_width]).domain([250, 256000]);
-    t_yScale = d3.scaleLinear().range([this.trace_height, 0]).domain([15, 95]);
   }
 
-  draw(data2d, population, continent, group) {
+  draw(data2d, data_options, population, continent, group) {
     var year = "1800";
     if (group.length == 0)
       group = undefined;
@@ -33,23 +30,42 @@ class TraceChart {
 
     var years = range(1800, 2019);
     this.data = {}
+    this.xrange = [10000000, 0];
+    this.yrange = [10000000, 0];
     for (var i in years) {
       var year = years[i];
       this.data[year] = [];
       for (var index in this.countries) {
         // console.log(index, this.countries[index], this.continentMap[index])
         if (group)
-        if (group[this.countries[index]]["group"] == this.g_id) {
-          this.data[year].push({
+        if (this.g_id == 0 || group[this.countries[index]]["group"] == this.g_id) {
+          var d = {
             "id": index,
             "name": this.countries[index],
             "x": data2d[year+"_x"][index],
             "y": data2d[year+"_y"][index],
-            "population": population[year][index]/40000,
-            "group": (group? group[this.countries[index]]["group"] : -1)
-          })
+            "group": (this.g_id>0 ? group[this.countries[index]]["group"] : 0)
+          }
+          this.xrange[0] = Math.min(this.xrange[0], d.x);
+          this.xrange[1] = Math.max(this.xrange[1], d.x);
+          this.yrange[0] = Math.min(this.yrange[0], d.y);
+          this.yrange[1] = Math.max(this.yrange[1], d.y);
+          this.data[year].push(d)
         }
       }
+    }
+
+    if (data_options["xScale"]["id"] == "log") {
+      this.xrange[0] = Math.max(1, this.xrange[0]);
+      t_xScale = d3.scaleLog().range([0, this.trace_width]).domain(this.xrange);
+    } else {
+      t_xScale = d3.scaleLinear().range([0, this.trace_width]).domain(this.xrange).nice();
+    }
+    if (data_options["yScale"]["id"] == "log") {
+      this.yrange[0] = Math.max(1, this.yrange[0]);
+      t_yScale = d3.scaleLog().range([this.trace_height, 0]).domain(this.yrange).nice();
+    } else {
+      t_yScale = d3.scaleLinear().range([this.trace_height, 0]).domain(this.yrange).nice();
     }
 
     this.trace_path_g = this.svg.append('g');

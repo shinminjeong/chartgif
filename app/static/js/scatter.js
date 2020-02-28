@@ -6,19 +6,14 @@ var hullOffset = 10;
 class ScatterPlot {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 10, bottom: 40, left:40};
+    this.margin = {top: 5, right: 10, bottom: 25, left:25};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
-
-    xScale = d3.scaleLog().range([0, this.width]).domain([250, 256000]);
-    yScale = d3.scaleLinear().range([this.height, 0]).domain([0, 95]);
-    radius = d3.scaleSqrt().range([2,15]).domain([10, 10000]);
-
     this.bubble = {};
   }
 
-  initChart(data2d, population, continent, group) {
+  initChart(data2d, data_options, population, continent, group) {
     var year = "1800";
     if (group.length == 0)
       group = undefined;
@@ -37,13 +32,16 @@ class ScatterPlot {
 
     this.years = range(1800, 2019);
     this.data = {}
+    this.xrange = [10000000, 0];
+    this.yrange = [10000000, 0];
+    this.srange = [10000000, 0];
     for (var i in this.years) {
       var year = this.years[i];
       var pre_year = this.years[i > 0? i-1:0];
       this.data[year] = [];
       for (var index in this.countries) {
         // console.log(index, this.countries[index], this.continentMap[index])
-        this.data[year].push({
+        var d = {
           "id": index,
           "name": this.countries[index],
           "x": data2d[year+"_x"][index],
@@ -53,16 +51,45 @@ class ScatterPlot {
           "pre_y": data2d[pre_year+"_y"][index],
           "pre_population": population[pre_year][index]/40000,
           "group": (group? group[this.countries[index]]["group"] : -1)
-        })
+        }
+        this.xrange[0] = Math.min(this.xrange[0], d.x);
+        this.xrange[1] = Math.max(this.xrange[1], d.x);
+        this.yrange[0] = Math.min(this.yrange[0], d.y);
+        this.yrange[1] = Math.max(this.yrange[1], d.y);
+        this.srange[0] = Math.min(this.srange[0], d.population);
+        this.srange[1] = Math.max(this.srange[1], d.population);
+        this.data[year].push(d)
       }
     }
+
+    var x_tickvalues, y_tickvalues;
+    // if (data_options["x"]["id"] == "income") {this.xrange[0] = Math.max(250, this.xrange[0]);}
+    // if (data_options["y"]["id"] == "income") {this.yrange[0] = Math.max(250, this.yrange[0]);}
+
+    if (data_options["xScale"]["id"] == "log") {
+      this.xrange[0] = Math.max(1, this.xrange[0]);
+      x_tickvalues = getTickValues(this.xrange, true);
+      xScale = d3.scaleLog().range([0, this.width]).domain(this.xrange);
+    } else {
+      x_tickvalues = getTickValues(this.xrange, false);
+      xScale = d3.scaleLinear().range([0, this.width]).domain(this.xrange).nice();
+    }
+    if (data_options["yScale"]["id"] == "log") {
+      this.yrange[0] = Math.max(1, this.yrange[0]);
+      y_tickvalues = getTickValues(this.yrange, true);
+      yScale = d3.scaleLog().range([this.height, 0]).domain(this.yrange);
+    } else {
+      y_tickvalues = getTickValues(this.yrange, false);
+      yScale = d3.scaleLinear().range([this.height, 0]).domain(this.yrange).nice();
+    }
+    radius = d3.scaleSqrt().range([2,15]).domain(this.srange).nice();
 
     this.svg.append('g')
       .attr('transform', 'translate(0,' + this.height + ')')
       .attr('class', 'x axis')
       .call(d3.axisBottom(xScale)
         .tickFormat(d3.format(".2s"))
-        .tickValues([500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000])
+        .tickValues(x_tickvalues)
       );
 
     this.svg.append('g')
@@ -70,39 +97,42 @@ class ScatterPlot {
       .call(d3.axisBottom(xScale)
         .tickSize(this.height)
         .tickFormat("")
-        .tickValues([500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000])
+        .tickValues(x_tickvalues)
       );
 
     // y-axis is translated to (0,0)
     this.svg.append('g')
       .attr('transform', 'translate(0,0)')
       .attr('class', 'y axis')
-      .call(d3.axisLeft(yScale));
+      .call(d3.axisLeft(yScale)
+        .tickFormat(d3.format(".2s"))
+        .tickValues(y_tickvalues)
+      );
 
     this.svg.append('g')
       .attr("class", "grid")
       .call(d3.axisLeft(yScale)
         .tickSize(-this.width)
         .tickFormat("")
-        .ticks(10)
+        .tickValues(y_tickvalues)
       );
 
     this.trace_path_g = this.svg.append('g');
     this.hull_g = this.svg.append('g');
 
     // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
-    this.svg.append('text')
-      .attr('x', 10)
-      .attr('y', 10)
-      .attr('class', 'label')
-      .text('Life Expectancy');
-
-    this.svg.append('text')
-      .attr('x', this.width)
-      .attr('y', this.height - 10)
-      .attr('text-anchor', 'end')
-      .attr('class', 'label')
-      .text('Income');
+    // this.svg.append('text')
+    //   .attr('x', 10)
+    //   .attr('y', 10)
+    //   .attr('class', 'label')
+    //   .text('Life Expectancy');
+    //
+    // this.svg.append('text')
+    //   .attr('x', this.width)
+    //   .attr('y', this.height - 10)
+    //   .attr('text-anchor', 'end')
+    //   .attr('class', 'label')
+    //   .text('Income');
 
     var legend = this.svg.selectAll('legend')
       .data(continent)
@@ -307,6 +337,29 @@ class ScatterPlot {
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles);
     }
+}
+
+function getTickValues(r, logflag) {
+  var tickvalues = [];
+  var scale;
+  if (logflag) {
+    if (r[1]-r[0] < 10) scale = 1;
+    else if (r[1]-r[0] < 100) scale = 5;
+    else if (r[1]-r[0] < 10000) scale = 125;
+    else scale = 250;
+    for (var i = Math.max(scale, parseInt(r[0]/scale)*scale); i < r[1]; i*=2) {
+      tickvalues.push(i)
+    }
+  } else {
+    if (r[1]-r[0] < 10) scale = 1;
+    else if (r[1]-r[0] < 100) scale = 10;
+    else scale = Math.pow(10, parseInt(Math.log10(r[1]))-1);
+    for (var i = Math.max(0, parseInt(r[0]/scale)*(scale)); i < r[1]; i+=scale) {
+      tickvalues.push(i)
+    }
+  }
+  tickvalues.shift();
+  return tickvalues
 }
 
 function getGroup(n) { return n.group; }

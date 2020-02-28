@@ -13,31 +13,48 @@
 </head>
 <body>
   <div class="row">
-    <div class="col-md-6">
-      <div style="padding-bottom: 20px">
-        <div style="float:left">
-          Chartgif <br/>
-          World Life Expectancy vs Income
-        </div>
-        <div style="float:right">
-          <div class="custom-control custom-switch">
-            <input type="checkbox" class="custom-control-input" id="switchTrace">
-            <label class="custom-control-label" for="switchTrace">Draw Trace</label>
+    <div id="dropdown_Y_scale" class="dropdown">
+      <button class="btn btn-sm btn-info dropdown-toggle rotate" type="button" id="dropdownMenuButton_yScale" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        {{ options.yScale.name }}
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_yScale">
+        <a class="dropdown-item" name="yScale" id="lin" href="#">Lin</a>
+        <a class="dropdown-item" name="yScale" id="log" href="#">Log</a>
+      </div>
+    </div>
+    <div id="dropdown_Y" class="dropdown">
+      <button class="btn btn-sm btn-outline-dark dropdown-toggle rotate" type="button" id="dropdownMenuButton_y" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        {{ options.y.name }}
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_Y">
+        <a class="dropdown-item" name="y" id="lifeexp" href="#">Life Expectancy</a>
+        <a class="dropdown-item" name="y" id="fertility" href="#">Babies per woman</a>
+        <a class="dropdown-item" name="y" id="income" href="#">Income</a>
+      </div>
+    </div>
+    <div class="col-md-6" style="padding-left: 50px;">
+      <div id="myChart"></div>
+      <div align="center">
+        <div id="dropdown_X" class="dropdown">
+          <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" id="dropdownMenuButton_x" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{ options.x.name }}
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_X">
+            <a class="dropdown-item" name="x" id="lifeexp" href="#">Life Expectancy</a>
+            <a class="dropdown-item" name="x" id="fertility" href="#">Babies per woman</a>
+            <a class="dropdown-item" name="x" id="income" href="#">Income</a>
           </div>
-          <div class="custom-control custom-switch">
-            <input type="checkbox" class="custom-control-input" id="switchHull">
-            <label class="custom-control-label" for="switchHull">Draw Hull</label>
-          </div>
         </div>
-        <div style="float:right">
-          <div class="custom-control custom-switch-play">
-            <label>
-              <input type="checkbox" class="custom-control-input" id="switchPlay">
-            <i id="play_icon" class="fa fa-play"></i></label>
+        <div id="dropdown_X_scale" class="dropdown">
+          <button class="btn btn-sm btn-info dropdown-toggle" type="button" id="dropdownMenuButton_xScale" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{ options.xScale.name }}
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_xScale">
+            <a class="dropdown-item" name="xScale" id="lin" href="#">Lin</a>
+            <a class="dropdown-item" name="xScale" id="log" href="#">Log</a>
           </div>
         </div>
       </div>
-      <div id="myChart"></div>
       <div class="year-background">
         <span id='infoCurYear'>
       </div>
@@ -46,8 +63,23 @@
       <div id="clusterinfo" class="row"></div>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row" style="padding-top: 20px;">
+    <div class="col-md-1">
+      <div class="custom-control custom-switch-play">
+        <label>
+          <input type="checkbox" class="custom-control-input" id="switchPlay">
+        <i id="play_icon" class="fa fa-play"></i></label>
+      </div>
+      <div class="custom-control custom-switch">
+        <input type="checkbox" class="custom-control-input" id="switchTrace">
+        <label class="custom-control-label" for="switchTrace">Trace</label>
+      </div>
+      <div class="custom-control custom-switch">
+        <input type="checkbox" class="custom-control-input" id="switchHull">
+        <label class="custom-control-label" for="switchHull">Hull</label>
+      </div>
+    </div>
+    <div class="col-md-11">
       <div class="timeline-background" id="timeline-background"></div>
       <div class="timeline-slider">
         <input type="range" class="slider" name="mySlider" id=mySlider min="1800" max="2018" value="1800"></input>
@@ -67,7 +99,7 @@
 <script src="{% static 'js/timeline.js' %}"></script>
 <script>
 var morecolor = d3.scaleOrdinal(d3.schemeCategory10);
-var colorarray = ["#F08391", "#FCEC71", "#AEED6C", "#80DBEB"];
+var colorarray = ["#666", "#F08391", "#FCEC71", "#AEED6C", "#80DBEB"];
 let gcolor = function(i){
   if (i < colorarray.length) {
     return colorarray[i];
@@ -77,6 +109,7 @@ let gcolor = function(i){
 };
 
 var data_plot = {{data|safe}};
+var data_options = {{options|safe}};
 var data_population = {{population|safe}};
 var data_continent = {{continent|safe}};
 var data_group = {{kgroup|safe}};
@@ -84,21 +117,40 @@ var cluster_info = {{clusterinfo|safe}};
 var data_avg_velocity = {{avg_velocity|safe}};
 var data_focus_range = {{focus_range|safe}};
 
+var params = {
+  "x": "income",
+  "xScale": "log",
+  "y": "lifeexp",
+  "yScale": "lin",
+  "s": "population"
+}
 var w = document.getElementById("myChart").offsetWidth,
-    h = w*0.8;
+    h = w*0.75;
 var label_w = Math.min(200, Math.max(120, w*0.2));
 var left_offset = 66;
 var chart = new ScatterPlot("myChart", w, h);
-chart.initChart(data_plot, data_population, data_continent, data_group);
+for (var k in data_options) {
+  params[k] = data_options[k].id;
+}
+document.getElementById("dropdown_Y").style.marginTop = w/2-100;
+document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
+chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
 
 var timeline_w = document.getElementById("timeline-background").offsetWidth;
 var timeline_h = 300;
 var timeline = new TimeLine("timeline", timeline_w, timeline_h);
 timeline.initChart([1800, 2018]);
+$(".dropdown-menu a").click(function () {
+  var setItem = $(this);
+  console.log("dropdown select", setItem[0].name, setItem[0].id, setItem.text())
+  $("#dropdownMenuButton_"+setItem[0].name).text(setItem.text());
+  params[setItem[0].name] = setItem[0].id;
+  window.location.href = "?"+$.param( params );
+});
 
-var el, newPoint;
+var el, newPoint, timebar;
 var linecharts_v = {};
-var gname = ["Asia", "Europe", "America", "Africa"];
+var gname = ["World", "Asia", "Europe", "America", "Africa"];
 var infodiv = document.getElementById("clusterinfo");
 function kFormatter(num) {
     if (Math.abs(num) > 999999)
@@ -106,6 +158,12 @@ function kFormatter(num) {
     if (Math.abs(num) > 999)
       return Math.sign(num)*((Math.abs(num)/1000).toFixed(1)) + 'K'
     return Math.sign(num)*Math.abs(num)
+}
+
+function updateLineTimebar() {
+  timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+10) + "px";
+  timebar.style.top = 10 + "px";
+  timebar.style.height = (h-5) + "px";
 }
 
 function initClusterinfo() {
@@ -119,7 +177,7 @@ function initClusterinfo() {
   var group_h = h/numGroup+5;
   for (var g = 0; g < numGroup; g++) {
     var div_group = document.createElement("div");
-    div_group.style = "display:block; padding: 10px; height: "+group_h+"px;";
+    div_group.style = "display:block; padding: 0 10px; height: "+group_h+"px;";
 
     var div_group_label = document.createElement("div");
     div_group_label.style = "display:inline-block; vertical-align:top; width:"+label_w+"px; height: "+group_h+"px;";
@@ -136,7 +194,7 @@ function initClusterinfo() {
     div_group_timeline_avg_v.id = "lines_v_"+gname[g];
     div_group_timeline_avg_a.id = div_group_timeline_avg_v.id+"_overlay";
     div_group_timeline_avg_v.style = "width:"+(w-label_w)+"px; height: "+group_h+"px; position: absolute; top:10; z-index:0";
-    div_group_timeline_avg_a.style = "width:"+(w-label_w)+"px; height: "+group_h+"px; position: absolute; top:10; left: "+left_offset+"; z-index:1";
+    div_group_timeline_avg_a.style = "width:"+(w-label_w-left_offset)+"px; height: "+group_h+"px; position: absolute; top:10; left: "+left_offset+"; z-index:1";
     div_group_timeline.appendChild(div_group_timeline_avg_a);
     div_group_timeline.appendChild(div_group_timeline_avg_v);
 
@@ -148,6 +206,10 @@ function initClusterinfo() {
     linecharts_v[g].drawChart(data_avg_velocity[g]);
   }
   drawTraceCharts(numGroup);
+
+  timebar = document.createElement("div");
+  timebar.className = "line-timebar";
+  infodiv.appendChild(timebar);
 }
 
 function updateClusterinfo(year) {
@@ -169,7 +231,7 @@ function drawTraceCharts(numGroup) {
   var trace_chart = {};
   for (var g = 0; g < numGroup; g++) {
     trace_chart[g] = new TraceChart("trace_chart_", g);
-    trace_chart[g].draw(data_plot, data_population, data_continent, data_group);
+    trace_chart[g].draw(data_plot, data_options, data_population, data_continent, data_group);
   }
 }
 
@@ -288,10 +350,9 @@ function calculateOuterbound() {
 function changeSelectedConts(continents) {
   swtvalues["trace"] = false;
   swtvalues["hull"] = false;
-  swtvalues["groups"][0] = false;
-  swtvalues["groups"][1] = false;
-  swtvalues["groups"][2] = false;
-  swtvalues["groups"][3] = false;
+  for (var c = 0; c < legendCount; c++) {
+    swtvalues["groups"][c] = false;
+  }
   for (var c = 0; c < continents.length; c++) {
     swtvalues["groups"][continents[c]] = true;
   }
@@ -312,8 +373,8 @@ function traceTimeline() {
     focus_groups = Array.from(outerbound[curYear]["groups"]);
     console.log("focus_index == ", focus_index)
     if (focus_index == -1) {
-      changeSelectedConts([0,1,2,3]);
-      resetPlaytimer(1000);
+      changeSelectedConts([1,2,3,4]);
+      resetPlaytimer(500);
     } else {
       console.log("focus_groups == ", focus_groups, focus_groups[focus_index])
       changeSelectedConts([focus_groups[focus_index]]);
@@ -323,7 +384,7 @@ function traceTimeline() {
     console.log("finish focusing", focus_index, focus_groups)
     if (focus_index >= focus_groups.length-1) {
       focus_index = -1;
-      changeSelectedConts([0,1,2,3]);
+      changeSelectedConts([1,2,3,4]);
       resetPlaytimer(100); // go to the normal pace
     } else {
       focus_index += 1;
@@ -338,11 +399,11 @@ function traceTimeline() {
 }
 
 
-var legendCount = 4;
+var legendCount = 5;
 var swtvalues = {
   "trace": false,
   "hull": false,
-  "groups": {0: true, 1:true, 2:true, 3:true},
+  "groups": {0: true, 1:true, 2:true, 3:true, 4:true},
 };
 var traceon = document.querySelectorAll("input#switchTrace");
 traceon[0].addEventListener("change", function(e) {
@@ -405,8 +466,9 @@ function highlightOff() {
   $("circle.tbubble").attr("r", 1).attr("stroke", "none");
 }
 function highlightCurYear() {
+  updateLineTimebar();
   highlightOff();
-  for (var i = 0; i < 4; i++) {
+  for (var i = 0; i < legendCount; i++) {
     $("circle.tbubble#"+i+"_"+curYear)
       .attr("r", 5)
       .attr("stroke", "black");

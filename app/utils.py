@@ -77,6 +77,7 @@ def minmax_for_group(years, K, kgroups, selectedAxis, values):
     G = {g:[] for g in range(0, K)}
     for cname, cv in kgroups.items():
         G[cv["group"]].append(cv["index"])
+        G[0].append(cv["index"]) # for group 0
     for y in years:
         for cgroup, cindex in G.items():
             for a in selectedAxis:
