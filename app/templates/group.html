@@ -203,7 +203,7 @@ function initClusterinfo() {
     infodiv.appendChild(div_group);
 
     linecharts_v[g] = new LineChart(div_group_timeline_avg_v.id, w-label_w, group_h, left_offset);
-    linecharts_v[g].drawChart(data_avg_velocity[g]);
+    linecharts_v[g].drawChart(data_avg_velocity[g], data_options);
   }
   drawTraceCharts(numGroup);
 

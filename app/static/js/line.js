@@ -9,7 +9,7 @@ class LineChart {
     // console.log("lineChart", this.div_id, this.width, this.height);
   }
 
-  drawChart(data) {
+  drawChart(data, data_options) {
     // console.log(data);
     var svg = d3.select("#"+this.div_id)
       .append('svg')
@@ -60,19 +60,17 @@ class LineChart {
         .domain([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })])
         .range([ this.height, 0 ]);
 
+      var axis_name = data_options[axis.toLowerCase()]["id"];
+      var name_len = axis_name.length*4.5;
+      console.log("name_len", name_len)
       var y_min = data[axis][0].value;
       var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-22*(1-i));
       path_svg.append("rect")
         .attr("x", function() {
-          var offset = left_offset-15;
-          if (axis == "S") offset = left_offset;
-          return line_xscale(1800)-offset;
+          return line_xscale(1800)-10-name_len-5;
         })
         .attr("y", y_pos-10)
-        .attr("width", function() {
-          if (axis == "S") return left_offset-10;
-          else return left_offset-25;
-        })
+        .attr("width", name_len+5)
         .attr("height", 18)
         .attr("rx", 5)
         .attr("ry", 5)
@@ -91,21 +89,16 @@ class LineChart {
         .attr("stroke", axisColors[i])
         .attr("stroke-width", 1.5)
       path_svg.append("text")
-        .attr("x", function() {
-          var offset = left_offset-19;
-          if (axis == "S") offset = left_offset-4;
-          return line_xscale(1800)-offset;
-        })
+        .attr("x", line_xscale(1800)-20)
         .attr("y", y_pos+2)
-        .text(function() {
-          if (axis == "X") return "Income";
-          if (axis == "Y") return "LifeExp";
-          if (axis == "S") return "Population";
-        })
+        .text(data_options[axis.toLowerCase()]["id"])
         .attr("class", this.div_id)
         .attr("axis", axis)
-        .style("fill", "#fff")
-        .style("font-size", 10)
+        .attr("fill", "#fff")
+        .attr("font-family", "monospace")
+        .attr("font-size", 10)
+        .attr("transform", "scale(0.7, 1)")
+        .attr("text-anchor", "end")
         .on("mouseover", mouseOverPaths)
         .on("mouseout", mouseOutPaths)
 
