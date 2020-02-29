@@ -62,7 +62,7 @@ class LineChart {
 
       var axis_name = data_options[axis.toLowerCase()]["id"];
       var name_len = axis_name.length*4.5;
-      console.log("name_len", name_len)
+      // console.log("name_len", name_len)
       var y_min = data[axis][0].value;
       var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-22*(1-i));
       path_svg.append("rect")

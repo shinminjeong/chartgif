@@ -44,7 +44,7 @@ def main(request):
         if k in request.GET:
             id = request.GET.get(k)
             options[k] = {"id": id, "name": name_map[id]}
-    print(options)
+    # print(options)
     selectedAxis = []
 
     years = [str(y) for y in range(1800, 2019)]
