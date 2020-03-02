@@ -2,7 +2,7 @@
 <html>
 <head>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
@@ -56,7 +56,10 @@
         </div>
       </div>
       <div class="year-background">
-        <span id='infoCurYear'>
+        <span id='infoCurYear'></span>
+      </div>
+      <div class="caption-panel">
+        <span id='caption'></span>
       </div>
     </div>
     <div class="col-md-6">
@@ -171,11 +174,6 @@ function updateLineTimebar() {
 }
 
 function initClusterinfo() {
-  // var div_year = document.createElement("div");
-  // div_year.innerHTML="Year = <span id='infoCurYear'>" + curYear + "</span><br>";
-  // div_year.classList.add("col-md-12");
-  // infodiv.appendChild(div_year);
-
   var numGroup = cluster_info["K"];
   var minmax = cluster_info["minmax"];
   var group_h = h/numGroup+5;
@@ -216,10 +214,21 @@ function initClusterinfo() {
   infodiv.appendChild(timebar);
 }
 
-function updateClusterinfo(year) {
+function updateBackgoundYear(year) {
   var info_year = document.getElementById("infoCurYear");
   info_year.innerHTML = year;
+}
+function updateCaptionText(year, g) {
+  console.log("updateCaptionText", year, g, caption[year])
+  var caption_year = document.getElementById("caption");
+  if (caption[year] && caption[year][g]) {
+    caption_year.innerHTML = caption[year][g];
+  } else {
+    caption_year.innerHTML = "";
+  }
+}
 
+function updateClusterinfo(year) {
   var numGroup = cluster_info["K"];
   var minmax = cluster_info["minmax"];
   for (var g = 0; g < numGroup; g++) {
@@ -242,6 +251,7 @@ function drawTraceCharts(numGroup) {
 var timeslices = {};
 var yearmap = {};
 var outerbound = {};
+var caption = {};
 function initTimeFrame() {
   for (var y = 1800; y <= 2019; y++) {
     yearmap[y] = [];
@@ -251,11 +261,15 @@ function initTimeFrame() {
       console.log(gname[g], a, data_focus_range[g][a])
       for (var r in data_focus_range[g][a]) {
         range = data_focus_range[g][a][r]
-        if (range.length  <= 1) continue;
+        if (range.length  <= 2) continue;
         drawFrame(range, g, a);
         draw_rect_input(range, "lines_v_"+gname[g], a);
       }
     }
+  }
+  for (var v in outerbound) {
+    console.log("getCaption", v)
+    getCaption(outerbound[v]);
   }
 }
 
@@ -345,7 +359,6 @@ function calculateOuterbound() {
         }
         outerbound[+head_y+1] = bound;
         timeline.addOuterBound([head_y, tail_y]);
-        getCaption(bound);
       }
       head_y = tail_y = -1;
       groups = [];
@@ -358,8 +371,12 @@ function getCaption(bound) {
     type: "POST",
     url: "/get_caption/",
     data: bound,
-    success: function(result){
-      console.log("getCaption success", result["caption"])
+    success: function(res){
+      console.log("getCaption success", res["caption"])
+      for (var y = res["head"]; y <= res["tail"]; y++) {
+        caption[y] = res["caption"];
+      }
+      console.log("caption", caption)
     }
   });
 }
@@ -410,9 +427,13 @@ function traceTimeline() {
     flag_focus = false;
     chart.clearFocus();
   } else {
+
     console.log(curYear, flag_focus);
     changeSlider($("input[type='range']"), curYear, true, flag_focus);
+    // update caption
   }
+  if (focus_index != -1)
+    updateCaptionText(curYear, focus_groups[focus_index]);
 }
 
 
@@ -480,6 +501,7 @@ function changeSlider(el, curYear, play, focus) {
   }
   highlightCurYear();
   // updateClusterinfo(curYear);
+  updateBackgoundYear(curYear);
 }
 
 function highlightOff() {

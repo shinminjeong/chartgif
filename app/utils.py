@@ -16,18 +16,30 @@ def get_focus_range(groups, axes, V):
             # print(a, [(v["year"], v["value"]) for v in V[g][a]])
             minv = min([v["min"] for v in V[g][a]])
             maxv = max([v["max"] for v in V[g][a]])
-            threshold = (maxv-minv)*0.02
+            threshold = (maxv-minv)*0.025
             range[g][a] = {v["year"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) > threshold}
             for y, thd in range[g][a].items():
                 if len(output[g][a]) == 0 or y - output[g][a][-1][-1] >= cont_threshold:
-                    output[g][a].append([y])
+                    output[g][a].append([y-1, y]) # add both y-1 and y
                 else:
+                    output[g][a][-1].append(y-1)
                     output[g][a][-1].append(y)
             # print(output[g][a])
     return output
 
+def avg_value(X, len):
+    n, m = X.shape
+    # Normalize values by axis
+    for r in range(0, m, len):
+        X[:, r:r+len] = normalize(X[:, r:r+len])
+    avg_d = np.average(X, axis=0)
+    min_d = np.amin(X, axis=0)
+    max_d = np.amax(X, axis=0)
+    for i in range(0, m, len):
+        avg_d[i] = min_d[i] = max_d[i] = 0
+    return avg_d, min_d, max_d
 
-def avg_velocity(X, len):
+def avg_variance(X, len):
     n, m = X.shape
     # Normalize values by axis
     for r in range(0, m, len):
@@ -83,9 +95,6 @@ def minmax_for_group(years, K, kgroups, selectedAxis, values):
             for a in selectedAxis:
                 minmax[cgroup][y][a]["min"] = min(values.loc[cindex][y+"_{}".format(a.lower())])
                 minmax[cgroup][y][a]["max"] = max(values.loc[cindex][y+"_{}".format(a.lower())])
-                if "X" == a:
-                    minmax[cgroup][y][a]["min"] = descale_income(minmax[cgroup][y][a]["min"])
-                    minmax[cgroup][y][a]["max"] = descale_income(minmax[cgroup][y][a]["max"])
     # print(minmax)
     return G, minmax
 
@@ -105,13 +114,4 @@ def minmax_for_group_slice(years, K, kgroups, selectedAxis, values):
             for a in selectedAxis:
                 minmax[y][cgroup][a]["min"] = min(values.loc[cindex][y+"_{}".format(a.lower())])
                 minmax[y][cgroup][a]["max"] = max(values.loc[cindex][y+"_{}".format(a.lower())])
-                if "X" == a:
-                    minmax[y][cgroup][a]["min"] = descale_income(minmax[y][cgroup][a]["min"])
-                    minmax[y][cgroup][a]["max"] = descale_income(minmax[y][cgroup][a]["max"])
     return G, minmax
-
-def scale_income(x):
-    return np.log2(x)*10
-
-def descale_income(y):
-    return round(np.power(2, y/10))

@@ -36,11 +36,15 @@ options = {
     "yScale": {"id": "lin", "name": "Lin"},
 }
 
-c_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":-1};
+c_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":-1}
 c_group_inv = {0: "World", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
-K = 5; # group 0 for the entire world
+K = 5 # group 0 for the entire world
 
+values = None
+kgroups = None
+numYears = 0
 def main(request):
+    global values, kgroups, numYears
     for k, v in options.items():
         if k in request.GET:
             id = request.GET.get(k)
@@ -65,10 +69,8 @@ def main(request):
 
     values = map.drop(columns='country').fillna(-1)
     values[["{}_s".format(y) for y in years]] = df_s[years].astype("float")
-    # normalise values for display
-    values[["{}_x".format(y) for y in years]] = scale_income(values[["{}_x".format(y) for y in years]])
 
-    # calculate average velocity/acceleration
+    # calculate average variance
     avg_v = {}
     groups = [0, 1, 2, 3, 4]
     for group_index in groups:
@@ -77,7 +79,8 @@ def main(request):
         else:
             cset = [v["index"] for k, v in kgroups.items() if v["group"] == group_index] # X value
             X = values.iloc[cset, :].to_numpy()
-        D, minD, maxD = avg_velocity(X, numYears)
+        # D, minD, maxD = avg_value(X, numYears)
+        D, minD, maxD = avg_variance(X, numYears)
         avg_v[group_index] = {}
         for i, a in enumerate(selectedAxis):
             avg_v[group_index][a] = [{"year":int(y), "value":v, "min": m1, "max": m2} for y, v, m1, m2 in zip(years, D.tolist()[i*numYears:(i+1)*numYears], minD.tolist()[i*numYears:(i+1)*numYears], maxD.tolist()[i*numYears:(i+1)*numYears])]
@@ -105,20 +108,43 @@ def main(request):
 
 @csrf_exempt
 def get_caption(request):
+    global values, kgroups, numYears
     outerbound = request.POST
     print("get_caption", outerbound)
-    head_y = outerbound.get("head")
-    tail_y = outerbound.get("tail")
-    groups = [c_group_inv[int(c)] for c in outerbound.getlist("groups[]")]
-    print(groups)
-    if len(groups) == 0:
-        return JsonResponse({"caption": "none"})
-    if len(groups) > 2:
-        regions = ", ".join(groups[:-1]) + " and " + groups[-1]
-    elif len(groups) == 2:
-        regions = " and ".join(groups)
-    else:
-        regions = groups[0]
-    test = "from {} to {}, Income increases fast in {}".format(head_y, tail_y, regions)
 
-    return JsonResponse({"caption": test})
+    head_y = int(outerbound.get("head"))
+    tail_y = int(outerbound.get("tail"))
+    groups = {int(c):c_group_inv[int(c)] for c in outerbound.getlist("groups[]")}
+    print(groups)
+    countries = list(groups.values())
+    if len(groups) > 2:
+        regions = ", ".join(countries[:-1]) + " and " + countries[-1]
+    elif len(groups) == 2:
+        regions = " and ".join(countries)
+    else:
+        regions = countries[0]
+
+    printgrp = {}
+    caption = {}
+    for g, gname in groups.items():
+        print("---- group {} ----".format(g))
+        cset = [v["index"] for k, v in kgroups.items() if g == 0 or v["group"] == g] # countries in selected continent
+        selectedCol = []
+        selectedAxis = ["X", "Y", "S"]
+        for r in range(0, len(selectedAxis)): # selected years
+            selectedCol.extend(list(range((head_y-1800)+numYears*r, (tail_y-1800)+numYears*r)))
+        X = values.iloc[cset, selectedCol].to_numpy()
+        cluster, num_cluster, trans = cluster_AP(X)
+
+        printgrp[g] = {c: [] for c in range(num_cluster)}
+        for i, k in enumerate(cset):
+            printgrp[g][cluster[i]].append(k)
+        caption[g] = "from {} to {}, something happens in {}".format(head_y, tail_y, gname)
+    print(printgrp)
+
+    return JsonResponse({
+        "head": head_y,
+        "tail": tail_y,
+        "printgrp": printgrp,
+        "caption": caption
+    })
