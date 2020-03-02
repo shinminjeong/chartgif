@@ -20,6 +20,7 @@ from . import views
 urlpatterns = [
     # path('admin/', admin.site.urls),
     url(r'^$', views.main, name='main'),
+    url(r'^get_caption', views.get_caption),
     # url(r'^slice$', views.slice, name='slice'),
     # url(r'^distance$', views.distance, name='distance')
 ]

@@ -10,6 +10,11 @@ body {
   stroke-width: 0;
 }
 
+.line-x-axis > path,
+.line-x-axis > g > line {
+	stroke: none;
+}
+
 #clusterinfo {
 	padding: 0;
 }
@@ -87,34 +92,45 @@ body {
 }
 
 .select_rectangle {
-  border: 1px solid #999;
+  border: 1px solid #17a2b8;
+	/* background-color: #17a2b8; */
+	/* opacity: 0.2; */
   position: absolute;
 }
 
-.timeline-slider {
+.timeline {
 	position: absolute;
-	padding-top: 20px;
-	padding-left: 100px;
-	padding-right: 35px;
-	width: 100%;
+}
+.timeline-slider {
+	top: 0px;
+	left: 98px;
+	height: 20px;
+	background: #bbb;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+}
+.timeline-slider-extend {
+	width: 2px;
+	top: 20px;
 	height: 300px;
+	background-color: #007bff;
 }
 .timeline-background {
-	position: absolute;
-	width: 100%;
+	top: 20px;
 	height: 300px;
+	background: #666;
 }
 .timeline-frame {
-	position: absolute;
+	top: 20px;
 }
 .time-slice {
 	position: absolute;
-	background-color: #333;
+	background-color: #666;
 	opacity: 0.5;
 }
 .time-slice-outer {
 	position: absolute;
-	background-color: #333;
+	background-color: #666;
 	opacity: 0.2;
 }
 
@@ -137,15 +153,22 @@ body {
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 3px;
-  height: 100%;
+	padding: 1px 2px 1px 0px;
+  width: 32px;
+  height: 18px;
   background: #007bff;
   cursor: pointer;
+	-webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 52% 100%, 48% 100%, 0% 65%);
+  clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 52% 100%, 48% 100%, 0% 65%);
 }
 
 .slider::-moz-range-thumb {
-  width: 3px;
-  height: 100%;
+	padding: 1px 2px 1px 0px;
+  width: 32px;
+  height: 18px;
+	opacity: 1;
   background: #007bff;
   cursor: pointer;
+	-webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 52% 100%, 48% 100%, 0% 65%);
+  clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 52% 100%, 48% 100%, 0% 65%);
 }

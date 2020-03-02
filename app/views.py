@@ -36,7 +36,8 @@ options = {
     "yScale": {"id": "lin", "name": "Lin"},
 }
 
-continent_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":-1};
+c_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":-1};
+c_group_inv = {0: "World", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
 K = 5; # group 0 for the entire world
 
 def main(request):
@@ -60,7 +61,7 @@ def main(request):
     df_c = df_c.loc[df_c['country'].isin(countries)].reset_index()
 
     selectedAxis = ["X", "Y", "S"]
-    kgroups = {k:{"index": i, "group": continent_group[df_c.iloc[i]["continent"]]} for i, k in enumerate(countries)}
+    kgroups = {k:{"index": i, "group": c_group[df_c.iloc[i]["continent"]]} for i, k in enumerate(countries)}
 
     values = map.drop(columns='country').fillna(-1)
     values[["{}_s".format(y) for y in years]] = df_s[years].astype("float")
@@ -101,3 +102,23 @@ def main(request):
         "avg_velocity": avg_v,
         "focus_range": focus_range
     })
+
+@csrf_exempt
+def get_caption(request):
+    outerbound = request.POST
+    print("get_caption", outerbound)
+    head_y = outerbound.get("head")
+    tail_y = outerbound.get("tail")
+    groups = [c_group_inv[int(c)] for c in outerbound.getlist("groups[]")]
+    print(groups)
+    if len(groups) == 0:
+        return JsonResponse({"caption": "none"})
+    if len(groups) > 2:
+        regions = ", ".join(groups[:-1]) + " and " + groups[-1]
+    elif len(groups) == 2:
+        regions = " and ".join(groups)
+    else:
+        regions = groups[0]
+    test = "from {} to {}, Income increases fast in {}".format(head_y, tail_y, regions)
+
+    return JsonResponse({"caption": test})

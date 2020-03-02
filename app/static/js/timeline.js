@@ -3,7 +3,7 @@
 class TimeLine {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 0, right: 35, bottom: 0, left:100, top_g: 20};
+    this.margin = {top: 0, right: 35, bottom: 0, left:100, top_g: 25};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id_background = div_id + "-background";
@@ -32,6 +32,7 @@ class TimeLine {
       .domain(year_domain)
       .range([ 0, this.width ]);
 
+    var numYears = year_domain[1]-year_domain[0]+1;
     this.grid.append("g")
       .attr("transform", "translate(0," + this.margin.top_g + ")")
       .attr('class', 'x axis')
@@ -44,6 +45,25 @@ class TimeLine {
         .tickSize(this.height)
         .tickFormat("")
       );
+    this.grid.append('g')
+      .attr("class", "grid")
+      .call(d3.axisBottom(this.timeScale)
+        .tickSize(this.margin.top_g)
+        .ticks(numYears)
+        .tickFormat("")
+      );
+
+    this.grid.append("g")
+      .attr("class", "grid")
+      .selectAll("line")
+      .data([30,60,90,120,150])
+    .enter().append("line")
+      .attr("x1", 0)
+      .attr("y1", d => d+this.margin.top_g)
+      .attr("x2", this.width)
+      .attr("y2", d => d+this.margin.top_g)
+      .attr("stroke", "black")
+      .attr("stroke-width", 1);
 
     this.addFrame(year_domain, -1)
   }

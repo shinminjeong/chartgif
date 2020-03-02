@@ -1,10 +1,10 @@
 {% load static %}
 <html>
 <head>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -80,12 +80,13 @@
       </div>
     </div>
     <div class="col-md-11">
-      <div class="timeline-background" id="timeline-background"></div>
-      <div class="timeline-slider">
+      <div class="timeline timeline-background" id="timeline-background"></div>
+      <div class="timeline timeline-frame" id="timeline"></div>
+      <div class="timeline timeline-slider">
         <input type="range" class="slider" name="mySlider" id=mySlider min="1800" max="2018" value="1800"></input>
         <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
       </div>
-      <div class="timeline-frame" id="timeline"></div>
+      <div class="timeline timeline-slider-extend" id="slider-extend"></div>
     </div>
   </div>
 </body>
@@ -134,7 +135,10 @@ for (var k in data_options) {
 }
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
+document.getElementsByClassName("timeline-background")[0].style.width = w*2-50;
+document.getElementsByClassName("timeline-slider")[0].style.width = w*2-50-135+34;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
+
 
 var timeline_w = document.getElementById("timeline-background").offsetWidth;
 var timeline_h = 300;
@@ -244,12 +248,12 @@ function initTimeFrame() {
   }
   for (var g in data_focus_range) {
     for (var a in data_focus_range[g]) {
-      // console.log(gname[g], a, data_focus_range[g][a])
+      console.log(gname[g], a, data_focus_range[g][a])
       for (var r in data_focus_range[g][a]) {
         range = data_focus_range[g][a][r]
         if (range.length  <= 1) continue;
         drawFrame(range, g, a);
-        draw_rect_input(range, "lines_v_"+gname[g]);
+        draw_rect_input(range, "lines_v_"+gname[g], a);
       }
     }
   }
@@ -334,17 +338,30 @@ function calculateOuterbound() {
     } else {
       if (head_y > 0) {
         // console.log("add", head_y, tail_y)
-        outerbound[+head_y+1] = {
+        var bound = {
           "head": +head_y+1,
           "tail": +tail_y+1,
-          "groups": new Set(groups)
+          "groups": Array.from(new Set(groups))
         }
+        outerbound[+head_y+1] = bound;
         timeline.addOuterBound([head_y, tail_y]);
+        getCaption(bound);
       }
       head_y = tail_y = -1;
       groups = [];
     }
   }
+}
+
+function getCaption(bound) {
+  $.ajax({
+    type: "POST",
+    url: "/get_caption/",
+    data: bound,
+    success: function(result){
+      console.log("getCaption success", result["caption"])
+    }
+  });
 }
 
 function changeSelectedConts(continents) {
@@ -370,7 +387,7 @@ function traceTimeline() {
     flag_focus = true;
     focus_start = outerbound[curYear]["head"]-1;
     focus_until = outerbound[curYear]["tail"];
-    focus_groups = Array.from(outerbound[curYear]["groups"]);
+    focus_groups = outerbound[curYear]["groups"];
     console.log("focus_index == ", focus_index)
     if (focus_index == -1) {
       changeSelectedConts([1,2,3,4]);
@@ -441,13 +458,16 @@ $("input[type='range']").change(function() {
 .trigger('change');
 
 function changeSlider(el, curYear, play, focus) {
-  width = el.width();
-  newPoint = (curYear-el.attr("min")) / (el.attr("max")-el.attr("min")+1);
+  width = el.width()-32;
+  newPoint = (curYear-el.attr("min")) / (el.attr("max")-el.attr("min"));
   // console.log(newPoint, el.val())
+  $("#slider-extend")[0].style.left = width * newPoint + 100+13;
   el.next("output")
     .css({
-      "marginLeft": width * newPoint-19,
-      "height": 20,
+      "marginLeft": width * newPoint + 36,
+      "marginTop": -20,
+      "font-size": 10,
+      "color": "#000"
     })
     .text(curYear);
   if (play) {

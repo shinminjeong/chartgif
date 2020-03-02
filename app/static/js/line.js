@@ -1,4 +1,5 @@
 var line_xscale;
+var overlap_offset = 0;
 class LineChart {
 
   constructor(div_id, w, h) {
@@ -25,7 +26,7 @@ class LineChart {
 
     svg.append("g")
       .attr("transform", "translate(0,"+ this.height+")")
-      .attr('class', 'x axis')
+      .attr('class', 'line-x-axis')
       .call(d3.axisBottom(line_xscale)
         .tickFormat(d3.format("d"))
       );
@@ -40,31 +41,34 @@ class LineChart {
     var y = d3.scaleLinear()
       .domain([0, 1])
       .range([this.height, 0]);
-    svg.append("g")
-      .attr("class", "grid")
-      .call(d3.axisLeft(y)
-        .tickFormat("")
-        .tickValues([0, 0.25, 0.5, 0.75, 1])
-      );
+    // svg.append("g")
+    //   .attr("class", "grid")
+    //   .call(d3.axisLeft(y)
+    //     .tickFormat("")
+    //     .tickValues([0, 0.25, 0.5, 0.75, 1])
+    //   );
 
     var area_svg = svg.append('g');
     var path_svg = svg.append('g');
 
     var selectedAxis = ["X", "Y", "S"];
     var axisColors = ["#000", "#444", "#888"];
-    var y_scale = {}
+    var y_scale = {};
+
     for (var i = 0; i < 3; i++) {
       var axis = selectedAxis[i];
       // console.log([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })]);
       y_scale[axis] = d3.scaleLinear()
         .domain([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })])
-        .range([ this.height, 0 ]);
+        .range([ (i+1)*this.height/3.0+overlap_offset, i*this.height/3.0-overlap_offset ]);
+        // .range([ this.height, 0 ]);
 
       var axis_name = data_options[axis.toLowerCase()]["id"];
       var name_len = axis_name.length*4.5;
       // console.log("name_len", name_len)
       var y_min = data[axis][0].value;
-      var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-22*(1-i));
+      // var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-22*(1-i));
+      var y_pos = (i+0.5)*this.height/3.0
       path_svg.append("rect")
         .attr("x", function() {
           return line_xscale(1800)-10-name_len-5;
@@ -95,7 +99,7 @@ class LineChart {
         .attr("class", this.div_id)
         .attr("axis", axis)
         .attr("fill", "#fff")
-        .attr("font-family", "monospace")
+        .attr("font-family", "Menlo")
         .attr("font-size", 10)
         .attr("transform", "scale(0.7, 1)")
         .attr("text-anchor", "end")
@@ -107,8 +111,8 @@ class LineChart {
         .attr("class", this.div_id)
         .attr("type", "area")
         .attr("axis", axis)
-        .attr("fill", "#ccc")
-        .attr("opacity", 0.4)
+        .attr("fill", "#aaa")
+        .attr("opacity", 0.5)
         .attr("stroke", "none")
         .attr("d", d3.area()
           .x(function(d) { return line_xscale(d.year) })
@@ -147,19 +151,20 @@ var mouse = {
   startX: 0,
   startY: 0
 };
-function draw_rect_input(range, div_id) {
+function draw_rect_input(range, div_id, axis) {
   var ys = line_xscale(range[0]-0.5),
       ye = line_xscale(range[range.length-1]+0.5);
   // console.log("draw_rect_input", range, ys, ye, div_id);
+  var aidx = ["X", "Y", "S"].indexOf(axis);
   var canvas = document.getElementById(div_id+"_overlay");
 
   var rect = canvas.getBoundingClientRect();
   var e = document.createElement('div');
   e.className = 'select_rectangle'
   e.style.left = ys + 'px';
-  e.style.top = 0;
+  e.style.top = (rect.height-30)/3*aidx;
   e.style.width = Math.abs(ye - ys) + 'px';
-  e.style.height = rect.height-30;
+  e.style.height = rect.height/3-10;
   canvas.appendChild(e)
 }
 function draw_rect_move(e, canvas) {
