@@ -37,7 +37,7 @@ options = {
 }
 
 c_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":-1}
-c_group_inv = {0: "World", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
+c_group_inv = {0: "the world", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
 K = 5 # group 0 for the entire world
 
 values = None
@@ -139,12 +139,14 @@ def get_caption(request):
         printgrp[g] = {c: [] for c in range(num_cluster)}
         for i, k in enumerate(cset):
             printgrp[g][cluster[i]].append(k)
-        caption[g] = "from {} to {}, something happens in {}".format(head_y, tail_y, gname)
+
+        caption[g] = "from {} to {}, ".format(head_y, tail_y) if not caption else ""
+        caption[g] += "something happens in {}".format(gname)
     print(printgrp)
 
     return JsonResponse({
-        "head": head_y,
-        "tail": tail_y,
+        "head": head_y-1,
+        "tail": tail_y-1,
         "printgrp": printgrp,
         "caption": caption
     })

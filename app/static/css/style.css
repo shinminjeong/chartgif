@@ -78,9 +78,10 @@ body {
 .caption-panel {
 	position: absolute;
 	z-index: 30;
-  color: #666;
+  color: #000;
   right: 50px;
-  margin-top: -100px;
+	font-size: 20px;
+  margin-top: -90px;
 }
 
 .custom-switch-play {
@@ -130,16 +131,32 @@ body {
 }
 .timeline-frame {
 	top: 20px;
+	height: 300px;
+	position: relative;
+	overflow-y: scroll;
 }
 .time-slice {
 	position: absolute;
 	background-color: #666;
+	border-radius: 5px;
+	border: 1px solid #666;
 	opacity: 0.5;
 }
 .time-slice-outer {
 	position: absolute;
 	background-color: #666;
 	opacity: 0.2;
+}
+.time-caption {
+	position: absolute;
+	background-color: #002654;
+	border-radius: 5px;
+	border: 1px solid #666;
+	color: #fff;
+	font-size: 10px;
+	padding: 1px 0 0 2px;
+	overflow-x: hidden;
+	opacity: 1;
 }
 
 .line-timebar {

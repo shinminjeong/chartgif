@@ -139,6 +139,7 @@ for (var k in data_options) {
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
 document.getElementsByClassName("timeline-background")[0].style.width = w*2-50;
+document.getElementsByClassName("timeline-frame")[0].style.width = w*2-50;
 document.getElementsByClassName("timeline-slider")[0].style.width = w*2-50-135+34;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
 
@@ -218,9 +219,13 @@ function updateBackgoundYear(year) {
   var info_year = document.getElementById("infoCurYear");
   info_year.innerHTML = year;
 }
-function updateCaptionText(year, g) {
-  console.log("updateCaptionText", year, g, caption[year])
+function updateCaptionText(year, gid, groups) {
+  console.log("updateCaptionText", year, gid, caption[year])
   var caption_year = document.getElementById("caption");
+  if (gid == -1) {
+    caption_year.innerHTML = "";
+  }
+  var g = groups[gid];
   if (caption[year] && caption[year][g]) {
     caption_year.innerHTML = caption[year][g];
   } else {
@@ -355,7 +360,7 @@ function calculateOuterbound() {
         var bound = {
           "head": +head_y+1,
           "tail": +tail_y+1,
-          "groups": Array.from(new Set(groups))
+          "groups": Array.from(new Set(groups)).sort()
         }
         outerbound[+head_y+1] = bound;
         timeline.addOuterBound([head_y, tail_y]);
@@ -377,6 +382,9 @@ function getCaption(bound) {
         caption[y] = res["caption"];
       }
       console.log("caption", caption)
+      for (var g in res["caption"]) {
+        timeline.addCaption([res["head"], res["tail"]], g, res["caption"][g]);
+      }
     }
   });
 }
@@ -432,8 +440,7 @@ function traceTimeline() {
     changeSlider($("input[type='range']"), curYear, true, flag_focus);
     // update caption
   }
-  if (focus_index != -1)
-    updateCaptionText(curYear, focus_groups[focus_index]);
+  updateCaptionText(curYear, focus_index, focus_groups);
 }
 
 

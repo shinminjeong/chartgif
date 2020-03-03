@@ -8,10 +8,14 @@ class TimeLine {
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id_background = div_id + "-background";
     this.div_id = div_id;
+
+    this.slice_h = 30;
+    this.caption_h = 20;
   }
 
   initChart(year_domain) {
     this.framepanel = document.getElementById(this.div_id);
+    this.bgpanel = document.getElementById(this.div_id_background);
     this.svg = d3.select("#"+this.div_id_background)
       .append('svg')
       .attr('width', this.width + this.margin.left + this.margin.right)
@@ -53,10 +57,14 @@ class TimeLine {
         .tickFormat("")
       );
 
+    var framelines = [], hh = this.caption_h+this.slice_h;
+    for (var l = hh; l < this.width; l += hh) {
+      framelines.push(l);
+    }
     this.grid.append("g")
       .attr("class", "grid")
       .selectAll("line")
-      .data([30,60,90,120,150])
+      .data(framelines)
     .enter().append("line")
       .attr("x1", 0)
       .attr("y1", d => d+this.margin.top_g)
@@ -73,7 +81,6 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
-    var slice_h = 30;
     // console.log(gindex, y_start, y_end, s, e);
 
     var tframe = document.createElement("div");
@@ -81,10 +88,10 @@ class TimeLine {
     if (gindex >= 0) {
       tframe.style = "border: 0.5px solid #333; background-color:"+gcolor(gindex);
     }
-    tframe.style.top = this.margin.top_g+slice_h*(1+gindex);
+    tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(1+gindex);
     tframe.style.left = this.margin.left+s;
     tframe.style.width = e-s;
-    tframe.style.height = slice_h;
+    tframe.style.height = this.slice_h;
     this.framepanel.appendChild(tframe);
   }
 
@@ -97,13 +104,28 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
-    var slice_h = this.height-this.margin.top_g;
     var tframe = document.createElement("div");
     tframe.className = "time-slice-outer"
     tframe.style.top = this.margin.top_g;
     tframe.style.left = this.margin.left+s;
     tframe.style.width = e-s;
-    tframe.style.height = slice_h;
+    tframe.style.height = this.height-this.margin.top_g;
+    this.bgpanel.appendChild(tframe);
+  }
+
+  addCaption(yrange, gindex, caption) {
+    console.log("addCaption", yrange, gindex, this.margin.top_g, this.slice_h+this.caption_h)
+    var y_start = yrange[0],
+        y_end = yrange[yrange.length-1];
+    var s = this.timeScale(y_start),
+        e = this.timeScale(y_end);
+    var tframe = document.createElement("div");
+    tframe.className = "time-caption"
+    tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(+gindex+1)-this.caption_h;
+    tframe.style.left = this.margin.left+s;
+    tframe.style.width = e-s;
+    tframe.style.height = this.caption_h;
+    tframe.innerHTML = caption;
     this.framepanel.appendChild(tframe);
   }
 }
