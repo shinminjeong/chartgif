@@ -128,14 +128,16 @@ def get_caption(request):
     printgrp = {}
     groupdesc = {}
     caption = {}
+
     for g, gname in groups.items():
         # print("---- group {} ----".format(g))
         cset = [v["index"] for k, v in kgroups.items() if g == 0 or v["group"] == g] # countries in selected continent
         selectedCol = []
         selectedAxis = ["X", "Y", "S"]
         for r in range(0, len(selectedAxis)): # selected years
-            selectedCol.extend(list(range((head_y-1800)+numYears*r, (tail_y-1800)+numYears*r)))
+            selectedCol.extend(list(range((head_y-1800)+numYears*r, (tail_y+1-1800)+numYears*r)))
         X = values.iloc[cset, selectedCol].to_numpy()
+        # X = normalizeVector(X, tail_y-head_y+1)
         cluster, num_cluster, trans = cluster_AP(X)
 
         printgrp[g] = {k:int(cluster[i]) for i, k in enumerate(cset)}

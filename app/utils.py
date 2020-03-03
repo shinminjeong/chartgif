@@ -29,9 +29,7 @@ def get_focus_range(groups, axes, V):
 
 def avg_value(X, len):
     n, m = X.shape
-    # Normalize values by axis
-    for r in range(0, m, len):
-        X[:, r:r+len] = normalize(X[:, r:r+len])
+    X = normalizeVector(X, len)
     avg_d = np.average(X, axis=0)
     min_d = np.amin(X, axis=0)
     max_d = np.amax(X, axis=0)
@@ -41,10 +39,7 @@ def avg_value(X, len):
 
 def avg_variance(X, len):
     n, m = X.shape
-    # Normalize values by axis
-    for r in range(0, m, len):
-        X[:, r:r+len] = normalize(X[:, r:r+len])
-
+    X = normalizeVector(X, len)
     X1 = np.roll(X, 1)
     X1[:, 0] = 0
     diff = X-X1
@@ -54,6 +49,13 @@ def avg_variance(X, len):
     for i in range(0, m, len):
         avg_d[i] = min_d[i] = max_d[i] = 0
     return avg_d, min_d, max_d
+
+def normalizeVector(X, len):
+    n, m = X.shape
+    # Normalize values by axis
+    for r in range(0, m, len):
+        X[:, r:r+len] = normalize(X[:, r:r+len])
+    return X
 
 def cluster_Kmeans(X, num):
     kmeans = KMeans(n_clusters=num, random_state=0)

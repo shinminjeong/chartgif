@@ -362,11 +362,11 @@ class ScatterPlot {
         .attr("class", "hull")
         .attr("id", function(d) { return d.group; })
         .attr("d", drawPreCluster)
-        .style("opacity", 0.8)
+        .style("opacity", 0.5)
         .style("fill", function(d) { return "#666"; })
         .style('visibility', function(d) {
           console.log(d.group, d.items)
-          if (d.items < 5) return 'visible';
+          if (d.group >= 0 && d.items < 1000) return 'visible';
           else return 'hidden';
         })
       .transition()
@@ -387,7 +387,7 @@ class ScatterPlot {
         })
         .style('visibility', function(d) {
           console.log(d.group, d.items)
-          if (d.items < 5) return 'visible';
+          if (d.group >= 0 && d.items < 10) return 'visible';
           else return 'hidden';
         })
       .transition()
