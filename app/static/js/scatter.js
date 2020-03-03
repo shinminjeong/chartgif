@@ -268,10 +268,8 @@ class ScatterPlot {
     for (var d in data) {
       var group = flag_world?0:data[d].group;
       if (swtvalues["groups"][group] && group in innergrp[year]["group"]) {
-        console.log("group", group, "in innergroup");
         data[d].ingroup = innergrp[year]["group"][group][data[d].id];
         data[d].ingdesc = innergrp[year]["desc"][group][data[d].ingroup];
-        console.log("Data", data[d]);
       } else {
         data[d].ingroup = -1;
       }
@@ -365,7 +363,6 @@ class ScatterPlot {
         .style("opacity", 0.5)
         .style("fill", function(d) { return "#666"; })
         .style('visibility', function(d) {
-          console.log(d.group, d.items)
           if (d.group >= 0 && d.items < 1000) return 'visible';
           else return 'hidden';
         })
@@ -386,7 +383,6 @@ class ScatterPlot {
           return d.desc;
         })
         .style('visibility', function(d) {
-          console.log(d.group, d.items)
           if (d.group >= 0 && d.items < 10) return 'visible';
           else return 'hidden';
         })
