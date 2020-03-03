@@ -154,7 +154,7 @@ body {
 	border: 1px solid #666;
 	color: #fff;
 	font-size: 10px;
-	padding: 1px 0 0 2px;
+	padding: 1px 0 2px 2px;
 	overflow-x: hidden;
 	opacity: 1;
 }

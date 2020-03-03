@@ -126,6 +126,23 @@ class TimeLine {
     tframe.style.width = e-s;
     tframe.style.height = this.caption_h;
     tframe.innerHTML = caption;
+
+    tframe.setAttribute("data-o-width", e-s);
+    tframe.setAttribute("data-o-height", this.caption_h);
+    tframe.addEventListener("mouseover", function(e) {
+      e.target.style.overflowX = "visible";
+      e.target.style.width = 120;
+      e.target.style.height = "auto";
+      e.target.style.zIndex = 10;
+      e.target.style.backgroundColor = "#007bff";
+    });
+    tframe.addEventListener("mouseout", function(e) {
+      e.target.style.overflowX = "hidden";
+      e.target.style.width = e.target.getAttribute("data-o-width");
+      e.target.style.height = e.target.getAttribute("data-o-height");
+      e.target.style.zIndex = 8;
+      e.target.style.backgroundColor = "#002654";
+    });
     this.framepanel.appendChild(tframe);
   }
 }
