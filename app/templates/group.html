@@ -257,13 +257,14 @@ var timeslices = {};
 var yearmap = {};
 var outerbound = {};
 var caption = {};
+var innergrp = {};
 function initTimeFrame() {
   for (var y = 1800; y <= 2019; y++) {
     yearmap[y] = [];
   }
   for (var g in data_focus_range) {
     for (var a in data_focus_range[g]) {
-      console.log(gname[g], a, data_focus_range[g][a])
+      // console.log(gname[g], a, data_focus_range[g][a])
       for (var r in data_focus_range[g][a]) {
         range = data_focus_range[g][a][r]
         if (range.length  <= 2) continue;
@@ -273,7 +274,6 @@ function initTimeFrame() {
     }
   }
   for (var v in outerbound) {
-    console.log("getCaption", v)
     getCaption(outerbound[v]);
   }
 }
@@ -377,11 +377,11 @@ function getCaption(bound) {
     url: "/get_caption/",
     data: bound,
     success: function(res){
-      console.log("getCaption success", res["caption"])
+      // console.log("getCaption success");
       for (var y = res["head"]; y <= res["tail"]; y++) {
         caption[y] = res["caption"];
+        innergrp[y] = res["innergrp"];
       }
-      console.log("caption", caption)
       for (var g in res["caption"]) {
         timeline.addCaption([res["head"], res["tail"]], g, res["caption"][g]);
       }
@@ -405,7 +405,7 @@ var focus_index = -1,
     focus_start = focus_until = -1,
     focus_groups = [];
 function traceTimeline() {
-  console.log("traceTimeline", curYear, outerbound[curYear], flag_focus, focus_until);
+  // console.log("traceTimeline", curYear, outerbound[curYear], flag_focus, focus_until);
   var groups = [];
   if (!flag_focus && outerbound[curYear]) {
     console.log("start focusing")
@@ -415,7 +415,7 @@ function traceTimeline() {
     focus_groups = outerbound[curYear]["groups"];
     console.log("focus_index == ", focus_index)
     if (focus_index == -1) {
-      changeSelectedConts([1,2,3,4]);
+      changeSelectedConts([0,1,2,3,4]);
       resetPlaytimer(500);
     } else {
       console.log("focus_groups == ", focus_groups, focus_groups[focus_index])
@@ -426,7 +426,7 @@ function traceTimeline() {
     console.log("finish focusing", focus_index, focus_groups)
     if (focus_index >= focus_groups.length-1) {
       focus_index = -1;
-      changeSelectedConts([1,2,3,4]);
+      changeSelectedConts([0,1,2,3,4]);
       resetPlaytimer(100); // go to the normal pace
     } else {
       focus_index += 1;
@@ -502,7 +502,7 @@ function changeSlider(el, curYear, play, focus) {
     el.val(curYear);
   }
   if (focus) {
-    chart.updateFocus(curYear, swtvalues);
+    chart.updateFocus(curYear, swtvalues, innergrp);
   } else {
     chart.updateChart(curYear, swtvalues);
   }

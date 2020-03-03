@@ -1,5 +1,3 @@
-
-
 class TimeLine {
 
   constructor(div_id, w, h) {
@@ -114,7 +112,7 @@ class TimeLine {
   }
 
   addCaption(yrange, gindex, caption) {
-    console.log("addCaption", yrange, gindex, this.margin.top_g, this.slice_h+this.caption_h)
+    // console.log("addCaption", yrange, gindex, this.margin.top_g, this.slice_h+this.caption_h)
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),

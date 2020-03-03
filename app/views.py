@@ -43,8 +43,9 @@ K = 5 # group 0 for the entire world
 values = None
 kgroups = None
 numYears = 0
+countries = None
 def main(request):
-    global values, kgroups, numYears
+    global values, kgroups, numYears, countries
     for k, v in options.items():
         if k in request.GET:
             id = request.GET.get(k)
@@ -108,7 +109,7 @@ def main(request):
 
 @csrf_exempt
 def get_caption(request):
-    global values, kgroups, numYears
+    global values, kgroups, numYears, countries
     outerbound = request.POST
     print("get_caption", outerbound)
 
@@ -116,18 +117,19 @@ def get_caption(request):
     tail_y = int(outerbound.get("tail"))
     groups = {int(c):c_group_inv[int(c)] for c in outerbound.getlist("groups[]")}
     print(groups)
-    countries = list(groups.values())
+    continents = list(groups.values())
     if len(groups) > 2:
-        regions = ", ".join(countries[:-1]) + " and " + countries[-1]
+        regions = ", ".join(continents[:-1]) + " and " + continents[-1]
     elif len(groups) == 2:
-        regions = " and ".join(countries)
+        regions = " and ".join(continents)
     else:
-        regions = countries[0]
+        regions = continents[0]
 
     printgrp = {}
+    groupdesc = {}
     caption = {}
     for g, gname in groups.items():
-        print("---- group {} ----".format(g))
+        # print("---- group {} ----".format(g))
         cset = [v["index"] for k, v in kgroups.items() if g == 0 or v["group"] == g] # countries in selected continent
         selectedCol = []
         selectedAxis = ["X", "Y", "S"]
@@ -136,17 +138,28 @@ def get_caption(request):
         X = values.iloc[cset, selectedCol].to_numpy()
         cluster, num_cluster, trans = cluster_AP(X)
 
-        printgrp[g] = {c: [] for c in range(num_cluster)}
+        printgrp[g] = {k:int(cluster[i]) for i, k in enumerate(cset)}
+        groupdesc[g] = {c: [] for c in range(num_cluster)}
         for i, k in enumerate(cset):
-            printgrp[g][cluster[i]].append(k)
+            groupdesc[g][cluster[i]].append(k)
+        for c, v in groupdesc[g].items():
+            if len(v) == 1:
+                groupdesc[g][c] = countries[v[0]]
+            else:
+                groupdesc[g][c] = " ".join([countries[vv] for vv in v])
 
         caption[g] = "from {} to {}, ".format(head_y, tail_y) if not caption else ""
-        caption[g] += "something happens in {}".format(gname)
-    print(printgrp)
+        caption[g] += "something happened in {}".format(gname)
+    # print(printgrp)
+    print(head_y, tail_y, "-----------------------------")
+    print(groupdesc)
 
     return JsonResponse({
         "head": head_y-1,
         "tail": tail_y-1,
-        "printgrp": printgrp,
+        "innergrp": {
+            "group": printgrp,
+            "desc": groupdesc
+        },
         "caption": caption
     })

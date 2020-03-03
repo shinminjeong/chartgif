@@ -156,6 +156,7 @@ class ScatterPlot {
     this.bubble_trace_g = this.svg.append('g');
     this.bubble_shadow_g = this.svg.append('g');
     this.bubble_g = this.svg.append('g');
+    this.hull_label_g = this.svg.append('g');
   }
 
   updateChart(year, swtvalues) {
@@ -211,7 +212,7 @@ class ScatterPlot {
     this.hull_g.selectAll("path.hull").remove();
     if (flagConvexHulls) {
       this.hull_g.selectAll("path.hull")
-          .data(convexHulls(data, getGroup, hullOffset))
+          .data(convexHulls(data, getGroup, hullOffset, false))
         .enter().append("path")
           .attr("class", "hull")
           .attr("id", function(d) { return d.group; })
@@ -253,13 +254,30 @@ class ScatterPlot {
     this.bubble_g.selectAll("*").remove();
     this.bubble_shadow_g.selectAll("*").remove();
     this.bubble_trace_g.selectAll("*").remove();
+    this.hull_g.selectAll("path.hull").remove();
+    this.hull_label_g.selectAll("text.hull-label").remove();
   }
 
-  updateFocus(year, swtvalues) {
+  updateFocus(year, swtvalues, innergrp) {
+    console.log("updateFocus", swtvalues, innergrp[year]["group"])
     this.bubble_g.selectAll("*").remove();
     this.trace_path_g.selectAll("circle.tbubble").remove();
 
     var data = this.data[year];
+    var flag_world = swtvalues["groups"][0];
+    for (var d in data) {
+      var group = flag_world?0:data[d].group;
+      if (swtvalues["groups"][group] && group in innergrp[year]["group"]) {
+        console.log("group", group, "in innergroup");
+        data[d].ingroup = innergrp[year]["group"][group][data[d].id];
+        data[d].ingdesc = innergrp[year]["desc"][group][data[d].ingroup];
+        console.log("Data", data[d]);
+      } else {
+        data[d].ingroup = -1;
+      }
+    }
+
+    var dataCvxHulls = convexHulls(data, getInnerGroup, hullOffset, true);
 
     this.bubble_trace_g.append("g").selectAll('.bubble_trace')
         .data(data)
@@ -336,6 +354,47 @@ class ScatterPlot {
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles);
+
+    this.hull_g.selectAll("path.hull").remove();
+    this.hull_g.selectAll("path.hull")
+        .data(dataCvxHulls)
+      .enter().append("path")
+        .attr("class", "hull")
+        .attr("id", function(d) { return d.group; })
+        .attr("d", drawPreCluster)
+        .style("opacity", 0.8)
+        .style("fill", function(d) { return "#666"; })
+        .style('visibility', function(d) {
+          console.log(d.group, d.items)
+          if (d.items < 5) return 'visible';
+          else return 'hidden';
+        })
+      .transition()
+        .duration(1000)
+        .attr("d", drawCluster);
+
+
+    this.hull_label_g.selectAll("text.hull-label").remove();
+    this.hull_label_g.selectAll('.hull-label')
+        .data(dataCvxHulls)
+      .enter().append('text')
+        .attr('id', d => d.group)
+        .attr('class', function(d){ return 'hull-label g'+d.group; })
+        .attr('x', d => d.pre_x)
+        .attr('y', d => d.pre_y)
+        .text(function(d){
+          return d.desc;
+        })
+        .style('visibility', function(d) {
+          console.log(d.group, d.items)
+          if (d.items < 5) return 'visible';
+          else return 'hidden';
+        })
+      .transition()
+        .duration(1000)
+        .attr('x', d => d.x)
+        .attr('y', d => d.y);
+
     }
 }
 
@@ -362,29 +421,60 @@ function getTickValues(r, logflag) {
   return tickvalues
 }
 
+function getInnerGroup(n) { return n.ingroup; }
 function getGroup(n) { return n.group; }
 
-function convexHulls(nodes, index, offset) {
+function convexHulls(nodes, index, offset, pre) {
   // console.log("convexHulls")
   var hulls = {};
-
+  var phulls = {};
+  var desc = {};
   // create point sets
   for (var k=0; k<nodes.length; ++k) {
     var n = nodes[k];
     if (n.size) continue;
-    var i = getGroup(n),
-        l = hulls[i] || (hulls[i] = []);
+    var i = index(n),
+        l = hulls[i] || (hulls[i] = []),
+        p = phulls[i] || (phulls[i] = []);
     var rOffset = radius(n.population)*1.3+1;
+    if (pre) {
+      p.push([xScale(n.pre_x)-rOffset-offset, yScale(n.pre_y)-rOffset-offset]);
+      p.push([xScale(n.pre_x)-rOffset-offset, yScale(n.pre_y)+rOffset+offset]);
+      p.push([xScale(n.pre_x)+rOffset+offset, yScale(n.pre_y)-rOffset-offset]);
+      p.push([xScale(n.pre_x)+rOffset+offset, yScale(n.pre_y)+rOffset+offset]);
+    }
     l.push([xScale(n.x)-rOffset-offset, yScale(n.y)-rOffset-offset]);
     l.push([xScale(n.x)-rOffset-offset, yScale(n.y)+rOffset+offset]);
     l.push([xScale(n.x)+rOffset+offset, yScale(n.y)-rOffset-offset]);
     l.push([xScale(n.x)+rOffset+offset, yScale(n.y)+rOffset+offset]);
+    desc[i] = n.ingdesc?n.ingdesc:"";
   }
   // console.log(hulls)
   // create convex hulls
   var hullset = [];
   for (i in hulls) {
-    hullset.push({group: i, path: d3.polygonHull(hulls[i])});
+    if (pre) {
+      hullset.push({
+        group: i,
+        desc: desc[i],
+        items: hulls[i].length,
+        x: hulls[i][0][0],
+        y: hulls[i][0][1],
+        path: d3.polygonHull(hulls[i]),
+        pre_x: phulls[i][0][0],
+        pre_y: phulls[i][0][1],
+        pre_path: d3.polygonHull(phulls[i]),
+      });
+    } else {
+      hullset.push({
+        group: i,
+        desc: desc[i],
+        items: hulls[i].length,
+        x: hulls[i][0][0],
+        y: hulls[i][0][1],
+        path: d3.polygonHull(hulls[i]),
+      });
+    }
   }
 
   return hullset;
@@ -394,6 +484,11 @@ function drawCluster(d) {
   if (isNaN(d.path[0][0])) return "";
   var curve = d3.line().curve(d3.curveCardinalClosed.tension(0.8));
   return curve(d.path);
+}
+function drawPreCluster(d) {
+  if (isNaN(d.pre_path[0][0])) return "";
+  var curve = d3.line().curve(d3.curveCardinalClosed.tension(0.8));
+  return curve(d.pre_path);
 }
 
 function mouseOverBubbles(d) {
