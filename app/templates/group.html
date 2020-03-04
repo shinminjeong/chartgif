@@ -220,7 +220,7 @@ function updateBackgoundYear(year) {
   info_year.innerHTML = year;
 }
 function updateCaptionText(year, gid, groups) {
-  console.log("updateCaptionText", year, gid, caption[year])
+  // console.log("updateCaptionText", year, gid, caption[year])
   var caption_year = document.getElementById("caption");
   if (gid == -1) {
     caption_year.innerHTML = "";
@@ -260,7 +260,7 @@ var caption = {};
 var innergrp = {};
 function initTimeFrame() {
   for (var y = 1800; y <= 2019; y++) {
-    yearmap[y] = [];
+    yearmap[y] = {"group":[], "axis":[]};
   }
   for (var g in data_focus_range) {
     for (var a in data_focus_range[g]) {
@@ -284,13 +284,14 @@ function drawFrame(yrange, group, axis) {
   r = [yrange[0], yrange[yrange.length-1]];
   for (var i = r[0]; i <= r[1]; i++) {
     // console.log("addFrame", i, group)
-    yearmap[i].push(+group)
+    yearmap[i]["group"].push(+group)
+    yearmap[i]["axis"].push(axis)
     if (!timeslices[i]) {
       timeslices[i] = {};
     }
     timeslices[i] = {"g":[+group], "until":r[1]};
   }
-  timeline.addFrame(r, +group);
+  timeline.addFrame(r, +group, data_options[axis.toLowerCase()]["id"]);
   calculateOuterbound();
 }
 
@@ -313,10 +314,10 @@ playon[0].addEventListener("change", function(e) {
   var timing = 100;
   if (play_timer == undefined && e.target.checked && curYear < maxYear) {
     play_timer = setInterval(function() {
-      curYear += 1;
       if (curYear >= maxYear) {
         clearInterval(play_timer);
       }
+      curYear += 1;
       // console.log("original", timing, curYear, maxYear);
       traceTimeline();
     }, timing);
@@ -330,11 +331,11 @@ function resetPlaytimer(timing) {
   curYear -= 1;
   clearInterval(play_timer);
   play_timer = setInterval(function() {
-    curYear += 1;
     if (curYear >= maxYear) {
       clearInterval(play_timer);
       play_timer = undefined;
     }
+    curYear += 1;
     // console.log("after reset", timing, curYear, maxYear);
     traceTimeline();
   }, timing);
@@ -344,11 +345,16 @@ function calculateOuterbound() {
   outerbound = {};
   timeline.clearOuterBound();
   var head_y = -1, tail_y = -1;
-  var groups = [];
+  var groups = [], group_axis = {};
   for (var y in yearmap) {
-    if (yearmap[y].length > 0) {
+    if (yearmap[y]["group"].length > 0) {
       // console.log("-", y, head_y, tail_y)
-      groups = groups.concat(yearmap[y]);
+      groups = groups.concat(yearmap[y]["group"]);
+      for (var i in groups) {
+        if (group_axis[yearmap[y]["group"][i]] == undefined)
+          group_axis[yearmap[y]["group"][i]] = [];
+        group_axis[yearmap[y]["group"][i]].push(yearmap[y]["axis"][i])
+      }
       if (head_y > 0) {
         tail_y = y;
       } else {
@@ -360,13 +366,15 @@ function calculateOuterbound() {
         var bound = {
           "head": +head_y+1,
           "tail": +tail_y+1,
-          "groups": Array.from(new Set(groups)).sort()
+          "groups": Array.from(new Set(groups)).sort(),
+          "info": group_axis
         }
         outerbound[+head_y+1] = bound;
         timeline.addOuterBound([head_y, tail_y]);
       }
       head_y = tail_y = -1;
       groups = [];
+      group_axis = {};
     }
   }
 }
@@ -436,7 +444,7 @@ function traceTimeline() {
     chart.clearFocus();
   } else {
 
-    console.log(curYear, flag_focus);
+    // console.log(curYear, flag_focus);
     changeSlider($("input[type='range']"), curYear, true, flag_focus);
     // update caption
   }

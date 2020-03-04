@@ -80,8 +80,8 @@ def main(request):
         else:
             cset = [v["index"] for k, v in kgroups.items() if v["group"] == group_index] # X value
             X = values.iloc[cset, :].to_numpy()
-        # D, minD, maxD = avg_value(X, numYears)
-        D, minD, maxD = avg_variance(X, numYears)
+        D, minD, maxD = avg_value(X, numYears)
+        # D, minD, maxD = avg_variance(X, numYears)
         avg_v[group_index] = {}
         for i, a in enumerate(selectedAxis):
             avg_v[group_index][a] = [{"year":int(y), "value":v, "min": m1, "max": m2} for y, v, m1, m2 in zip(years, D.tolist()[i*numYears:(i+1)*numYears], minD.tolist()[i*numYears:(i+1)*numYears], maxD.tolist()[i*numYears:(i+1)*numYears])]
@@ -116,7 +116,9 @@ def get_caption(request):
     head_y = int(outerbound.get("head"))
     tail_y = int(outerbound.get("tail"))
     groups = {int(c):c_group_inv[int(c)] for c in outerbound.getlist("groups[]")}
-    print(groups)
+    axis_info = {g:set(outerbound.getlist("info[{}][]".format(g))) for g in groups}
+    # print(groups)
+    # print(axis_info)
     continents = list(groups.values())
     if len(groups) > 2:
         regions = ", ".join(continents[:-1]) + " and " + continents[-1]
@@ -130,15 +132,23 @@ def get_caption(request):
     caption = {}
 
     for g, gname in groups.items():
-        # print("---- group {} ----".format(g))
+        # row: selected countries
         cset = [v["index"] for k, v in kgroups.items() if g == 0 or v["group"] == g] # countries in selected continent
+
+        # column: selected years of selected axis
         selectedCol = []
-        selectedAxis = ["X", "Y", "S"]
-        for r in range(0, len(selectedAxis)): # selected years
-            selectedCol.extend(list(range((head_y-1800)+numYears*r, (tail_y-1800)+numYears*r)))
+        axes = ["X", "Y", "S"]
+        selectedAxis = list(axis_info[g])
+        # print("---- group {} ---- {} ----".format(g, selectedAxis))
+        for r in range(0, len(axes)): # selected years
+            if axes[r] in selectedAxis:
+                selectedCol.extend(list(range((head_y-1800)+numYears*r, (tail_y-1800)+numYears*r)))
+        # print(selectedCol)
+
+        ## cluster vector
         X = values.iloc[cset, selectedCol].to_numpy()
         # X = normalizeVector(X, tail_y-head_y)
-        cluster, num_cluster, trans = cluster_AP(X)
+        cluster, num_cluster, trans = cluster_MeanShift(X)
 
         printgrp[g] = {k:int(cluster[i]) for i, k in enumerate(cset)}
         groupdesc[g] = {c: [] for c in range(num_cluster)}
@@ -153,8 +163,8 @@ def get_caption(request):
         caption[g] = "from {} to {}, ".format(head_y, tail_y) if not caption else ""
         caption[g] += "something happened in {}".format(gname)
     # print(printgrp)
-    print(head_y, tail_y, "-----------------------------")
-    print(groupdesc)
+    # print(head_y, tail_y, "-----------------------------")
+    # print(groupdesc)
 
     return JsonResponse({
         "head": head_y-1,

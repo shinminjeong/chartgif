@@ -16,15 +16,16 @@ def get_focus_range(groups, axes, V):
             # print(a, [(v["year"], v["value"]) for v in V[g][a]])
             minv = min([v["min"] for v in V[g][a]])
             maxv = max([v["max"] for v in V[g][a]])
-            threshold = (maxv-minv)*0.025
+            threshold = (maxv-minv)*0.02
             range[g][a] = {v["year"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) > threshold}
             for y, thd in range[g][a].items():
                 if len(output[g][a]) == 0 or y - output[g][a][-1][-1] >= cont_threshold:
                     output[g][a].append([y-1, y]) # add both y-1 and y
                 else:
-                    output[g][a][-1].append(y-1)
+                    if y-1 not in output[g][a][-1]:
+                        output[g][a][-1].append(y-1)
                     output[g][a][-1].append(y)
-            # print(output[g][a])
+            print("output", g, a, output[g][a])
     return output
 
 def avg_value(X, len):
@@ -65,7 +66,7 @@ def cluster_Kmeans(X, num):
     return labels, num, trans
 
 def cluster_AP(X):
-    af = AffinityPropagation(damping=0.97).fit(X)
+    af = AffinityPropagation(damping=0.9).fit(X)
     cluster_centers_indices = af.cluster_centers_indices_
     labels = af.labels_
     afmatrix = -af.affinity_matrix_
