@@ -262,37 +262,39 @@ function initTimeFrame() {
   for (var y = 1800; y <= 2019; y++) {
     yearmap[y] = {"group":[], "axis":[]};
   }
-  for (var g in data_focus_range) {
-    for (var a in data_focus_range[g]) {
-      // console.log(gname[g], a, data_focus_range[g][a])
-      for (var r in data_focus_range[g][a]["years"]) {
-        reason = data_focus_range[g][a]["reason"];
-        range = data_focus_range[g][a]["years"][r];
-        if (range.length  <= 2) continue;
-        drawFrame(range, g, a, reason);
-        draw_rect_input(range, "lines_v_"+gname[g], a, reason);
-      }
-    }
+  for (var i in data_focus_range) {
+    d = data_focus_range[i];
+    reason = d["reason"];
+    range = d["years"];
+    g = d["g"];
+    a = d["a"];
+    if (reason == "var" && range.length  <= 2) continue;
+    drawFrame(range, g, a, reason);
+    draw_rect_input(range, "lines_v_"+gname[g], a, reason);
   }
   for (var v in outerbound) {
     getCaption(outerbound[v]);
   }
 }
 
-function drawFrame(yrange, group, axis, reason) {
+function drawFrame(yrange, group, axes, reason) {
   // console.log("drawFrame", yrange, group, axis)
   // axis: X, Y, S or (overlay == input from the linecharts)
   r = [yrange[0], yrange[yrange.length-1]];
   for (var i = r[0]; i <= r[1]; i++) {
     // console.log("addFrame", i, group)
     yearmap[i]["group"].push(+group)
-    yearmap[i]["axis"].push(axis)
+    yearmap[i]["axis"].push(axes)
     if (!timeslices[i]) {
       timeslices[i] = {};
     }
     timeslices[i] = {"g":[+group], "until":r[1]};
   }
-  timeline.addFrame(r, +group, data_options[axis.toLowerCase()]["id"], reason);
+  names = [];
+  for (var i in axes) {
+    names.push(data_options[axes[i].toLowerCase()]["id"])
+  }
+  timeline.addFrame(r, +group, names, reason);
   calculateOuterbound();
 }
 
@@ -352,9 +354,7 @@ function calculateOuterbound() {
       // console.log("-", y, head_y, tail_y)
       groups = groups.concat(yearmap[y]["group"]);
       for (var i in groups) {
-        if (group_axis[yearmap[y]["group"][i]] == undefined)
-          group_axis[yearmap[y]["group"][i]] = [];
-        group_axis[yearmap[y]["group"][i]].push(yearmap[y]["axis"][i])
+        group_axis[yearmap[y]["group"][i]] = yearmap[y]["axis"][i];
       }
       if (head_y > 0) {
         tail_y = y;

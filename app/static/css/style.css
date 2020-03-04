@@ -100,10 +100,14 @@ body {
 	padding-left: 2px;
 }
 
-.select_rectangle {
+.select_rectangle_var {
   border: 1px solid #17a2b8;
-	/* background-color: #17a2b8; */
-	/* opacity: 0.2; */
+  position: absolute;
+	font-size: 10px;
+	padding-top: 20px;
+}
+.select_rectangle_spr {
+  border: 1px solid #df11fa;
   position: absolute;
 	font-size: 10px;
 	padding-top: 20px;

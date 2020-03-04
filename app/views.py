@@ -118,7 +118,7 @@ def get_caption(request):
     groups = {int(c):c_group_inv[int(c)] for c in outerbound.getlist("groups[]")}
     axis_info = {g:set(outerbound.getlist("info[{}][]".format(g))) for g in groups}
     # print(groups)
-    # print(axis_info)
+    print(axis_info)
     continents = list(groups.values())
     if len(groups) > 2:
         regions = ", ".join(continents[:-1]) + " and " + continents[-1]

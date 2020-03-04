@@ -151,22 +151,25 @@ var mouse = {
   startX: 0,
   startY: 0
 };
-function draw_rect_input(yrange, div_id, axis, reason) {
+function draw_rect_input(yrange, div_id, axes, reason) {
   var ys = line_xscale(yrange[0]-0.5),
       ye = line_xscale(yrange[yrange.length-1]+0.5);
   // console.log("draw_rect_input", range, ys, ye, div_id);
-  var aidx = ["X", "Y", "S"].indexOf(axis);
   var canvas = document.getElementById(div_id+"_overlay");
-
   var rect = canvas.getBoundingClientRect();
-  var e = document.createElement('div');
-  e.className = 'select_rectangle'
-  e.style.left = ys + 'px';
-  e.style.top = (rect.height-30)/3*aidx;
-  e.style.width = Math.abs(ye - ys) + 'px';
-  e.style.height = rect.height/3-10;
-  e.innerHTML = reason;
-  canvas.appendChild(e)
+
+  for (var i in axes) {
+    var aidx = ["X", "Y", "S"].indexOf(axes[i]);
+    var e = document.createElement('div');
+    console.log("select_rectangle_", reason)
+    e.className = 'select_rectangle_'+reason;
+    e.style.left = ys + 'px';
+    e.style.top = (rect.height-30)/3*aidx;
+    e.style.width = Math.abs(ye - ys) + 'px';
+    e.style.height = rect.height/3-10;
+    e.innerHTML = reason;
+    canvas.appendChild(e)
+  }
 }
 function draw_rect_move(e, canvas) {
   var rect = canvas.getBoundingClientRect();
