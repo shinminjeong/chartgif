@@ -84,7 +84,7 @@ def main(request):
         # D, minD, maxD = avg_variance(X, numYears)
         avg_v[group_index] = {}
         for i, a in enumerate(selectedAxis):
-            avg_v[group_index][a] = [{"year":int(y), "value":v, "min": m1, "max": m2} for y, v, m1, m2 in zip(years, D.tolist()[i*numYears:(i+1)*numYears], minD.tolist()[i*numYears:(i+1)*numYears], maxD.tolist()[i*numYears:(i+1)*numYears])]
+            avg_v[group_index][a] = [{"year":int(y), "value":v, "min": m1, "max": m2, "diff": m2-m1} for y, v, m1, m2 in zip(years, D.tolist()[i*numYears:(i+1)*numYears], minD.tolist()[i*numYears:(i+1)*numYears], maxD.tolist()[i*numYears:(i+1)*numYears])]
     # print(avg_v)
     focus_range = get_focus_range(groups, selectedAxis, avg_v);
 

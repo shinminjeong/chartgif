@@ -9,23 +9,37 @@ from sklearn.preprocessing import normalize
 def get_focus_range(groups, axes, V):
     # avg_v[group_index(0,1,2,3)][axis("X","Y","S")] = {"year":y, "value":v, "min":m, "max":n}
     range = {g:{} for g in groups}
-    output = {g:{a:[] for a in axes} for g in groups}
+    output = {g:{a:{"reason": "unknown", "years":[]} for a in axes} for g in groups}
     cont_threshold = 5
+
     for g in groups:
+        spreadv = {v["year"]:0 for v in V[g][axes[0]]}
         for a in axes:
             # print(a, [(v["year"], v["value"]) for v in V[g][a]])
+            #### (1) when there is a sharp change in value
+            output[g][a]["reason"] = "variance"git
             minv = min([v["min"] for v in V[g][a]])
             maxv = max([v["max"] for v in V[g][a]])
             threshold = (maxv-minv)*0.02
             range[g][a] = {v["year"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) > threshold}
             for y, thd in range[g][a].items():
-                if len(output[g][a]) == 0 or y - output[g][a][-1][-1] >= cont_threshold:
-                    output[g][a].append([y-1, y]) # add both y-1 and y
+                if len(output[g][a]["years"]) == 0 or y - output[g][a]["years"][-1][-1] >= cont_threshold:
+                    output[g][a]["years"].append([y-1, y]) # add both y-1 and y
                 else:
-                    if y-1 not in output[g][a][-1]:
-                        output[g][a][-1].append(y-1)
-                    output[g][a][-1].append(y)
+                    if y-1 not in output[g][a]["years"][-1]:
+                        output[g][a]["years"][-1].append(y-1)
+                    output[g][a]["years"][-1].append(y)
             print("output", g, a, output[g][a])
+
+            #### (2) when most spread
+            for v in V[g][a]:
+                if a != "S":
+                    spreadv[v["year"]] += v["diff"]/maxv
+        mostspread = sorted(spreadv.items(), key=lambda x:x[1], reverse=True)[0]
+        # print("spreadv", g, mostspread)
+        # output[g]["X"]["reason"] = output[g]["Y"]["reason"] = "widest"
+        # output[g]["X"]["years"] = output[g]["Y"]["years"] = [mostspread[0]]
+
     return output
 
 def avg_value(X, len):

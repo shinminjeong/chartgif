@@ -74,7 +74,7 @@ class TimeLine {
     this.addFrame(year_domain, -1)
   }
 
-  addFrame(yrange, gindex, axis) {
+  addFrame(yrange, gindex, axis, reason) {
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),

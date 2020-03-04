@@ -265,11 +265,12 @@ function initTimeFrame() {
   for (var g in data_focus_range) {
     for (var a in data_focus_range[g]) {
       // console.log(gname[g], a, data_focus_range[g][a])
-      for (var r in data_focus_range[g][a]) {
-        range = data_focus_range[g][a][r]
+      for (var r in data_focus_range[g][a]["years"]) {
+        reason = data_focus_range[g][a]["reason"];
+        range = data_focus_range[g][a]["years"][r];
         if (range.length  <= 2) continue;
-        drawFrame(range, g, a);
-        draw_rect_input(range, "lines_v_"+gname[g], a);
+        drawFrame(range, g, a, reason);
+        draw_rect_input(range, "lines_v_"+gname[g], a, reason);
       }
     }
   }
@@ -278,7 +279,7 @@ function initTimeFrame() {
   }
 }
 
-function drawFrame(yrange, group, axis) {
+function drawFrame(yrange, group, axis, reason) {
   // console.log("drawFrame", yrange, group, axis)
   // axis: X, Y, S or (overlay == input from the linecharts)
   r = [yrange[0], yrange[yrange.length-1]];
@@ -291,7 +292,7 @@ function drawFrame(yrange, group, axis) {
     }
     timeslices[i] = {"g":[+group], "until":r[1]};
   }
-  timeline.addFrame(r, +group, data_options[axis.toLowerCase()]["id"]);
+  timeline.addFrame(r, +group, data_options[axis.toLowerCase()]["id"], reason);
   calculateOuterbound();
 }
 

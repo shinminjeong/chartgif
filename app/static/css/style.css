@@ -105,6 +105,8 @@ body {
 	/* background-color: #17a2b8; */
 	/* opacity: 0.2; */
   position: absolute;
+	font-size: 10px;
+	padding-top: 20px;
 }
 
 .timeline {
