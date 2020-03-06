@@ -61,7 +61,7 @@ class TimeLine {
       var l2 = timeframes[+y].length;
       var l3 = +y+1 < timeframes.length? timeframes[+y+1].length: 0;
       // console.log("**", timeframes[+y], l1, l2, l3)
-      if (y == 0 || timeframes[+y]%20 == 0 || (l1 == l2 && l2 < l3)) {
+      if (y == 0 || timeframes[+y]%20 == 0 || (l1 == l2 && l2 < l3) || (l2 == l3 && l2 < l1)) {
         if (timeframes[+y] - this.tickNumber[this.tickNumber.length-1] >= 3) {
           this.tickNumber.push(timeframes[+y]); // do not put numbers too close
         }
