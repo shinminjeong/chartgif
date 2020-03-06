@@ -160,6 +160,7 @@ class ScatterPlot {
   }
 
   updateChart(year, swtvalues) {
+    console.log("updateChart", year);
     this.clearFocus();
     var data = this.data[year];
 

@@ -32,6 +32,7 @@ options = {
     "y": {"id": "lifeexp", "name": "Life Expectancy"},
     "s": {"id": "population", "name": "Population"},
     "c": {"id": "continent", "name": "Continent"},
+    "overlay": {"id": "user", "name": "User"},
     "xScale": {"id": "log", "name": "Log"},
     "yScale": {"id": "lin", "name": "Lin"},
 }
@@ -139,11 +140,10 @@ def get_caption(request):
         selectedCol = []
         axes = ["X", "Y", "S"]
         selectedAxis = list(axis_info[g])
-        # print("---- group {} ---- {} ----".format(g, selectedAxis))
         for r in range(0, len(axes)): # selected years
             if axes[r] in selectedAxis:
-                selectedCol.extend(list(range((head_y-1800)+numYears*r, (tail_y-1800)+numYears*r)))
-        # print(selectedCol)
+                selectedCol.extend(list(range((head_y-1800)+numYears*r, (tail_y+1-1800)+numYears*r)))
+        # print("---- group {} ---- {} ----".format(g, selectedAxis), selectedCol)
 
         ## cluster vector
         X = values.iloc[cset, selectedCol].to_numpy()

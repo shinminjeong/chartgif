@@ -143,11 +143,6 @@ document.getElementsByClassName("timeline-frame")[0].style.width = w*2-50;
 document.getElementsByClassName("timeline-slider")[0].style.width = w*2-50-135+34;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
 
-
-var timeline_w = document.getElementById("timeline-background").offsetWidth;
-var timeline_h = 300;
-var timeline = new TimeLine("timeline", timeline_w, timeline_h);
-timeline.initChart([1800, 2018]);
 $(".dropdown-menu a").click(function () {
   var setItem = $(this);
   console.log("dropdown select", setItem[0].name, setItem[0].id, setItem.text())
@@ -155,6 +150,31 @@ $(".dropdown-menu a").click(function () {
   params[setItem[0].name] = setItem[0].id;
   window.location.href = "?"+$.param( params );
 });
+
+var timeslices = {};
+var yearmap = {};
+var outerbound = {};
+var caption = {};
+var innergrp = {};
+
+var minYear = 1800, maxYear = 2018;
+var curFrame = 0, preFrame = 0;
+var delayMap = {}, timeFrames = [];
+var play_timer = undefined;
+var flagConvexHulls = false;
+var slowdown = {
+  "var": 5,
+  "spr": 15
+};
+
+initTimeFrame();
+updateSlider();
+
+var timeline_w = document.getElementById("timeline-background").offsetWidth;
+var timeline_h = 300;
+var timeline = new TimeLine("timeline", timeline_w, timeline_h);
+timeline.initChart(timeFrames, minYear, maxYear);
+
 
 var el, newPoint, timebar;
 var linecharts_v = {};
@@ -253,15 +273,14 @@ function drawTraceCharts(numGroup) {
   }
 }
 
-var timeslices = {};
-var yearmap = {};
-var outerbound = {};
-var caption = {};
-var innergrp = {};
 function initTimeFrame() {
-  for (var y = 1800; y <= 2019; y++) {
+  for (var y = minYear; y <= maxYear; y++) {
+    delayMap[y] = 1;
     yearmap[y] = {"group":[], "axis":[]};
   }
+}
+
+function generateFrames() {
   for (var i in data_focus_range) {
     d = data_focus_range[i];
     reason = d["reason"];
@@ -277,12 +296,28 @@ function initTimeFrame() {
   }
 }
 
+function updateSlider() {
+  timeFrames = [];
+  for (var y = minYear; y <= maxYear; y++) {
+    for (var d = 0; d < delayMap[y]; d++) {
+      if (d == 0) timeFrames.push(y + "");
+      else timeFrames.push(y + "_" + d);
+    }
+  }
+  var slider = document.getElementById("mySlider");
+  slider.min = 0;
+  slider.max = timeFrames.length;
+  slider.value = 0;
+}
+
 function drawFrame(yrange, group, axes, reason) {
-  // console.log("drawFrame", yrange, group, axis)
+  console.log("drawFrame", yrange, group, axes)
   // axis: X, Y, S or (overlay == input from the linecharts)
   r = [yrange[0], yrange[yrange.length-1]];
+  for (var i = r[0]; i < r[1]; i++) {
+    delayMap[i] = slowdown[reason];
+  }
   for (var i = r[0]; i <= r[1]; i++) {
-    // console.log("addFrame", i, group)
     yearmap[i]["group"].push(+group)
     yearmap[i]["axis"].push(axes)
     if (!timeslices[i]) {
@@ -294,17 +329,15 @@ function drawFrame(yrange, group, axes, reason) {
   for (var i in axes) {
     names.push(data_options[axes[i].toLowerCase()]["id"])
   }
-  timeline.addFrame(r, +group, names, reason);
+  updateSlider();
+  timeline.updateXaxis(timeFrames);
+  timeline.addFrame(r, +group, names, reason, delayMap[r[0]]);
   calculateOuterbound();
 }
 
 initClusterinfo();
-initTimeFrame();
+generateFrames()
 
-var curYear = 1800;
-var maxYear = 2018;
-var play_timer = undefined;
-var flagConvexHulls = false;
 var playon = document.querySelectorAll("input#switchPlay");
 playon[0].addEventListener("change", function(e) {
   // console.log("playon", e.target.checked, curYear);
@@ -446,10 +479,10 @@ function traceTimeline() {
   } else {
 
     // console.log(curYear, flag_focus);
-    changeSlider($("input[type='range']"), curYear, true, flag_focus);
+    changeSlider($("input[type='range']"), curFrame, true, flag_focus);
     // update caption
   }
-  updateCaptionText(curYear, focus_index, focus_groups);
+  updateCaptionText(curFrame, focus_index, focus_groups);
 }
 
 
@@ -463,14 +496,14 @@ var traceon = document.querySelectorAll("input#switchTrace");
 traceon[0].addEventListener("change", function(e) {
   console.log("traceon", e.target.checked);
   swtvalues["trace"] = e.target.checked;
-  chart.updateChart(curYear, swtvalues);
+  chart.updateChart(curFrame, swtvalues);
 });
 
 var hullon = document.querySelectorAll("input#switchHull");
 hullon[0].addEventListener("change", function(e) {
   console.log("hullon", e.target.checked);
   swtvalues["hull"] = e.target.checked;
-  chart.updateChart(curYear, swtvalues);
+  chart.updateChart(curFrame, swtvalues);
 });
 
 var switchLegends = document.querySelectorAll("input.switchLegend");
@@ -478,7 +511,7 @@ for (var s = 0; s < legendCount; s++) {
   switchLegends[s].addEventListener("change", function(e) {
     console.log("switchLegends", this.id, e.target.checked);
     swtvalues["groups"][gname.indexOf(this.id)] = e.target.checked;
-    chart.updateChart(curYear, swtvalues);
+    chart.updateChart(curFrame, swtvalues);
   });
 }
 
@@ -488,15 +521,19 @@ $('input[type=range]').on('input', function () {
 });
 $("input[type='range']").change(function() {
   el = $(this);
-  curYear  = parseInt(el.val());
-  changeSlider(el, curYear, false, false);
+  curFrame = parseInt(el.val());
+  changeSlider(el, curFrame, false, false);
 })
 // Fake a change to position bubble at page load
 .trigger('change');
 
-function changeSlider(el, curYear, play, focus) {
+function changeSlider(el, curFrame, play, focus) {
+  preYear = parseInt(timeFrames[preFrame]);
+  curYear = parseInt(timeFrames[curFrame]);
+  preFrame = curFrame;
+  console.log("curFrame", curFrame, preYear, curYear);
   width = el.width()-32;
-  newPoint = (curYear-el.attr("min")) / (el.attr("max")-el.attr("min"));
+  newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
   // console.log(newPoint, el.val())
   $("#slider-extend")[0].style.left = width * newPoint + 100+13;
   el.next("output")
@@ -510,9 +547,9 @@ function changeSlider(el, curYear, play, focus) {
   if (play) {
     el.val(curYear);
   }
-  if (focus) {
+  if (focus && (preYear == minYear || preYear != curYear)) {
     chart.updateFocus(curYear, swtvalues, innergrp);
-  } else {
+  } else if (preYear == minYear || preYear != curYear) {
     chart.updateChart(curYear, swtvalues);
   }
   highlightCurYear();
@@ -532,6 +569,7 @@ function highlightCurYear() {
       .attr("stroke", "black");
   }
 }
+
 
 </script>
 </html>

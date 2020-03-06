@@ -39,18 +39,19 @@ def get_focus_range(groups, axes, V):
                 "a": [a],
                 "years": yrange
             })
-            
+
             #### (2) when most spread
             for v in V[g][a]:
                 if a != "S":
                     spreadv[v["year"]] += v["diff"]/maxv
-        mostspread = sorted(spreadv.items(), key=lambda x:x[1], reverse=True)[0]
-        output.append({
-            "reason": "spr",
-            "g": g,
-            "a": ["X", "Y"],
-            "years": [mostspread[0]]
-        })
+        if g == 0:
+            mostspread = sorted(spreadv.items(), key=lambda x:x[1], reverse=True)[0]
+            output.append({
+                "reason": "spr",
+                "g": g,
+                "a": ["X", "Y"],
+                "years": [mostspread[0]]
+            })
     # print(output)
     return output
 

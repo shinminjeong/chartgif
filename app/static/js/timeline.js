@@ -11,7 +11,7 @@ class TimeLine {
     this.caption_h = 20;
   }
 
-  initChart(year_domain) {
+  initChart(timeframes, minYear, maxYear) {
     this.framepanel = document.getElementById(this.div_id);
     this.bgpanel = document.getElementById(this.div_id_background);
     this.svg = d3.select("#"+this.div_id_background)
@@ -29,31 +29,8 @@ class TimeLine {
       .style("fill", "#d3d3d3");
 
     this.grid = this.svg.append("g");
-
-    this.timeScale = d3.scaleLinear()
-      .domain(year_domain)
-      .range([ 0, this.width ]);
-
-    var numYears = year_domain[1]-year_domain[0]+1;
-    this.grid.append("g")
-      .attr("transform", "translate(0," + this.margin.top_g + ")")
-      .attr('class', 'x axis')
-      .call(d3.axisTop(this.timeScale)
-        .tickFormat(d3.format("d"))
-      );
-    this.grid.append('g')
-      .attr("class", "grid")
-      .call(d3.axisBottom(this.timeScale)
-        .tickSize(this.height)
-        .tickFormat("")
-      );
-    this.grid.append('g')
-      .attr("class", "grid")
-      .call(d3.axisBottom(this.timeScale)
-        .tickSize(this.margin.top_g)
-        .ticks(numYears)
-        .tickFormat("")
-      );
+    this.x_1 = this.grid.append("g");
+    this.x_2 = this.grid.append("g");
 
     var framelines = [], hh = this.caption_h+this.slice_h;
     for (var l = hh; l < this.width; l += hh) {
@@ -71,15 +48,65 @@ class TimeLine {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
-    this.addFrame(year_domain, -1)
+    this.updateXaxis(timeframes);
+    this.addFrame([minYear, maxYear], -1, 1)
   }
 
-  addFrame(yrange, gindex, name, reason) {
+  calculateTickValues(timeframes) {
+    this.tickEveryYear = [];
+    this.tickNumber = [minYear];
+    for (var y in timeframes) {
+      // console.log("updateXaxis", y, timeframes[+y], timeframes[+y+1])
+      var l1 = +y-1 >= 0? timeframes[+y-1].length: 0;
+      var l2 = timeframes[+y].length;
+      var l3 = +y+1 < timeframes.length? timeframes[+y+1].length: 0;
+      // console.log("**", timeframes[+y], l1, l2, l3)
+      if (y == 0 || timeframes[+y]%20 == 0 || (l1 == l2 && l2 < l3)) {
+        if (timeframes[+y] - this.tickNumber[this.tickNumber.length-1] >= 3) {
+          this.tickNumber.push(timeframes[+y]); // do not put numbers too close
+        }
+      }
+      if (l2 == 4) this.tickEveryYear.push(timeframes[+y]);
+    }
+    this.tickNumber.push(maxYear);
+  }
+
+  updateXaxis(timeframes) {
+    // console.log("updateXaxis", timeframes.length)
+    this.calculateTickValues(timeframes);
+
+    this.timeScale = d3.scaleBand()
+      .domain(timeframes)
+      .range([ 0, this.width ])
+      .paddingInner(0)
+      .paddingOuter(0);
+
+    this.x_1.selectAll("*").remove();
+    this.x_2.selectAll("*").remove();
+
+    this.x_1
+      .attr("transform", "translate(0," + this.margin.top_g + ")")
+      .attr('class', 'timeline-x-axis')
+      .call(d3.axisTop(this.timeScale)
+        .tickFormat(d3.format("d"))
+        .tickValues(this.tickNumber)
+      );
+    this.x_2
+      .attr("class", "grid")
+      .call(d3.axisBottom(this.timeScale)
+        .tickSize(this.height)
+        .tickValues(this.tickEveryYear)
+        .tickFormat("")
+      );
+  }
+
+  addFrame(yrange, gindex, name, reason, delay) {
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
-    // console.log(gindex, y_start, y_end, s, e);
+    if (delay > 1) { e = this.timeScale(y_end+"_"+(delay-1)); }
+    console.log("addFrame", gindex, y_start, y_end, s, e, delay);
 
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
@@ -130,7 +157,7 @@ class TimeLine {
     tframe.setAttribute("data-o-height", this.caption_h);
     tframe.addEventListener("mouseover", function(e) {
       e.target.style.overflowX = "visible";
-      e.target.style.width = 120;
+      e.target.style.width = Math.max(120, e.target.getAttribute("data-o-width"));
       e.target.style.height = "auto";
       e.target.style.zIndex = 10;
       e.target.style.backgroundColor = "#007bff";
