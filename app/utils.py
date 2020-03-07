@@ -33,12 +33,13 @@ def get_focus_range(groups, axes, V):
                     yrange = [y-1, y]
                 else:
                     yrange.append(y) if y-1 in yrange else yrange.extend([y-1, y])
-            output.append({
-                "reason": "var",
-                "g": g,
-                "a": [a],
-                "years": yrange
-            })
+            if len(yrange) > 0:
+                output.append({
+                    "reason": "var",
+                    "g": g,
+                    "a": [a],
+                    "years": yrange
+                })
 
             #### (2) when most spread
             for v in V[g][a]:
@@ -50,7 +51,7 @@ def get_focus_range(groups, axes, V):
                 "reason": "spr",
                 "g": g,
                 "a": ["X", "Y"],
-                "years": [mostspread[0]]
+                "years": [mostspread[0], mostspread[0]+1]
             })
     # print(output)
     return output
@@ -61,8 +62,6 @@ def avg_value(X, len):
     avg_d = np.average(X, axis=0)
     min_d = np.amin(X, axis=0)
     max_d = np.amax(X, axis=0)
-    for i in range(0, m, len):
-        avg_d[i] = min_d[i] = max_d[i] = 0
     return avg_d, min_d, max_d
 
 def avg_variance(X, len):

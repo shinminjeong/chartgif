@@ -189,6 +189,7 @@ function kFormatter(num) {
 }
 
 function updateLineTimebar() {
+  var curYear = timeFrames[curFrame];
   timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+10) + "px";
   timebar.style.top = 10 + "px";
   timebar.style.height = (h-5) + "px";
@@ -287,7 +288,6 @@ function generateFrames() {
     range = d["years"];
     g = d["g"];
     a = d["a"];
-    if (reason == "var" && range.length  <= 2) continue;
     drawFrame(range, g, a, reason);
     draw_rect_input(range, "lines_v_"+gname[g], a, reason);
   }
@@ -398,12 +398,12 @@ function calculateOuterbound() {
       if (head_y > 0) {
         // console.log("add", head_y, tail_y)
         var bound = {
-          "head": +head_y+1,
-          "tail": +tail_y+1,
+          "head": +head_y,
+          "tail": +tail_y,
           "groups": Array.from(new Set(groups)).sort(),
           "info": group_axis
         }
-        outerbound[+head_y+1] = bound;
+        outerbound[+head_y] = bound;
         timeline.addOuterBound([head_y, tail_y]);
       }
       head_y = tail_y = -1;
@@ -447,7 +447,8 @@ var focus_index = -1,
     focus_start = focus_until = -1,
     focus_groups = [];
 function traceTimeline() {
-  // console.log("traceTimeline", curYear, outerbound[curYear], flag_focus, focus_until);
+  var curYear = timeFrames[curFrame];
+  console.log("traceTimeline", curFrame, outerbound[curYear], flag_focus, focus_until);
   var groups = [];
   if (!flag_focus && outerbound[curYear]) {
     console.log("start focusing")
@@ -528,8 +529,8 @@ $("input[type='range']").change(function() {
 .trigger('change');
 
 function changeSlider(el, curFrame, play, focus) {
-  preYear = parseInt(timeFrames[preFrame]);
-  curYear = parseInt(timeFrames[curFrame]);
+  var preYear = parseInt(timeFrames[preFrame]),
+      curYear = parseInt(timeFrames[curFrame]);
   console.log("curFrame", curFrame, preYear, curYear);
 
   width = el.width()-32;
@@ -562,6 +563,7 @@ function highlightOff() {
   $("circle.tbubble").attr("r", 1).attr("stroke", "none");
 }
 function highlightCurYear() {
+  var curYear = timeFrames[curFrame];
   updateLineTimebar();
   highlightOff();
   for (var i = 0; i < legendCount; i++) {
