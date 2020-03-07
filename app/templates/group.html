@@ -348,12 +348,12 @@ playon[0].addEventListener("change", function(e) {
   }
 
   var timing = 100;
-  if (play_timer == undefined && e.target.checked && curYear < maxYear) {
+  if (play_timer == undefined && e.target.checked && curFrame < timeFrames.length) {
     play_timer = setInterval(function() {
-      if (curYear >= maxYear) {
+      if (curFrame >= timeFrames.length) {
         clearInterval(play_timer);
       }
-      curYear += 1;
+      curFrame += 1;
       // console.log("original", timing, curYear, maxYear);
       traceTimeline();
     }, timing);
@@ -364,14 +364,14 @@ playon[0].addEventListener("change", function(e) {
 });
 
 function resetPlaytimer(timing) {
-  curYear -= 1;
+  curFrame -= 1;
   clearInterval(play_timer);
   play_timer = setInterval(function() {
-    if (curYear >= maxYear) {
+    if (curFrame >= timeFrames.length) {
       clearInterval(play_timer);
       play_timer = undefined;
     }
-    curYear += 1;
+    curFrame += 1;
     // console.log("after reset", timing, curYear, maxYear);
     traceTimeline();
   }, timing);
@@ -530,8 +530,8 @@ $("input[type='range']").change(function() {
 function changeSlider(el, curFrame, play, focus) {
   preYear = parseInt(timeFrames[preFrame]);
   curYear = parseInt(timeFrames[curFrame]);
-  preFrame = curFrame;
   console.log("curFrame", curFrame, preYear, curYear);
+
   width = el.width()-32;
   newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
   // console.log(newPoint, el.val())
@@ -545,7 +545,7 @@ function changeSlider(el, curFrame, play, focus) {
     })
     .text(curYear);
   if (play) {
-    el.val(curYear);
+    el.val(curFrame);
   }
   if (focus && (preYear == minYear || preYear != curYear)) {
     chart.updateFocus(curYear, swtvalues, innergrp);
@@ -555,6 +555,7 @@ function changeSlider(el, curFrame, play, focus) {
   highlightCurYear();
   // updateClusterinfo(curYear);
   updateBackgoundYear(curYear);
+  preFrame = curFrame;
 }
 
 function highlightOff() {

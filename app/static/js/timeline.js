@@ -114,7 +114,7 @@ class TimeLine {
       tframe.style = "border: 0.5px solid #333; background-color:"+gcolor(gindex);
     }
     tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(1+gindex);
-    tframe.style.left = this.margin.left+s;
+    tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.slice_h;
     tframe.innerHTML = name;
@@ -132,10 +132,10 @@ class TimeLine {
         e = this.timeScale(y_end);
     var tframe = document.createElement("div");
     tframe.className = "time-slice-outer"
-    tframe.style.top = this.margin.top_g;
-    tframe.style.left = this.margin.left+s;
+    tframe.style.top = 0;
+    tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
-    tframe.style.height = this.height-this.margin.top_g;
+    tframe.style.height = this.height;
     this.bgpanel.appendChild(tframe);
   }
 
@@ -148,7 +148,7 @@ class TimeLine {
     var tframe = document.createElement("div");
     tframe.className = "time-caption"
     tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(+gindex+1)-this.caption_h;
-    tframe.style.left = this.margin.left+s;
+    tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.caption_h;
     tframe.innerHTML = caption;

@@ -153,8 +153,8 @@ body {
 }
 .time-slice-outer {
 	position: absolute;
-	background-color: #666;
-	opacity: 0.2;
+	background-color: #000;
+	opacity: 0.3;
 }
 .time-caption {
 	position: absolute;

@@ -20,7 +20,7 @@ def get_focus_range(groups, axes, V):
             yrange = []
             minv = min([v["min"] for v in V[g][a]])
             maxv = max([v["max"] for v in V[g][a]])
-            threshold = (maxv-minv)*0.02
+            threshold = (maxv-minv)*0.1 #0.02
             range[g][a] = {v["year"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) > threshold}
             for y, thd in range[g][a].items():
                 if len(yrange) > 0 and y - yrange[-1] >= cont_threshold:
