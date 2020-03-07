@@ -239,8 +239,9 @@ function updateBackgoundYear(year) {
   var info_year = document.getElementById("infoCurYear");
   info_year.innerHTML = year;
 }
-function updateCaptionText(year, gid, groups) {
-  // console.log("updateCaptionText", year, gid, caption[year])
+function updateCaptionText(frame, gid, groups) {
+  var year = parseInt(timeFrames[frame]);
+  console.log("updateCaptionText", year, gid, caption[year])
   var caption_year = document.getElementById("caption");
   if (gid == -1) {
     caption_year.innerHTML = "";
@@ -275,7 +276,7 @@ function drawTraceCharts(numGroup) {
 
 function initTimeFrame() {
   for (var y = minYear; y <= maxYear; y++) {
-    delayMap[y] = 1;
+    delayMap[y] = {"time":1, "reason":""};
     yearmap[y] = {"group":[], "axis":[]};
   }
 }
@@ -298,7 +299,7 @@ function generateFrames() {
 function updateSlider() {
   timeFrames = [];
   for (var y = minYear; y <= maxYear; y++) {
-    for (var d = 0; d < delayMap[y]; d++) {
+    for (var d = 0; d < delayMap[y]["time"]; d++) {
       if (d == 0) timeFrames.push(y + "");
       else timeFrames.push(y + "_" + d);
     }
@@ -314,7 +315,8 @@ function drawFrame(yrange, group, axes, reason) {
   // axis: X, Y, S or (overlay == input from the linecharts)
   r = [yrange[0], yrange[yrange.length-1]];
   for (var i = r[0]; i < r[1]; i++) {
-    delayMap[i] = slowdown[reason];
+    delayMap[i]["reason"] = reason;
+    delayMap[i]["time"] = slowdown[reason];
   }
   for (var i = r[0]; i <= r[1]; i++) {
     yearmap[i]["group"].push(+group)
@@ -330,13 +332,14 @@ function drawFrame(yrange, group, axes, reason) {
   }
   updateSlider();
   timeline.updateXaxis(timeFrames);
-  timeline.addFrame(r, +group, names, reason, delayMap[r[0]]);
+  timeline.addFrame(r, +group, names, reason, delayMap[r[0]]["time"]);
   calculateOuterbound();
 }
 
 initClusterinfo();
 generateFrames()
 
+var timeunit = 100;
 var playon = document.querySelectorAll("input#switchPlay");
 playon[0].addEventListener("change", function(e) {
   // console.log("playon", e.target.checked, curYear);
@@ -346,7 +349,6 @@ playon[0].addEventListener("change", function(e) {
     document.getElementById("play_icon").className = "fa fa-play";
   }
 
-  var timing = 100;
   if (play_timer == undefined && e.target.checked && curFrame < timeFrames.length) {
     play_timer = setInterval(function() {
       if (curFrame >= timeFrames.length) {
@@ -355,7 +357,7 @@ playon[0].addEventListener("change", function(e) {
       curFrame += 1;
       // console.log("original", timing, curYear, maxYear);
       traceTimeline();
-    }, timing);
+    }, timeunit);
   } else if (play_timer != undefined) {
     clearInterval(play_timer);
     play_timer = undefined;
@@ -422,6 +424,7 @@ function changeSelectedConts(continents) {
   for (var c = 0; c < legendCount; c++) {
     swtvalues["groups"][c] = false;
   }
+  if (continents.indexOf(0) > -1) continents = [0,1,2,3,4];
   for (var c = 0; c < continents.length; c++) {
     swtvalues["groups"][continents[c]] = true;
   }
@@ -521,7 +524,7 @@ $("input[type='range']").change(function() {
 function changeSlider(el, curFrame, play, focus) {
   var preYear = parseInt(timeFrames[preFrame]),
       curYear = parseInt(timeFrames[curFrame]);
-  console.log("curFrame", curFrame, preYear, curYear);
+  console.log("curFrame", curFrame, preYear, curYear, delayMap[curYear]);
 
   width = el.width()-32;
   newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
@@ -539,7 +542,9 @@ function changeSlider(el, curFrame, play, focus) {
     el.val(curFrame);
   }
   if (focus && (preYear == minYear || preYear != curYear)) {
-    chart.updateFocus(curYear, swtvalues, innergrp);
+    var delaytime = delaytime = delayMap[curYear]["time"]*timeunit;
+    if (delayMap[curYear]["reason"] == "spr") delaytime = 0;
+    chart.updateFocus(curYear, swtvalues, innergrp, delaytime);
   } else if (preYear == minYear || preYear != curYear) {
     chart.updateChart(curYear, swtvalues);
   }

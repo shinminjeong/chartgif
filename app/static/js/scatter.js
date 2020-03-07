@@ -222,7 +222,7 @@ class ScatterPlot {
     this.bubble_shadow_g.selectAll("*").remove();
     this.bubble_trace_g.selectAll("*").remove();
   }
-  
+
   clear() {
     this.bubble_g.selectAll("*").remove();
     this.bubble_shadow_g.selectAll("*").remove();
@@ -231,7 +231,7 @@ class ScatterPlot {
     this.hull_label_g.selectAll("text.hull-label").remove();
   }
 
-  updateFocus(year, swtvalues, innergrp) {
+  updateFocus(year, swtvalues, innergrp, delay) {
     console.log("updateFocus", swtvalues, innergrp[year]["group"])
     this.bubble_g.selectAll("*").remove();
     this.trace_path_g.selectAll("circle.tbubble").remove();
@@ -265,7 +265,7 @@ class ScatterPlot {
           else return 'hidden';
         })
       .transition()
-        .duration(1000)
+        .duration(delay)
         .attr("x2", d => xScale(d.x))
         .attr("y2", d => yScale(d.y))
 
@@ -308,7 +308,7 @@ class ScatterPlot {
           // else return 'hidden';
         })
       .transition()
-        .duration(1000)
+        .duration(delay)
         .attr("cx", function(d){return xScale(d.x);})
         .attr("cy", function(d){ return yScale(d.y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1; })
@@ -340,7 +340,7 @@ class ScatterPlot {
           else return 'hidden';
         })
       .transition()
-        .duration(1000)
+        .duration(delay)
         .attr("d", drawCluster);
 
 
@@ -360,7 +360,7 @@ class ScatterPlot {
           else return 'hidden';
         })
       .transition()
-        .duration(1000)
+        .duration(delay)
         .attr('x', d => d.x)
         .attr('y', d => d.y);
 
