@@ -163,8 +163,8 @@ var delayMap = {}, timeFrames = [];
 var play_timer = undefined;
 var flagConvexHulls = false;
 var slowdown = {
-  "var": 5,
-  "spr": 15
+  "var": 10,
+  "spr": 20
 };
 var el, newPoint, timebar;
 var linecharts_v = {};
@@ -362,20 +362,6 @@ playon[0].addEventListener("change", function(e) {
   }
 });
 
-function resetPlaytimer(timing) {
-  curFrame -= 1;
-  clearInterval(play_timer);
-  play_timer = setInterval(function() {
-    if (curFrame >= timeFrames.length) {
-      clearInterval(play_timer);
-      play_timer = undefined;
-    }
-    curFrame += 1;
-    // console.log("after reset", timing, curYear, maxYear);
-    traceTimeline();
-  }, timing);
-}
-
 function calculateOuterbound() {
   outerbound = {};
   timeline.clearOuterBound();
@@ -447,41 +433,46 @@ var focus_index = -1,
     focus_groups = [];
 function traceTimeline() {
   var curYear = timeFrames[curFrame];
-  console.log("traceTimeline", curFrame, outerbound[curYear], flag_focus, focus_until);
-  var groups = [];
-  if (!flag_focus && outerbound[curYear]) {
-    console.log("start focusing")
-    flag_focus = true;
-    focus_start = outerbound[curYear]["head"]-1;
-    focus_until = outerbound[curYear]["tail"];
-    focus_groups = outerbound[curYear]["groups"];
-    console.log("focus_index == ", focus_index)
-    if (focus_index == -1) {
-      changeSelectedConts([0,1,2,3,4]);
-      resetPlaytimer(500);
-    } else {
-      console.log("focus_groups == ", focus_groups, focus_groups[focus_index])
-      changeSelectedConts([focus_groups[focus_index]]);
-      resetPlaytimer(1000);
-    }
-  } else if (flag_focus && curYear == focus_until) {
-    console.log("finish focusing", focus_index, focus_groups)
+  var nextYear = timeFrames[curFrame+1];
+  console.log("traceTimeline", curFrame, curYear, flag_focus, focus_until);
+
+  // if in focus mode
+  if (flag_focus && curFrame == focus_until) {
     if (focus_index >= focus_groups.length-1) {
+      console.log("-- finish focusing", focus_index, focus_groups)
       focus_index = -1;
+      flag_focus = false;
+      // chart.clearFocus();
       changeSelectedConts([0,1,2,3,4]);
-      resetPlaytimer(100); // go to the normal pace
+      // resetPlaytimer(100); // go to the normal pace
     } else {
       focus_index += 1;
-      curYear = focus_start;
+      changeSelectedConts([focus_groups[focus_index]]);
+      console.log("-- move to the next group focusing", focus_index, focus_groups)
+      curFrame = focus_start;
     }
-    flag_focus = false;
     chart.clearFocus();
   } else {
-
     // console.log(curYear, flag_focus);
     changeSlider($("input[type='range']"), curFrame, true, flag_focus);
     // update caption
   }
+
+  // if next year is focus_year
+  if (outerbound[nextYear]) {
+    flag_focus = true;
+    focus_start = timeFrames.indexOf(""+outerbound[nextYear]["head"]);
+    focus_until = timeFrames.indexOf(""+outerbound[nextYear]["tail"])+1;
+    focus_groups = outerbound[nextYear]["groups"];
+    console.log("-- prepare focusing in ", nextYear)
+    console.log("==", focus_start, "~", focus_until, focus_groups)
+    if (focus_index == -1) {
+      focus_index = 0;
+      changeSelectedConts([focus_groups[focus_index]]);
+      // resetPlaytimer(1000);
+    }
+  }
+
   updateCaptionText(curFrame, focus_index, focus_groups);
 }
 

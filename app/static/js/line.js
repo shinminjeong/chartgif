@@ -161,7 +161,7 @@ function draw_rect_input(yrange, div_id, axes, reason) {
   for (var i in axes) {
     var aidx = ["X", "Y", "S"].indexOf(axes[i]);
     var e = document.createElement('div');
-    console.log("select_rectangle_", reason)
+    // console.log("select_rectangle_", reason)
     e.className = 'select_rectangle_'+reason;
     e.style.left = ys + 'px';
     e.style.top = (rect.height-30)/3*aidx;

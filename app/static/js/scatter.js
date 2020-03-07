@@ -128,7 +128,7 @@ class ScatterPlot {
 
   updateChart(year, swtvalues) {
     console.log("updateChart", year);
-    this.clearFocus();
+    this.clear();
     var data = this.data[year];
 
     var flagTrace = swtvalues["trace"],
@@ -219,6 +219,11 @@ class ScatterPlot {
   }
 
   clearFocus() {
+    this.bubble_shadow_g.selectAll("*").remove();
+    this.bubble_trace_g.selectAll("*").remove();
+  }
+  
+  clear() {
     this.bubble_g.selectAll("*").remove();
     this.bubble_shadow_g.selectAll("*").remove();
     this.bubble_trace_g.selectAll("*").remove();

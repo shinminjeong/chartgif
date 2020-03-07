@@ -59,7 +59,7 @@ class TimeLine {
         .attr("x", this.margin.left-20)
         .attr("y", this.margin.top_g+(this.caption_h+this.slice_h)*g+25)
         .attr("text-anchor", "end")
-        .style("fill", "white")
+        .style("fill", "black")
         .text(gname[g]);
     }
 
@@ -130,7 +130,7 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
-    console.log("addFrame", gindex, y_start, y_end, s, e, delay);
+    // console.log("addFrame", gindex, y_start, y_end, s, e, delay);
 
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
@@ -168,7 +168,7 @@ class TimeLine {
   }
 
   addCaption(yrange, gindex, caption) {
-    console.log("addCaption", yrange, gindex, this.margin.top_g, this.slice_h+this.caption_h)
+    // console.log("addCaption", yrange, gindex, this.margin.top_g, this.slice_h+this.caption_h)
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
