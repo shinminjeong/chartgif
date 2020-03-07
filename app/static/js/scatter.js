@@ -120,39 +120,6 @@ class ScatterPlot {
     this.trace_path_g = this.svg.append('g');
     this.hull_g = this.svg.append('g');
 
-    // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
-    // this.svg.append('text')
-    //   .attr('x', 10)
-    //   .attr('y', 10)
-    //   .attr('class', 'label')
-    //   .text('Life Expectancy');
-    //
-    // this.svg.append('text')
-    //   .attr('x', this.width)
-    //   .attr('y', this.height - 10)
-    //   .attr('text-anchor', 'end')
-    //   .attr('class', 'label')
-    //   .text('Income');
-
-    var legend = this.svg.selectAll('legend')
-      .data(continent)
-      .enter().append('g')
-      .attr('class', 'legend')
-      .attr('transform', function(d,i){ return 'translate(0,' + i * 20 + ')'; });
-
-    legend.append('rect')
-      .attr('x', this.width)
-      .attr('width', 18)
-      .attr('height', 18)
-      .style('fill', color);
-
-    legend.append('text')
-      .attr('x', this.width - 6)
-      .attr('y', 9)
-      .attr('dy', '.35em')
-      .style('text-anchor', 'end')
-      .text(function(d){ return d; });
-
     this.bubble_trace_g = this.svg.append('g');
     this.bubble_shadow_g = this.svg.append('g');
     this.bubble_g = this.svg.append('g');

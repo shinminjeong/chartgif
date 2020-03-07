@@ -11,24 +11,25 @@ class TimeLine {
     this.caption_h = 20;
   }
 
-  initChart(timeframes, minYear, maxYear) {
+  initChart(timeframes, minYear, maxYear, gname) {
     this.framepanel = document.getElementById(this.div_id);
     this.bgpanel = document.getElementById(this.div_id_background);
     this.svg = d3.select("#"+this.div_id_background)
       .append('svg')
       .attr('width', this.width + this.margin.left + this.margin.right)
-      .attr('height', this.height + this.margin.top + this.margin.bottom)
-    .append('g')
+      .attr('height', this.height + this.margin.top + this.margin.bottom);
+
+    this.chart_g = this.svg.append('g')
       .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
 
-    this.background = this.svg.append("rect")
+    this.background = this.chart_g.append("rect")
       .attr("x", 0)
       .attr("y", this.margin.top_g)
       .attr("width", this.width)
       .attr("height", this.height-this.margin.top_g)
       .style("fill", "#d3d3d3");
 
-    this.grid = this.svg.append("g");
+    this.grid = this.chart_g.append("g");
     this.x_1 = this.grid.append("g");
     this.x_2 = this.grid.append("g");
 
@@ -48,8 +49,19 @@ class TimeLine {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
+    this.legend_d = this.svg.append("g")
+      .attr('transform', 'translate(0,' + this.margin.top + ')');
+
+    for (var g = 0; g < gname.length; g++) {
+      this.legend_d.append("text")
+        .attr("x", this.margin.left-20)
+        .attr("y", this.margin.top_g+(this.caption_h+this.slice_h)*g+25)
+        .attr("text-anchor", "end")
+        .style("fill", "white")
+        .text(gname[g]);
+    }
+
     this.updateXaxis(timeframes);
-    this.addFrame([minYear, maxYear], -1, 1)
   }
 
   calculateTickValues(timeframes) {
@@ -112,7 +124,7 @@ class TimeLine {
     if (gindex >= 0) {
       tframe.style = "border: 0.5px solid #333; background-color:"+gcolor(gindex);
     }
-    tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(1+gindex);
+    tframe.style.top = this.margin.top_g+this.caption_h+(this.slice_h+this.caption_h)*(gindex);
     tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.slice_h;
@@ -146,7 +158,7 @@ class TimeLine {
         e = this.timeScale(y_end);
     var tframe = document.createElement("div");
     tframe.className = "time-caption"
-    tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(+gindex+1)-this.caption_h;
+    tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(+gindex);
     tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.caption_h;

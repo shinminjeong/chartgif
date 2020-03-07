@@ -166,20 +166,19 @@ var slowdown = {
   "var": 5,
   "spr": 15
 };
+var el, newPoint, timebar;
+var linecharts_v = {};
+var gname = ["World", "Asia", "Europe", "America", "Africa"];
+var infodiv = document.getElementById("clusterinfo");
 
 initTimeFrame();
 updateSlider();
 
 var timeline_w = document.getElementById("timeline-background").offsetWidth;
-var timeline_h = 300;
+var timeline_h = 275;
 var timeline = new TimeLine("timeline", timeline_w, timeline_h);
-timeline.initChart(timeFrames, minYear, maxYear);
+timeline.initChart(timeFrames, minYear, maxYear, gname);
 
-
-var el, newPoint, timebar;
-var linecharts_v = {};
-var gname = ["World", "Asia", "Europe", "America", "Africa"];
-var infodiv = document.getElementById("clusterinfo");
 function kFormatter(num) {
     if (Math.abs(num) > 999999)
       return Math.sign(num)*((Math.abs(num)/1000000).toFixed(1)) + 'M'
