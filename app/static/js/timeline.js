@@ -9,6 +9,8 @@ class TimeLine {
 
     this.slice_h = 30;
     this.caption_h = 20;
+
+    this.frames = [];
   }
 
   initChart(timeframes, minYear, maxYear, gname) {
@@ -110,6 +112,17 @@ class TimeLine {
         .tickValues(this.tickEveryYear)
         .tickFormat("")
       );
+
+    // move time slices according to the new x-axis
+    for (var i = 0; i < this.frames.length; i++) {
+      var f = this.frames[i];
+      var y_start = f.getAttribute("data-s-year"),
+          y_end = f.getAttribute("data-e-year");
+      var s = this.timeScale(y_start),
+          e = this.timeScale(y_end);
+      f.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
+      f.style.width = e-s;
+    }
   }
 
   addFrame(yrange, gindex, name, reason, delay) {
@@ -124,11 +137,15 @@ class TimeLine {
     if (gindex >= 0) {
       tframe.style = "border: 0.5px solid #333; background-color:"+gcolor(gindex);
     }
+    tframe.setAttribute("data-s-year", y_start);
+    tframe.setAttribute("data-e-year", y_end);
     tframe.style.top = this.margin.top_g+this.caption_h+(this.slice_h+this.caption_h)*(gindex);
     tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.slice_h;
     tframe.innerHTML = name;
+
+    this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
   }
 
