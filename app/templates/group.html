@@ -558,7 +558,7 @@ function highlightOff() {
   $("circle.tbubble").attr("r", 1).attr("stroke", "none");
 }
 function highlightCurYear() {
-  var curYear = timeFrames[curFrame];
+  var curYear = parseInt(timeFrames[curFrame]);
   updateLineTimebar();
   highlightOff();
   for (var i = 0; i < legendCount; i++) {
