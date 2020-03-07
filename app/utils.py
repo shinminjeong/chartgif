@@ -5,6 +5,21 @@ from sklearn.cluster import KMeans, AffinityPropagation, MeanShift
 from scipy.spatial.distance import euclidean
 from sklearn.preprocessing import normalize
 
+def change_pattern(yrange, V):
+    values = {v["year"]: v["value"] for v in V}
+    leftmost = values[yrange[0]]
+    rightmost = values[yrange[-1]]
+    minvalue = min([values[y] for y in yrange])
+    maxvalue = max([values[y] for y in yrange])
+    # print("change_pattern", leftmost, rightmost, minvalue, maxvalue)
+    if leftmost == minvalue and rightmost == maxvalue: ## increase
+        return "increased"
+    if leftmost == maxvalue and rightmost == minvalue: ## decrease
+        return "decreased"
+    if minvalue < min(leftmost, rightmost): ## go down then up
+        return "downup"
+    if maxvalue > max(leftmost, rightmost): ## go up then down
+        return "updown"
 
 def get_focus_range(groups, axes, V):
     # avg_v[group_index(0,1,2,3)][axis("X","Y","S")] = {"year":y, "value":v, "min":m, "max":n}
@@ -20,12 +35,13 @@ def get_focus_range(groups, axes, V):
             yrange = []
             minv = min([v["min"] for v in V[g][a]])
             maxv = max([v["max"] for v in V[g][a]])
-            threshold = (maxv-minv)*0.05
+            threshold = (maxv-minv)*0.03
             range[g][a] = {v["year"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) > threshold}
             for y, thd in range[g][a].items():
                 if len(yrange) > 0 and y - yrange[-1] >= cont_threshold:
                     output.append({
                         "reason": "var",
+                        "pattern": change_pattern(yrange, V[g][a]),
                         "g": g,
                         "a": [a],
                         "years": yrange
@@ -36,6 +52,7 @@ def get_focus_range(groups, axes, V):
             if len(yrange) > 0:
                 output.append({
                     "reason": "var",
+                    "pattern": change_pattern(yrange, V[g][a]),
                     "g": g,
                     "a": [a],
                     "years": yrange
@@ -49,6 +66,7 @@ def get_focus_range(groups, axes, V):
             mostspread = sorted(spreadv.items(), key=lambda x:x[1], reverse=True)[0]
             output.append({
                 "reason": "spr",
+                "pattern": "mostspread",
                 "g": g,
                 "a": ["X", "Y"],
                 "years": [mostspread[0], mostspread[0]+1]

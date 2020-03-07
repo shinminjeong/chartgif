@@ -10,6 +10,8 @@ import os, sys, csv, json
 import pandas as pd
 import numpy as np
 from .utils import *
+from .caption import *
+
 
 file_map = {
     "income": "app/static/data/income_per_person_gdppercapita_ppp_inflation_adjusted.csv",
@@ -18,21 +20,12 @@ file_map = {
     "population": "app/static/data/population_total.csv",
     "continent": "app/static/data/country_continent.csv"
 }
-name_map = {
-    "income": "Income",
-    "fertility": "Babies per woman",
-    "lifeexp": "Life Expectancy",
-    "population": "Population",
-    "continent": "Continent",
-    "log": "Log",
-    "lin": "Lin",
-}
+
 options = {
     "x": {"id": "income", "name": "Income"},
     "y": {"id": "lifeexp", "name": "Life Expectancy"},
     "s": {"id": "population", "name": "Population"},
     "c": {"id": "continent", "name": "Continent"},
-    "overlay": {"id": "user", "name": "User"},
     "xScale": {"id": "log", "name": "Log"},
     "yScale": {"id": "lin", "name": "Lin"},
 }
@@ -46,7 +39,7 @@ kgroups = None
 numYears = 0
 countries = None
 def main(request):
-    global values, kgroups, numYears, countries
+    global values, kgroups, options, numYears, countries
     for k, v in options.items():
         if k in request.GET:
             id = request.GET.get(k)
@@ -112,13 +105,15 @@ def main(request):
 
 @csrf_exempt
 def get_caption(request):
-    global values, kgroups, numYears, countries
+    global values, kgroups, options, numYears, countries
     outerbound = request.POST
     print("get_caption", outerbound)
 
     head_y = int(outerbound.get("head"))
     tail_y = int(outerbound.get("tail"))
     groups = {int(c):c_group_inv[int(c)] for c in outerbound.getlist("groups[]")}
+    reason = outerbound.get("reason")
+    pattern = outerbound.get("pattern")
     axis_info = {g:set(outerbound.getlist("info[{}][]".format(g))) for g in groups}
     # print(groups)
     print(axis_info)
@@ -162,8 +157,8 @@ def get_caption(request):
             else:
                 groupdesc[g][c] = " ".join([countries[vv] for vv in v])
 
-        caption[g] = "from {} to {}, ".format(head_y, tail_y) if not caption else ""
-        caption[g] += "something happened in {}".format(gname)
+        axisNames = [options[a.lower()] for a in selectedAxis]
+        caption[g] = generateCaption(gname, axisNames, reason, pattern, head_y, tail_y, g == 0)
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")
     # print(groupdesc)

@@ -125,7 +125,7 @@ class TimeLine {
     }
   }
 
-  addFrame(yrange, gindex, name, reason, delay) {
+  addFrame(yrange, gindex, name, reason, pattern, delay) {
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
@@ -143,7 +143,7 @@ class TimeLine {
     tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.slice_h;
-    tframe.innerHTML = name;
+    tframe.innerHTML = name + " " + pattern;
 
     this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
@@ -185,6 +185,7 @@ class TimeLine {
     tframe.setAttribute("data-o-height", this.caption_h);
     tframe.addEventListener("mouseover", function(e) {
       e.target.style.overflowX = "visible";
+      e.target.style.whiteSpace = "normal";
       e.target.style.width = Math.max(120, e.target.getAttribute("data-o-width"));
       e.target.style.height = "auto";
       e.target.style.zIndex = 10;
@@ -192,6 +193,7 @@ class TimeLine {
     });
     tframe.addEventListener("mouseout", function(e) {
       e.target.style.overflowX = "hidden";
+      e.target.style.whiteSpace = "nowrap";
       e.target.style.width = e.target.getAttribute("data-o-width");
       e.target.style.height = e.target.getAttribute("data-o-height");
       e.target.style.zIndex = 8;
