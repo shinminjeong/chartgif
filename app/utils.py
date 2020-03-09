@@ -5,6 +5,17 @@ from sklearn.cluster import KMeans, AffinityPropagation, MeanShift
 from scipy.spatial.distance import euclidean
 from sklearn.preprocessing import normalize
 
+def get_dict_from_request(reason):
+    pardict = {}
+    for k, v in reason.items():
+        n = [n.replace("]", "") for n in k.split("[")]
+        if n[0] != "reason": continue
+        if n[1] in pardict:
+            pardict[n[1]][n[2]] = v
+        else:
+            pardict[n[1]] = {n[2]:v}
+    return pardict
+
 def change_pattern(yrange, V):
     values = {v["year"]: v["value"] for v in V}
     leftmost = values[yrange[0]]

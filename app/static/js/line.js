@@ -189,6 +189,7 @@ function draw_rect_click(e, canvas) {
   // console.log("draw_rect_click", rect);
   if (element !== null) {
     names = canvas.id.split("_");
+    console.log("draw_rect_click", names);
     left = +element.style.left.split("px")[0];
     width = +element.style.width.split("px")[0];
     // console.log("canvas - left", left_offset, left, line_xscale.invert(left));
@@ -197,7 +198,7 @@ function draw_rect_click(e, canvas) {
     endYear = Math.floor(line_xscale.invert(left+width));
     // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear+1), (x,i) => i + startYear)
-    drawFrame(years, gname.indexOf(names[2]), [names[3]], "user");
+    drawFrame(years, gname.indexOf(names[2]), ["X"], "user", "user");
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
     element = null;
