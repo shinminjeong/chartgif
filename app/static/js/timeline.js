@@ -134,6 +134,7 @@ class TimeLine {
 
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
+    tframe.id = y_start+"_"+gindex;
     if (gindex >= 0) {
       tframe.style = "border: 0.5px solid #333; background-color:"+gcolor(gindex);
     }
@@ -145,6 +146,8 @@ class TimeLine {
     tframe.style.height = this.slice_h;
     tframe.innerHTML = name + " " + pattern;
 
+    tframe.addEventListener("mouseover", showOptions);
+    tframe.addEventListener("mouseleave", hideOptions);
     this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
   }
@@ -201,4 +204,27 @@ class TimeLine {
     });
     this.framepanel.appendChild(tframe);
   }
+}
+
+function removeTimeSlice(e) {
+  console.log("removebutton clicked", e.target.parentElement)
+  $("div#"+e.target.parentElement.id).remove();
+}
+
+function showOptions(e) {
+  e.target.style.opacity = 1;
+  if (e.target.getElementsByTagName("DIV").length > 0 || e.target.className != "time-slice") return;
+  var removebtn = document.createElement("div");
+  removebtn.className = "time-slice-remove"
+  removebtn.id = e.target.id;
+  removebtn.style.left = parseFloat(e.target.style.width.replace('px',''))-20;
+  removebtn.innerHTML = "<i class='fa fa-times'></i>"
+  removebtn.addEventListener("click", removeTimeSlice);
+  e.target.appendChild(removebtn);
+}
+
+function hideOptions(e) {
+  e.target.style.opacity = 0.5;
+  console.log("div#"+e.target.id+".time-slice-remove");
+  $("div#"+e.target.id+".time-slice-remove").remove();
 }
