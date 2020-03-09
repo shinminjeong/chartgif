@@ -1,4 +1,5 @@
 import os, sys
+from collections import Counter
 
 # Life expectancy in {Region} increased/decreased by {change in value} years between {time} and {time}
 # Income level in {Region} increased/decreased by {change in value} dollars between {time} and {time}
@@ -26,6 +27,23 @@ unit_map = {
     "lifeexp": "years",
     "population": "",
 }
+
+def summarizeGroup(info, countries):
+    # print("--- summarizeGroup", countries)
+    if len(countries) == 1:
+        return countries[0]
+
+    desc = ""
+    sub_regions = [info[c]["sub"] for c in countries]
+    region_counter = Counter(sub_regions)
+    if len(region_counter) == 1:
+        desc = region_counter.most_common(1)[0][0]
+    else:
+        for c in region_counter.most_common(3):
+            if (c[1]/len(sub_regions) > 0.1):
+                desc += "{}({}%); ".format(c[0], int(100*c[1]/len(sub_regions)))
+    # print(desc)
+    return desc
 
 def cap_mostSpread(y_s, y_e):
     return "From {} to {}, differences between the countries of the world was wider than ever".format(y_s, y_e)

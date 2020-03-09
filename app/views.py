@@ -18,7 +18,8 @@ file_map = {
     "lifeexp": "app/static/data/life_expectancy_years.csv",
     "fertility": "app/static/data/children_per_woman_total_fertility.csv",
     "population": "app/static/data/population_total.csv",
-    "continent": "app/static/data/country_continent.csv"
+    # "continent": "app/static/data/country_continent.csv",
+    "continent": "app/static/data/additional_data.csv"
 }
 
 options = {
@@ -60,8 +61,7 @@ def main(request):
     df_c = df_c.loc[df_c['country'].isin(countries)].reset_index()
 
     selectedAxis = ["X", "Y", "S"]
-    kgroups = {k:{"index": i, "group": c_group[df_c.iloc[i]["continent"]]} for i, k in enumerate(countries)}
-
+    kgroups = {k:{"index": i, "group": c_group[df_c.iloc[i]["continent"]], "sub": df_c.iloc[i]["sub_region"]} for i, k in enumerate(countries)}
     values = map.drop(columns='country').fillna(-1)
     values[["{}_s".format(y) for y in years]] = df_s[years].astype("float")
 
@@ -152,10 +152,7 @@ def get_caption(request):
         for i, k in enumerate(cset):
             groupdesc[g][cluster[i]].append(k)
         for c, v in groupdesc[g].items():
-            if len(v) == 1:
-                groupdesc[g][c] = countries[v[0]]
-            else:
-                groupdesc[g][c] = " ".join([countries[vv] for vv in v])
+            groupdesc[g][c] = summarizeGroup(kgroups, [countries[vv] for vv in v])
 
         axisNames = [options[a.lower()] for a in selectedAxis]
         print("pattern", pattern)

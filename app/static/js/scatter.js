@@ -349,21 +349,22 @@ class ScatterPlot {
         .data(dataCvxHulls)
       .enter().append('text')
         .attr('id', d => d.group)
-        .attr('class', function(d){ return 'hull-label g'+d.group; })
+        .attr('class', function(d){ return 'hull-label wrap g'+d.group; })
         .attr('x', d => d.pre_x)
         .attr('y', d => d.pre_y)
+        .attr('font-size', 10)
+        .attr('text-anchor', 'middle')
         .text(function(d){
           return d.desc;
         })
         .style('visibility', function(d) {
-          if (d.group >= 0 && d.items < 10) return 'visible';
+          if (d.group >= 0 && d.items < 1000) return 'visible';
           else return 'hidden';
         })
       .transition()
         .duration(delay)
         .attr('x', d => d.x)
-        .attr('y', d => d.y);
-
+        .attr('y', d => d.y)
     }
 }
 
