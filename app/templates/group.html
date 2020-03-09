@@ -241,7 +241,7 @@ function updateBackgoundYear(year) {
 }
 function updateCaptionText(frame, gid, groups) {
   var year = parseInt(timeFrames[frame]);
-  console.log("updateCaptionText", year, gid, caption[year])
+  // console.log("updateCaptionText", year, gid, caption[year])
   var caption_year = document.getElementById("caption");
   if (gid == -1) {
     caption_year.innerHTML = "";
@@ -353,10 +353,10 @@ playon[0].addEventListener("change", function(e) {
 
   if (play_timer == undefined && e.target.checked && curFrame < timeFrames.length) {
     play_timer = setInterval(function() {
-      if (curFrame >= timeFrames.length) {
+      curFrame += 1;
+      if (curFrame >= timeFrames.length-1) {
         clearInterval(play_timer);
       }
-      curFrame += 1;
       // console.log("original", timing, curYear, maxYear);
       traceTimeline();
     }, timeunit);
@@ -385,7 +385,7 @@ function calculateOuterbound() {
       }
     } else {
       if (head_y > 0) {
-        console.log("add", head_y, tail_y)
+        // console.log("add", head_y, tail_y)
         var bound = {
           "head": +head_y,
           "tail": +tail_y,
@@ -528,7 +528,7 @@ $("input[type='range']").change(function() {
 function changeSlider(el, curFrame, play, focus) {
   var preYear = parseInt(timeFrames[preFrame]),
       curYear = parseInt(timeFrames[curFrame]);
-  console.log("curFrame", curFrame, preYear, curYear, delayMap[curYear]);
+  // console.log("curFrame", curFrame, preYear, curYear, delayMap[curYear]);
 
   width = el.width()-32;
   newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
