@@ -158,6 +158,7 @@ def get_caption(request):
                 groupdesc[g][c] = " ".join([countries[vv] for vv in v])
 
         axisNames = [options[a.lower()] for a in selectedAxis]
+        print("pattern", pattern)
         caption[g] = generateCaption(gname, axisNames, reason, pattern, head_y, tail_y, g == 0)
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")

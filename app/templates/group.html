@@ -277,7 +277,7 @@ function drawTraceCharts(numGroup) {
 function initTimeFrame() {
   for (var y = minYear; y <= maxYear; y++) {
     delayMap[y] = {"time":1, "reason":""};
-    yearmap[y] = {"group":[], "axis":[]};
+    yearmap[y] = {"group":[], "axis":[], "pattern": ""};
   }
 }
 
@@ -320,8 +320,9 @@ function drawFrame(yrange, group, axes, reason, pattern) {
     delayMap[i]["time"] = slowdown[reason];
   }
   for (var i = r[0]; i <= r[1]; i++) {
-    yearmap[i]["group"].push(+group)
-    yearmap[i]["axis"].push(axes)
+    yearmap[i]["group"].push(+group);
+    yearmap[i]["axis"].push(axes);
+    yearmap[i]["pattern"] = pattern;
     if (!timeslices[i]) {
       timeslices[i] = {};
     }
@@ -384,12 +385,13 @@ function calculateOuterbound() {
       }
     } else {
       if (head_y > 0) {
-        // console.log("add", head_y, tail_y)
+        console.log("add", head_y, tail_y)
         var bound = {
           "head": +head_y,
           "tail": +tail_y,
           "groups": Array.from(new Set(groups)).sort(),
           "reason": delayMap[+head_y]["reason"],
+          "pattern": yearmap[+head_y]["pattern"],
           "info": group_axis
         }
         outerbound[+head_y] = bound;

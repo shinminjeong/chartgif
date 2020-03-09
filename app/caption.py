@@ -30,11 +30,11 @@ unit_map = {
 def cap_mostSpread(y_s, y_e):
     return "From {} to {}, differences between the countries of the world was wider than ever".format(y_s, y_e)
 
-def cap_valueChange(y_s, y_e, gname, axes, vars):
+def cap_valueChange(y_s, y_e, gname, axes, pattern):
     cap = ""
-    for axis, var in zip(axes, vars):
-        how = "increased" if var > 0 else "decreased"
-        cap += "{} in {} {} by {} {} between {} and {}".format(axis["name"], gname, how, var, unit_map[axis["id"]], y_s, y_e)
+    for axis in axes:
+        how = pattern.upper() if pattern else "" ## by n unit_map[axis["id"]]
+        cap += "{} in {} {} between {} and {}".format(axis["name"], gname, how, y_s, y_e)
     return cap
 
 def generateCaption(gname, axes, reason, pattern, head_y, tail_y, year=False):
@@ -42,5 +42,5 @@ def generateCaption(gname, axes, reason, pattern, head_y, tail_y, year=False):
     if reason == "spr":
         caption = cap_mostSpread(head_y, tail_y)
     if reason == "var":
-        caption = cap_valueChange(head_y, tail_y, gname, axes, [5])
+        caption = cap_valueChange(head_y, tail_y, gname, axes, pattern)
     return caption
