@@ -107,16 +107,12 @@ def main(request):
 def get_caption(request):
     global values, kgroups, options, numYears, countries
     outerbound = request.POST
-    print("get_caption", outerbound)
-
     head_y = int(outerbound.get("head"))
-    tail_y = int(outerbound.get("tail"))
+    tail_y = int(outerbound.get("tail"))+1
     groups = {int(c):c_group_inv[int(c)] for c in outerbound.getlist("groups[]")}
-    reason = outerbound.get("reason")
-    pattern = outerbound.get("pattern")
-    axis_info = {g:set(outerbound.getlist("info[{}][]".format(g))) for g in groups}
-    # print(groups)
-    print(axis_info)
+    reasons = get_dict_from_request(dict(outerbound))
+    print("get_caption", head_y, tail_y, groups, reasons)
+
     continents = list(groups.values())
     if len(groups) > 2:
         regions = ", ".join(continents[:-1]) + " and " + continents[-1]
@@ -129,17 +125,19 @@ def get_caption(request):
     groupdesc = {}
     caption = {}
 
-    for g, gname in groups.items():
+    for id, v in reasons.items():
         # row: selected countries
+        g = int(v["group"][0])
         cset = [v["index"] for k, v in kgroups.items() if g == 0 or v["group"] == g] # countries in selected continent
 
         # column: selected years of selected axis
         selectedCol = []
         axes = ["X", "Y", "S"]
-        selectedAxis = list(axis_info[g])
+        selectedAxis = list(v["axis"])
+        yrange = [int(y) for y in v["yrange"]]
         for r in range(0, len(axes)): # selected years
             if axes[r] in selectedAxis:
-                selectedCol.extend(list(range((head_y-1800)+numYears*r, (tail_y+1-1800)+numYears*r)))
+                selectedCol.extend(list(range((yrange[0]-1800)+numYears*r, (yrange[-1]+1-1800)+numYears*r)))
         # print("---- group {} ---- {} ----".format(g, selectedAxis), selectedCol)
 
         ## cluster vector
@@ -151,12 +149,11 @@ def get_caption(request):
         groupdesc[g] = {c: [] for c in range(num_cluster)}
         for i, k in enumerate(cset):
             groupdesc[g][cluster[i]].append(k)
-        for c, v in groupdesc[g].items():
-            groupdesc[g][c] = summarizeGroup(kgroups, [countries[vv] for vv in v])
+        for c, clist in groupdesc[g].items():
+            groupdesc[g][c] = summarizeGroup(kgroups, [countries[vv] for vv in clist])
 
         axisNames = [options[a.lower()] for a in selectedAxis]
-        print("pattern", pattern)
-        caption[g] = generateCaption(gname, axisNames, reason, pattern, head_y, tail_y, g == 0)
+        caption[id] = generateCaption(groups[g], axisNames, v["reason"][0], v["pattern"][0], yrange[0], yrange[-1], g == 0)
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")
     # print(groupdesc)
