@@ -2,11 +2,12 @@ var line_xscale;
 var overlap_offset = 0;
 class LineChart {
 
-  constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 10, bottom: 25, left:left_offset};
+  constructor(div_id, w, h, axis_h) {
+    this.margin = {top: 5, right: 0, bottom: 25, left:left_offset};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
+    this.axis_h = axis_h;
     // console.log("lineChart", this.div_id, this.width, this.height);
   }
 
@@ -18,7 +19,6 @@ class LineChart {
       .attr('height', this.height+30)
     .append('g')
       .attr('transform', 'translate('+this.margin.left+',0)');
-    var canvas = document.getElementById(this.div_id+"_overlay");
 
     line_xscale = d3.scaleLinear()
       .domain(d3.extent(data["X"], function(d) { return +d.year; }))
@@ -51,7 +51,6 @@ class LineChart {
     var area_svg = svg.append('g');
     var path_svg = svg.append('g');
 
-    var selectedAxis = ["X", "Y", "S"];
     var axisColors = ["#000", "#444", "#888"];
     var y_scale = {};
 
@@ -138,8 +137,18 @@ class LineChart {
         .on("mouseout", mouseOutPaths)
     }
 
-    canvas.onmousemove = function(e) { draw_rect_move(e, this); };
-    canvas.onclick = function(e) { draw_rect_click (e, this); };
+    var canvas = {};
+    for (var a = 0; a < 3; a++) {
+      canvas[selectedAxis[a]] = document.getElementById(this.div_id+"_"+selectedAxis[a]);
+      canvas[selectedAxis[a]].onmousemove = function(e) { draw_rect_move(e, this); };
+      canvas[selectedAxis[a]].onmouseover = function(e) {
+        this.style.backgroundColor = "rgba(0, 123, 255, 0.2)";
+      }
+      canvas[selectedAxis[a]].onmouseleave = function(e) {
+        this.style.backgroundColor = "transparent";
+      }
+      canvas[selectedAxis[a]].onclick = function(e) { draw_rect_click (e, this); };
+    }
 
   }
 }
@@ -152,21 +161,24 @@ var mouse = {
   startY: 0
 };
 function draw_rect_input(yrange, div_id, axes, reason) {
-  var ys = line_xscale(yrange[0]-0.5),
-      ye = line_xscale(yrange[yrange.length-1]+0.5);
-  // console.log("draw_rect_input", range, ys, ye, div_id);
-  var canvas = document.getElementById(div_id+"_overlay");
-  var rect = canvas.getBoundingClientRect();
-
+  var y_start = yrange[0],
+      y_end = yrange[yrange.length-1];
+  var ys = line_xscale(y_start-0.5),
+      ye = line_xscale(y_end+0.5);
+  console.log("draw_rect_input", range, ys, ye, div_id, axes);
   for (var i in axes) {
-    var aidx = ["X", "Y", "S"].indexOf(axes[i]);
+    var names = div_id.split("_");
+    var canvas = document.getElementById(div_id+"_"+axes[i]);
+    var rect = canvas.getBoundingClientRect();
+    var aidx = selectedAxis.indexOf(axes[i]);
     var e = document.createElement('div');
     // console.log("select_rectangle_", reason)
     e.className = 'select_rectangle_'+reason;
+    e.id = y_start+"_"+y_end+"_"+names[2]+"_"+selectedAxis[i];
     e.style.left = ys + 'px';
-    e.style.top = (rect.height-30)/3*aidx;
+    e.style.top = 0;
     e.style.width = Math.abs(ye - ys) + 'px';
-    e.style.height = rect.height/3-10;
+    e.style.height = "100%";
     e.innerHTML = reason;
     canvas.appendChild(e)
   }
@@ -177,7 +189,7 @@ function draw_rect_move(e, canvas) {
     setMousePosition(e);
     element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
     // element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
-    element.style.height = rect.height-30;
+    element.style.height = "100%";
     element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x - rect.x + 'px' : mouse.startX - rect.x + 'px';
     // element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y - rect.y + 'px' : mouse.startY - rect.y + 'px';
     element.style.top = 0;
@@ -185,6 +197,7 @@ function draw_rect_move(e, canvas) {
 }
 function draw_rect_click(e, canvas) {
   var rect = canvas.getBoundingClientRect();
+  var reason = "user"
   setMousePosition(e);
   // console.log("draw_rect_click", rect);
   if (element !== null) {
@@ -192,13 +205,14 @@ function draw_rect_click(e, canvas) {
     console.log("draw_rect_click", names);
     left = +element.style.left.split("px")[0];
     width = +element.style.width.split("px")[0];
+    element.innerHTML = reason;
     // console.log("canvas - left", left_offset, left, line_xscale.invert(left));
     // console.log("canvas - right", left+width, line_xscale.invert(left+width));
     startYear = Math.floor(line_xscale.invert(left));
     endYear = Math.floor(line_xscale.invert(left+width));
     // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear+1), (x,i) => i + startYear)
-    drawFrame(years, gname.indexOf(names[2]), ["X"], "user", "user");
+    drawFrame(years, names[2], [names[3]], reason, reason);
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
     element = null;
@@ -206,11 +220,12 @@ function draw_rect_click(e, canvas) {
     mouse.startX = mouse.x;
     mouse.startY = mouse.y;
     element = document.createElement('div');
-    element.className = 'select_rectangle'
+    element.className = 'select_rectangle_'+reason;
     element.style.left = mouse.x - rect.x + 'px';
     element.style.top = 0;
+    element.style.height = "100%";
     // element.style.top = mouse.y - rect.y + 'px';
-    // console.log("begun.", element);
+    console.log("begun.", element);
     canvas.appendChild(element)
     canvas.style.cursor = "crosshair";
   }

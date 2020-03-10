@@ -121,6 +121,7 @@ var cluster_info = {{clusterinfo|safe}};
 var data_avg_velocity = {{avg_velocity|safe}};
 var data_focus_range = {{focus_range|safe}};
 
+var selectedAxis = ["X", "Y", "S"];
 var params = {
   "x": "income",
   "xScale": "log",
@@ -199,6 +200,7 @@ function initClusterinfo() {
   var numGroup = cluster_info["K"];
   var minmax = cluster_info["minmax"];
   var group_h = h/numGroup+5;
+  var axis_h = (group_h-30)/3;
   for (var g = 0; g < numGroup; g++) {
     var div_group = document.createElement("div");
     div_group.style = "display:block; padding: 0 10px; height: "+group_h+"px;";
@@ -214,19 +216,22 @@ function initClusterinfo() {
     div_group_timeline.style="display:inline-block; position: relative; padding:0; width:"+(w-label_w)+"px; height: "+group_h+"px;";
 
     var div_group_timeline_avg_v = document.createElement("div");
-    var div_group_timeline_avg_a = document.createElement("div");
-    div_group_timeline_avg_v.id = "lines_v_"+gname[g];
-    div_group_timeline_avg_a.id = div_group_timeline_avg_v.id+"_overlay";
+    div_group_timeline_avg_v.id = "lines_v_"+g;
     div_group_timeline_avg_v.style = "width:"+(w-label_w)+"px; height: "+group_h+"px; position: absolute; top:10; z-index:0";
-    div_group_timeline_avg_a.style = "width:"+(w-label_w-left_offset)+"px; height: "+group_h+"px; position: absolute; top:10; left: "+left_offset+"; z-index:1";
-    div_group_timeline.appendChild(div_group_timeline_avg_a);
     div_group_timeline.appendChild(div_group_timeline_avg_v);
+
+    for (var a = 0; a < 3; a++) {
+      var div_group_timeline_avg_a = document.createElement("div");
+      div_group_timeline_avg_a.id = div_group_timeline_avg_v.id+"_"+selectedAxis[a];
+      div_group_timeline_avg_a.style = "width:"+(w-label_w-left_offset)+"px; height: "+axis_h+"px; position: absolute; top:"+(10+axis_h*a)+"; left: "+left_offset+"; z-index:1";
+      div_group_timeline.appendChild(div_group_timeline_avg_a);
+    }
 
     div_group.appendChild(div_group_label);
     div_group.appendChild(div_group_timeline);
     infodiv.appendChild(div_group);
 
-    linecharts_v[g] = new LineChart(div_group_timeline_avg_v.id, w-label_w, group_h, left_offset);
+    linecharts_v[g] = new LineChart(div_group_timeline_avg_v.id, w-label_w, group_h, axis_h);
     linecharts_v[g].drawChart(data_avg_velocity[g], data_options);
   }
   drawTraceCharts(numGroup);
@@ -294,7 +299,7 @@ function generateFrames() {
     g = d["g"];
     a = d["a"];
     drawFrame(range, g, a, reason, pattern);
-    draw_rect_input(range, "lines_v_"+gname[g], a, reason);
+    draw_rect_input(range, "lines_v_"+g, a, reason);
   }
   for (var v in outerbound) {
     getCaption(outerbound[v]);

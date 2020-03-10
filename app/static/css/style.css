@@ -113,6 +113,12 @@ body {
 	font-size: 10px;
 	padding-top: 20px;
 }
+.select_rectangle_user {
+  border: 1px solid orange;
+  position: absolute;
+	font-size: 10px;
+	padding-top: 20px;
+}
 
 .timeline {
 	position: absolute;
