@@ -112,7 +112,7 @@ class LineChart {
         .attr("type", "area")
         .attr("axis", axis)
         .attr("fill", gcolor(parseInt(names[1])))
-        .attr("opacity", 0.5)
+        .attr("opacity", 0.6)
         .attr("stroke", "none")
         .attr("d", d3.area()
           .x(function(d) { return line_xscale(d.year) })

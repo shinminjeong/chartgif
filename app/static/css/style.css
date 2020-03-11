@@ -77,12 +77,13 @@ body {
 }
 
 .caption-panel {
-	position: absolute;
-	z-index: 30;
   color: #000;
-  right: 50px;
-	font-size: 20px;
-  margin-top: -90px;
+	background-color: #bbb;
+	border: 1px solid #000;
+	height: 60px;
+	margin: 5px 5px 0 5px;
+	padding: 5px 10px;
+	font-size: 16px;
 }
 
 .custom-switch-play {

@@ -132,8 +132,8 @@ var params = {
 var w = document.getElementById("myChart").offsetWidth,
     h = w*0.75;
 var label_w = Math.min(200, Math.max(120, w*0.2));
-var left_offset = 66;
-var chart = new ScatterPlot("myChart", w, h);
+var left_offset = 66, caption_h = 65;
+var chart = new ScatterPlot("myChart", w, h-caption_h);
 for (var k in data_options) {
   params[k] = data_options[k].id;
 }
@@ -443,8 +443,10 @@ function getCaption(bound) {
       }
       for (var g in res["caption"]) {
         var id = g.split("_");
-        if (caption[id[0]] == undefined) caption[id[0]] = {};
-        caption[id[0]][id[2]] = res["caption"][g];
+        for (var y = id[0]; y <= id[1]; y++) {
+          if (caption[y] == undefined) caption[y] = {};
+          caption[y][id[2]] = res["caption"][g];
+        }
         timeline.addCaption(g, res["caption"][g]);
       }
     }
