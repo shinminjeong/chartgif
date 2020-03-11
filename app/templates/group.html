@@ -103,7 +103,7 @@
 <script src="{% static 'js/timeline.js' %}"></script>
 <script>
 var morecolor = d3.scaleOrdinal(d3.schemeCategory10);
-var colorarray = ["#666", "#F08391", "#FCEC71", "#AEED6C", "#80DBEB"];
+var colorarray = ["#666", "#F08391", "#ffe940", "#AEED6C", "#80DBEB"];
 let gcolor = function(i){
   if (i < colorarray.length) {
     return colorarray[i];
@@ -216,7 +216,7 @@ function initClusterinfo() {
     div_group_timeline.style="display:inline-block; position: relative; padding:0; width:"+(w-label_w)+"px; height: "+group_h+"px;";
 
     var div_group_timeline_avg_v = document.createElement("div");
-    div_group_timeline_avg_v.id = "lines_v_"+g;
+    div_group_timeline_avg_v.id = "lines_"+g;
     div_group_timeline_avg_v.style = "width:"+(w-label_w)+"px; height: "+group_h+"px; position: absolute; top:10; z-index:0";
     div_group_timeline.appendChild(div_group_timeline_avg_v);
 
@@ -299,7 +299,7 @@ function generateFrames() {
     g = d["g"];
     a = d["a"];
     drawFrame(range, g, a, reason, pattern);
-    draw_rect_input(range, "lines_v_"+g, a, reason);
+    draw_rect_input(range, "lines_"+g, a, reason);
   }
   for (var v in outerbound) {
     getCaption(outerbound[v]);

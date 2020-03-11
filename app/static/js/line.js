@@ -53,6 +53,7 @@ class LineChart {
 
     var axisColors = ["#000", "#444", "#888"];
     var y_scale = {};
+    var names = this.div_id.split("_");
 
     for (var i = 0; i < 3; i++) {
       var axis = selectedAxis[i];
@@ -110,7 +111,7 @@ class LineChart {
         .attr("class", this.div_id)
         .attr("type", "area")
         .attr("axis", axis)
-        .attr("fill", "#aaa")
+        .attr("fill", gcolor(parseInt(names[1])))
         .attr("opacity", 0.5)
         .attr("stroke", "none")
         .attr("d", d3.area()
@@ -142,7 +143,7 @@ class LineChart {
       canvas[selectedAxis[a]] = document.getElementById(this.div_id+"_"+selectedAxis[a]);
       canvas[selectedAxis[a]].onmousemove = function(e) { draw_rect_move(e, this); };
       canvas[selectedAxis[a]].onmouseover = function(e) {
-        this.style.backgroundColor = "rgba(0, 123, 255, 0.2)";
+        this.style.backgroundColor = "rgba(128, 128, 128, 0.2)";
       }
       canvas[selectedAxis[a]].onmouseleave = function(e) {
         this.style.backgroundColor = "transparent";
@@ -174,7 +175,7 @@ function draw_rect_input(yrange, div_id, axes, reason) {
     var e = document.createElement('div');
     // console.log("select_rectangle_", reason)
     e.className = 'select_rectangle_'+reason;
-    e.id = y_start+"_"+y_end+"_"+names[2]+"_"+selectedAxis[i];
+    e.id = y_start+"_"+y_end+"_"+names[1]+"_"+selectedAxis[i];
     e.style.left = ys + 'px';
     e.style.top = 0;
     e.style.width = Math.abs(ye - ys) + 'px';
@@ -212,7 +213,7 @@ function draw_rect_click(e, canvas) {
     endYear = Math.floor(line_xscale.invert(left+width));
     // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear+1), (x,i) => i + startYear)
-    drawFrame(years, names[2], [names[3]], reason, reason);
+    drawFrame(years, names[1], [names[2]], reason, reason);
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
     element = null;
