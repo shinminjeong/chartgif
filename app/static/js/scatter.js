@@ -345,7 +345,7 @@ class ScatterPlot {
 
 
     this.hull_label_g.selectAll("text.hull-label").remove();
-    this.hull_label_g.selectAll('.hull-label')
+    let text = this.hull_label_g.selectAll('.hull-label')
         .data(dataCvxHulls)
       .enter().append('text')
         .attr('id', d => d.group)
@@ -353,19 +353,30 @@ class ScatterPlot {
         .attr('x', d => d.pre_x)
         .attr('y', d => d.pre_y)
         .attr('font-size', 10)
-        .attr('text-anchor', 'middle')
-        .text(function(d){
-          return d.desc;
-        })
+        .attr('text-anchor', 'start')
         .style('visibility', function(d) {
           if (d.group >= 0 && d.items < 1000) return 'visible';
           else return 'hidden';
         })
-      .transition()
-        .duration(delay)
-        .attr('x', d => d.x)
-        .attr('y', d => d.y)
+
+    text.selectAll("text.hull-label")
+      .data(d => d.desc.split(";"))
+      .enter().append("tspan")
+        .attr("class", "text")
+        .text(d => d)
+        .attr("dx", d => -5*d.length)
+        .attr("dy", 12);
+
+    text.transition()
+      .duration(delay)
+      .attr('x', d => d.x)
+      .attr('y', d => d.y)
+
     }
+}
+
+function splitText() {
+
 }
 
 function getTickValues(r, logflag) {
