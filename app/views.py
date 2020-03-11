@@ -15,7 +15,7 @@ from .caption import *
 
 file_map = {
     "income": "app/static/data/income_per_person_gdppercapita_ppp_inflation_adjusted.csv",
-    "lifeexp": "app/static/data/life_expectancy_years.csv",
+    "lifespan": "app/static/data/life_expectancy_years.csv",
     "fertility": "app/static/data/children_per_woman_total_fertility.csv",
     "population": "app/static/data/population_total.csv",
     # "continent": "app/static/data/country_continent.csv",
@@ -24,7 +24,7 @@ file_map = {
 
 options = {
     "x": {"id": "income", "name": "Income"},
-    "y": {"id": "lifeexp", "name": "Life Expectancy"},
+    "y": {"id": "lifespan", "name": "Life Expectancy"},
     "s": {"id": "population", "name": "Population"},
     "c": {"id": "continent", "name": "Continent"},
     "xScale": {"id": "log", "name": "Log"},
@@ -45,6 +45,9 @@ def main(request):
         if k in request.GET:
             id = request.GET.get(k)
             options[k] = {"id": id, "name": name_map[id]}
+        if v["id"] in label_map:
+            options[k]["label"] = label_map[v["id"]]
+
     # print(options)
     selectedAxis = []
 

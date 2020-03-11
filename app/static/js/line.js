@@ -71,7 +71,7 @@ class LineChart {
       var y_pos = (i+0.5)*this.height/3.0
       path_svg.append("rect")
         .attr("x", function() {
-          return line_xscale(1800)-10-name_len-5;
+          return line_xscale(minYear)-10-name_len-5;
         })
         .attr("y", y_pos-10)
         .attr("width", name_len+5)
@@ -84,16 +84,16 @@ class LineChart {
         .on("mouseover", mouseOverPaths)
         .on("mouseout", mouseOutPaths)
       path_svg.append("line")
-        .attr("x1", line_xscale(1800)-12)
+        .attr("x1", line_xscale(minYear)-12)
         .attr("y1", y_pos)
-        .attr("x2", line_xscale(1800))
+        .attr("x2", line_xscale(minYear))
         .attr("y2", y_scale[axis](y_min))
         .attr("class", this.div_id)
         .attr("axis", axis)
         .attr("stroke", axisColors[i])
         .attr("stroke-width", 1.5)
       path_svg.append("text")
-        .attr("x", line_xscale(1800)-20)
+        .attr("x", line_xscale(minYear)-20)
         .attr("y", y_pos+2)
         .text(data_options[axis.toLowerCase()]["id"])
         .attr("class", this.div_id)

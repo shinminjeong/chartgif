@@ -27,7 +27,7 @@
         {{ options.y.name }}
       </button>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_Y">
-        <a class="dropdown-item" name="y" id="lifeexp" href="#">Life Expectancy</a>
+        <a class="dropdown-item" name="y" id="lifespan" href="#">Life Expectancy</a>
         <a class="dropdown-item" name="y" id="fertility" href="#">Babies per woman</a>
         <a class="dropdown-item" name="y" id="income" href="#">Income</a>
       </div>
@@ -40,7 +40,7 @@
             {{ options.x.name }}
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_X">
-            <a class="dropdown-item" name="x" id="lifeexp" href="#">Life Expectancy</a>
+            <a class="dropdown-item" name="x" id="lifespan" href="#">Life Expectancy</a>
             <a class="dropdown-item" name="x" id="fertility" href="#">Babies per woman</a>
             <a class="dropdown-item" name="x" id="income" href="#">Income</a>
           </div>
@@ -66,13 +66,13 @@
       <div id="clusterinfo" class="row"></div>
     </div>
   </div>
-  <div class="row" style="padding-top: 20px;">
-    <div class="col-md-1">
-      <div class="custom-control custom-switch-play">
-        <label>
-          <input type="checkbox" class="custom-control-input" id="switchPlay">
-        <i id="play_icon" class="fa fa-play"></i></label>
-      </div>
+  <div class="row" id="timeline-panel" style="padding-top: 20px;">
+    <div class="custom-control custom-switch-play">
+      <label>
+        <input type="checkbox" class="custom-control-input" id="switchPlay">
+      <i id="play_icon" class="fa fa-play"></i></label>
+    </div>
+    <!-- <div class="col-md-1">
       <div class="custom-control custom-switch">
         <input type="checkbox" class="custom-control-input" id="switchTrace">
         <label class="custom-control-label" for="switchTrace">Trace</label>
@@ -81,8 +81,8 @@
         <input type="checkbox" class="custom-control-input" id="switchHull">
         <label class="custom-control-label" for="switchHull">Hull</label>
       </div>
-    </div>
-    <div class="col-md-11">
+    </div> -->
+    <div class="col-md-12">
       <div class="timeline timeline-background" id="timeline-background"></div>
       <div class="timeline timeline-frame" id="timeline"></div>
       <div class="timeline timeline-slider">
@@ -125,12 +125,13 @@ var selectedAxis = ["X", "Y", "S"];
 var params = {
   "x": "income",
   "xScale": "log",
-  "y": "lifeexp",
+  "y": "lifespan",
   "yScale": "lin",
   "s": "population"
 }
 var w = document.getElementById("myChart").offsetWidth,
     h = w*0.75;
+var timeline_w = document.getElementById("timeline-panel").offsetWidth;
 var label_w = Math.min(200, Math.max(120, w*0.2));
 var left_offset = 66, caption_h = 65;
 var chart = new ScatterPlot("myChart", w, h-caption_h);
@@ -139,9 +140,9 @@ for (var k in data_options) {
 }
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
-document.getElementsByClassName("timeline-background")[0].style.width = w*2-50;
-document.getElementsByClassName("timeline-frame")[0].style.width = w*2-50;
-document.getElementsByClassName("timeline-slider")[0].style.width = w*2-50-135+34;
+document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-50;
+document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-50;
+document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-50;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
 
 $(".dropdown-menu a").click(function () {
@@ -191,6 +192,7 @@ function kFormatter(num) {
 
 function updateLineTimebar() {
   var curYear = timeFrames[curFrame];
+  if (isNaN(curYear)) curYear = minYear;
   timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+10) + "px";
   timebar.style.top = 10 + "px";
   timebar.style.height = (h-5) + "px";
@@ -212,18 +214,19 @@ function initClusterinfo() {
     // div_group_label.innerHTML += "<div class='group_label'><span id='infoMinMax_"+g+"'></span></div>"
     div_group_label.innerHTML += "<div class='group_trace' id='trace_chart_" + g + "'></div>"
 
+    var line_w = w-label_w+10;
     var div_group_timeline = document.createElement("div");
-    div_group_timeline.style="display:inline-block; position: relative; padding:0; width:"+(w-label_w)+"px; height: "+group_h+"px;";
+    div_group_timeline.style="display:inline-block; position: relative; padding:0; width:"+line_w+"px; height: "+group_h+"px;";
 
     var div_group_timeline_avg_v = document.createElement("div");
     div_group_timeline_avg_v.id = "lines_"+g;
-    div_group_timeline_avg_v.style = "width:"+(w-label_w)+"px; height: "+group_h+"px; position: absolute; top:10; z-index:0";
+    div_group_timeline_avg_v.style = "width:"+line_w+"px; height: "+group_h+"px; position: absolute; top:10; z-index:0";
     div_group_timeline.appendChild(div_group_timeline_avg_v);
 
     for (var a = 0; a < 3; a++) {
       var div_group_timeline_avg_a = document.createElement("div");
       div_group_timeline_avg_a.id = div_group_timeline_avg_v.id+"_"+selectedAxis[a];
-      div_group_timeline_avg_a.style = "width:"+(w-label_w-left_offset)+"px; height: "+axis_h+"px; position: absolute; top:"+(10+axis_h*a)+"; left: "+left_offset+"; z-index:1";
+      div_group_timeline_avg_a.style = "width:"+(line_w-left_offset)+"px; height: "+axis_h+"px; position: absolute; top:"+(10+axis_h*a)+"; left: "+left_offset+"; z-index:1";
       div_group_timeline.appendChild(div_group_timeline_avg_a);
     }
 
@@ -231,7 +234,7 @@ function initClusterinfo() {
     div_group.appendChild(div_group_timeline);
     infodiv.appendChild(div_group);
 
-    linecharts_v[g] = new LineChart(div_group_timeline_avg_v.id, w-label_w, group_h, axis_h);
+    linecharts_v[g] = new LineChart(div_group_timeline_avg_v.id, line_w, group_h, axis_h);
     linecharts_v[g].drawChart(data_avg_velocity[g], data_options);
   }
   drawTraceCharts(numGroup);
@@ -308,6 +311,12 @@ function generateFrames() {
 
 function updateSlider() {
   timeFrames = [];
+  // init sequence
+  timeFrames.push("init_start");
+  for (var y = 0; y < 10; y++) timeFrames.push("init_Y_"+y);
+  for (var y = 0; y < 10; y++) timeFrames.push("init_X_"+y);
+  for (var y = 0; y < 20; y++) timeFrames.push("init_trend_"+y);
+
   for (var y = minYear; y <= maxYear; y++) {
     for (var d = 0; d < yearmap[y]["delay"]; d++) {
       if (d == 0) timeFrames.push(y + "");
@@ -367,7 +376,7 @@ function drawFrame(yrange, group, axes, reason, pattern) {
 initClusterinfo();
 generateFrames()
 
-var timeunit = 100;
+var timeunit = 200;
 var playon = document.querySelectorAll("input#switchPlay");
 playon[0].addEventListener("change", function(e) {
   // console.log("playon", e.target.checked, curYear);
@@ -472,7 +481,18 @@ var focus_index = -1,
 function traceTimeline() {
   var curYear = timeFrames[curFrame];
   var nextYear = timeFrames[curFrame+1];
-  console.log("traceTimeline", curFrame, curYear, flag_focus, focus_until);
+  var curNames = curYear.split("_");
+  console.log("traceTimeline", curFrame, curNames, flag_focus, focus_until);
+  // if init sequence
+  if (curNames[0] == "init") {
+    if (curNames[2] == '0') {
+      if (curNames[1] == "Y") chart.highlightYaxis(5*timeunit);
+      if (curNames[1] == "X") chart.highlightXaxis(5*timeunit);
+      if (curNames[1] == "trend") chart.highlightDirect(5*timeunit);
+    }
+  } else {
+    chart.hideDesc(timeunit);
+  }
 
   // if in focus mode
   if (flag_focus && curFrame == focus_until) {
@@ -521,19 +541,18 @@ var swtvalues = {
   "hull": false,
   "groups": {0: true, 1:true, 2:true, 3:true, 4:true},
 };
-var traceon = document.querySelectorAll("input#switchTrace");
-traceon[0].addEventListener("change", function(e) {
-  console.log("traceon", e.target.checked);
-  swtvalues["trace"] = e.target.checked;
-  chart.updateChart(curFrame, swtvalues);
-});
-
-var hullon = document.querySelectorAll("input#switchHull");
-hullon[0].addEventListener("change", function(e) {
-  console.log("hullon", e.target.checked);
-  swtvalues["hull"] = e.target.checked;
-  chart.updateChart(curFrame, swtvalues);
-});
+// var traceon = document.querySelectorAll("input#switchTrace");
+// traceon[0].addEventListener("change", function(e) {
+//   console.log("traceon", e.target.checked);
+//   swtvalues["trace"] = e.target.checked;
+//   chart.updateChart(curFrame, swtvalues);
+// });
+// var hullon = document.querySelectorAll("input#switchHull");
+// hullon[0].addEventListener("change", function(e) {
+//   console.log("hullon", e.target.checked);
+//   swtvalues["hull"] = e.target.checked;
+//   chart.updateChart(curFrame, swtvalues);
+// });
 
 var switchLegends = document.querySelectorAll("input.switchLegend");
 for (var s = 0; s < legendCount; s++) {
@@ -557,9 +576,7 @@ $("input[type='range']").change(function() {
 .trigger('change');
 
 function changeSlider(el, curFrame, play, focus) {
-  var preYear = parseInt(timeFrames[preFrame]),
-      curYear = parseInt(timeFrames[curFrame]);
-  // console.log("curFrame", curFrame, preYear, curYear, delayMap[curYear]);
+  if (curFrame >= timeFrames.length) return;
 
   width = el.width()-32;
   newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
@@ -572,9 +589,27 @@ function changeSlider(el, curFrame, play, focus) {
       "font-size": 10,
       "color": "#000"
     })
-    .text(curYear);
+    .text(timeFrames[curFrame].split("_")[0]);
   if (play) {
     el.val(curFrame);
+  }
+
+  if (timeFrames[curFrame].split("_")[0] == "init") {
+    preFrame = curFrame;
+    console.log("**", timeFrames[curFrame]);
+    updateLineTimebar();
+    updateBackgoundYear("");
+    chart.clear();
+    return;
+  }
+  console.log("changeSlider", focus, curFrame, timeFrames[preFrame], timeFrames[curFrame]);
+  var preYear = parseInt(timeFrames[preFrame]),
+      curYear = parseInt(timeFrames[curFrame]);
+  if (yearmap[curYear]["delay"] > 1) {
+    focus = flag_focus = true;
+  } else {
+    changeSelectedConts([0,1,2,3,4]);
+    focus = flag_focus = false;
   }
   if (focus && (preYear == minYear || preYear != curYear)) {
     var delaytime = yearmap[curYear]["delay"]*timeunit;

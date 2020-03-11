@@ -76,6 +76,14 @@ body {
   margin-top: -300px;
 }
 
+.chart-desc {
+	font-size: 24px;
+	font-weight: bold;
+	fill: #17a2b8;
+	visibility: hidden;
+	opacity: 0;
+}
+
 .caption-panel {
   color: #000;
 	background-color: #bbb;
@@ -87,15 +95,17 @@ body {
 }
 
 .custom-switch-play {
-	width: 60px;
-	height: 60px;
+	position: absolute;
+	z-index: 30;
+	margin-top: 5px;
+	left: 30px;
+	width: 65px;
+	height: 40px;
 	background: #007bff;
 	color: #ffffff;
-	border-radius: 12px;
-	border: 0.5 solid #ddd;
-	font-size: 36px;
-	margin-bottom: 5px;
-	padding: 12px 14px;
+	border-radius: 5px;
+	font-size: 26px;
+	padding: 7px 21px;
 }
 
 .fa-play {
@@ -126,7 +136,9 @@ body {
 }
 .timeline-slider {
 	top: 0px;
-	left: 98px;
+	left: 15px;
+	padding-left: 83px;
+	padding-right: 17px;
 	height: 20px;
 	background: #bbb;
 	border-top: 1px solid black;
@@ -135,6 +147,7 @@ body {
 .timeline-slider-extend {
 	width: 2px;
 	top: 20px;
+	left: 114px;
 	height: 280px;
 	background-color: #007bff;
 }

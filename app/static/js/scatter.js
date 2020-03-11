@@ -84,14 +84,13 @@ class ScatterPlot {
     }
     radius = d3.scaleSqrt().range([2,15]).domain(this.srange).nice();
 
-    this.svg.append('g')
+    this.xaxis_grid = this.svg.append('g')
       .attr('transform', 'translate(0,' + this.height + ')')
       .attr('class', 'x axis')
       .call(d3.axisBottom(xScale)
         .tickFormat(d3.format(".2s"))
         .tickValues(x_tickvalues)
       );
-
     this.svg.append('g')
       .attr("class", "grid")
       .call(d3.axisBottom(xScale)
@@ -100,15 +99,13 @@ class ScatterPlot {
         .tickValues(x_tickvalues)
       );
 
-    // y-axis is translated to (0,0)
-    this.svg.append('g')
+    this.yaxis_grid = this.svg.append('g')
       .attr('transform', 'translate(0,0)')
       .attr('class', 'y axis')
       .call(d3.axisLeft(yScale)
         .tickFormat(d3.format(".2s"))
         .tickValues(y_tickvalues)
       );
-
     this.svg.append('g')
       .attr("class", "grid")
       .call(d3.axisLeft(yScale)
@@ -117,6 +114,59 @@ class ScatterPlot {
         .tickValues(y_tickvalues)
       );
 
+    this.xaxis = this.svg.append('g')
+      .append("text")
+        .attr("class", "chart-desc")
+        .attr("x", this.width-20)
+        .attr("y", this.height-10)
+        .attr("text-anchor", "end")
+        .text(data_options["x"]["name"]);
+
+    this.yaxis = this.svg.append('g')
+      .append("text")
+        .attr("class", "chart-desc")
+        .attr("x", -20)
+        .attr("y", 26)
+        .attr("text-anchor", "end")
+        .attr('transform', 'rotate(-90)')
+        .text(data_options["y"]["name"]);
+
+    this.bottomleft = this.svg.append('g').attr("class", "chart-desc");
+    this.bottomright = this.svg.append('g').attr("class", "chart-desc");
+    this.upperleft = this.svg.append('g').attr("class", "chart-desc");
+    this.upperright = this.svg.append('g').attr("class", "chart-desc");
+    var ll_labels = [data_options["x"]["label"]["low"], "and", data_options["y"]["label"]["low"]],
+        hl_labels = [data_options["x"]["label"]["high"], "and", data_options["y"]["label"]["low"]],
+        lh_labels = [data_options["x"]["label"]["low"], "and", data_options["y"]["label"]["high"]],
+        hh_labels = [data_options["x"]["label"]["high"], "and", data_options["y"]["label"]["high"]];
+    for (var l = 0; l < 3; l++) {
+      this.bottomleft
+        .append("text")
+          .attr("x", 80)
+          .attr("y", this.height-100+l*25)
+          .attr("text-anchor", "start")
+          .text(ll_labels[l]);
+      this.bottomright
+        .append("text")
+          .attr("x", this.width-80)
+          .attr("y", this.height-100+l*25)
+          .attr("text-anchor", "end")
+          .text(hl_labels[l]);
+      this.upperright
+        .append("text")
+          .attr("x", this.width-80)
+          .attr("y", 40+l*25)
+          .attr("text-anchor", "end")
+          .text(hh_labels[l]);
+      this.upperleft
+        .append("text")
+          .attr("x", 80)
+          .attr("y", 40+l*25)
+          .attr("text-anchor", "start")
+          .text(lh_labels[l]);
+    }
+
+
     this.trace_path_g = this.svg.append('g');
     this.hull_g = this.svg.append('g');
 
@@ -124,6 +174,57 @@ class ScatterPlot {
     this.bubble_shadow_g = this.svg.append('g');
     this.bubble_g = this.svg.append('g');
     this.hull_label_g = this.svg.append('g');
+  }
+
+  highlightXaxis(delay) {
+    this.xaxis.transition()
+      .duration(delay)
+      .style("visibility", "visible")
+      .style("opacity", 1);
+  }
+
+  highlightYaxis(delay) {
+    this.yaxis.transition()
+      .duration(delay)
+      .style("visibility", "visible")
+      .style("opacity", 1);
+  }
+
+  highlightDirect(delay) {
+    this.bottomleft.transition()
+      .duration(delay)
+      .style("visibility", "visible")
+      .style("opacity", 1);
+    this.upperright.transition()
+      .duration(delay)
+      .style("visibility", "visible")
+      .style("opacity", 1);
+  }
+
+  highlightInverse(delay) {
+    this.upperleft.transition()
+      .duration(delay)
+      .style("visibility", "visible")
+      .style("opacity", 1);
+    this.bottomright.transition()
+      .duration(delay)
+      .style("visibility", "visible")
+      .style("opacity", 1);
+  }
+
+  hideDesc(delay) {
+    this.bottomleft.remove();
+    this.bottomright.remove();
+    this.upperleft.remove();
+    this.upperright.remove();
+    this.xaxis.transition()
+      .duration(delay)
+      .style("visibility", "hidden")
+      .style("opacity", 0);
+    this.yaxis.transition()
+      .duration(delay)
+      .style("visibility", "hidden")
+      .style("opacity", 0);
   }
 
   updateChart(year, swtvalues) {

@@ -15,16 +15,22 @@ from collections import Counter
 name_map = {
     "income": "Income",
     "fertility": "Babies per woman",
-    "lifeexp": "Life Expectancy",
+    "lifespan": "Life Expectancy",
     "population": "Population",
     "continent": "Continent",
     "log": "Log",
     "lin": "Lin",
 }
+label_map = {
+    "income": {"low": "poor", "high": "rich"},
+    "fertility": {"low": "few", "high": "many"},
+    "lifespan": {"low": "sick", "high": "healthy"},
+    "none": {"low": "", "high": ""},
+}
 unit_map = {
     "income": "dollars",
     "fertility": "baby",
-    "lifeexp": "years",
+    "lifespan": "years",
     "population": "",
 }
 

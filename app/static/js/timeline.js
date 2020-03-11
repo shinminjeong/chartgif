@@ -57,7 +57,7 @@ class TimeLine {
     for (var g = 0; g < gname.length; g++) {
       this.legend_d.append("text")
         .attr("x", this.margin.left-20)
-        .attr("y", this.margin.top_g+(this.caption_h+this.slice_h)*g+25)
+        .attr("y", this.margin.top_g+(this.caption_h+this.slice_h)*g+30)
         .attr("text-anchor", "end")
         .style("fill", "black")
         .text(gname[g]);
