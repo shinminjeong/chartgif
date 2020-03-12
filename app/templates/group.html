@@ -130,7 +130,7 @@ var params = {
   "s": "population"
 }
 var w = document.getElementById("myChart").offsetWidth,
-    h = w*0.75;
+    h = w*0.9;
 var timeline_w = document.getElementById("timeline-panel").offsetWidth;
 var label_w = Math.min(200, Math.max(120, w*0.2));
 var left_offset = 66, caption_h = 65;
@@ -159,7 +159,7 @@ var outerbound = {};
 var caption = {};
 var innergrp = {};
 
-var minYear = 1800, maxYear = 2018;
+var minYear = 1800, maxYear = 1848; //maxYear = 2018;
 var curFrame = 0, preFrame = 0;
 var timeFrames = [];
 var play_timer = undefined;
@@ -171,7 +171,7 @@ var slowdown = {
 };
 var el, newPoint, timebar;
 var linecharts_v = {};
-var gname = ["World", "Asia", "Europe", "America", "Africa"];
+var gname = ["World", "China", "Japan", "Hong Kong", "Singapore", "S Korea", "Iran", "France", "US", "Italy", "UK", "Spain"];
 var infodiv = document.getElementById("clusterinfo");
 
 initTimeFrame();
@@ -201,8 +201,8 @@ function updateLineTimebar() {
 function initClusterinfo() {
   var numGroup = cluster_info["K"];
   var minmax = cluster_info["minmax"];
-  var group_h = h/numGroup+5;
-  var axis_h = (group_h-30)/3;
+  var group_h = h/numGroup+1;
+  var axis_h = (group_h-20)/1;
   for (var g = 0; g < numGroup; g++) {
     var div_group = document.createElement("div");
     div_group.style = "display:block; padding: 0 10px; height: "+group_h+"px;";
@@ -223,17 +223,17 @@ function initClusterinfo() {
     div_group_timeline_avg_v.style = "width:"+line_w+"px; height: "+group_h+"px; position: absolute; top:10; z-index:0";
     div_group_timeline.appendChild(div_group_timeline_avg_v);
 
-    for (var a = 0; a < 3; a++) {
+    for (var a = 1; a < 2; a++) {
       var div_group_timeline_avg_a = document.createElement("div");
       div_group_timeline_avg_a.id = div_group_timeline_avg_v.id+"_"+selectedAxis[a];
-      div_group_timeline_avg_a.style = "width:"+(line_w-left_offset)+"px; height: "+axis_h+"px; position: absolute; top:"+(10+axis_h*a)+"; left: "+left_offset+"; z-index:1";
+      div_group_timeline_avg_a.style = "width:"+(line_w-left_offset)+"px; height: "+axis_h+"px; position: absolute; top:"+10+"; left: "+left_offset+"; z-index:1";
       div_group_timeline.appendChild(div_group_timeline_avg_a);
     }
 
     div_group.appendChild(div_group_label);
     div_group.appendChild(div_group_timeline);
     infodiv.appendChild(div_group);
-
+    console.log(g, "linechart", data_avg_velocity[g]);
     linecharts_v[g] = new LineChart(div_group_timeline_avg_v.id, line_w, group_h, axis_h);
     linecharts_v[g].drawChart(data_avg_velocity[g], data_options);
   }
@@ -278,6 +278,7 @@ function updateClusterinfo(year) {
 function drawTraceCharts(numGroup) {
   var trace_chart = {};
   for (var g = 0; g < numGroup; g++) {
+    console.log("drawTraceCharts", g)
     trace_chart[g] = new TraceChart("trace_chart_", g);
     trace_chart[g].draw(data_plot, data_options, data_population, data_continent, data_group);
   }
@@ -535,11 +536,14 @@ function traceTimeline() {
 }
 
 
-var legendCount = 5;
+var legendCount = 12;
 var swtvalues = {
-  "trace": false,
+  "trace": true,
   "hull": false,
-  "groups": {0: true, 1:true, 2:true, 3:true, 4:true},
+  // "groups": {0: true, 1:true, 2:true, 3:true, 4:true},
+  "groups": {0: true, 1:true, 2:true, 3:true,
+    4:true, 5:true, 6:true, 7:true, 8:true, 9:true,
+    10:true, 11:true},
 };
 // var traceon = document.querySelectorAll("input#switchTrace");
 // traceon[0].addEventListener("change", function(e) {

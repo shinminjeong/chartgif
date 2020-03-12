@@ -46,7 +46,13 @@ body {
 	padding: 0px 5px;
 	width: 50px;
 }
-#dropdown_X > button,
+#dropdown_X > button {
+	height: 24px;
+	font-size: 14px;
+	padding: 0px 10px;
+	width: 230px;
+	margin-left: 20px;
+}
 #dropdown_Y > button {
 	height: 24px;
 	font-size: 14px;

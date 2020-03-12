@@ -8,7 +8,7 @@ class TraceChart {
     this.div_id = div_form + g_id;
     this.g_id = g_id;
     this.trace_width = document.getElementById(this.div_id).offsetWidth;
-    this.trace_height = this.trace_width*0.8;
+    this.trace_height = this.trace_width*0.2;
   }
 
   draw(data2d, data_options, population, continent, group) {
@@ -21,14 +21,15 @@ class TraceChart {
       .attr('width', this.trace_width)
       .attr('height', this.trace_height)
     .append('g')
-      .attr('transform', 'translate(0,0)');
+      .attr('transform', 'translate(5,5)');
 
     this.countries = data2d.country;
     this.continentMap = continent.continent;
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    var years = range(1800, 2019);
+    // var years = range(1800, 2019);
+    var years = range(1800, 1849);
     this.data = {}
     this.xrange = [10000000, 0];
     this.yrange = [10000000, 0];
@@ -77,13 +78,13 @@ class TraceChart {
       allyears = allyears.concat(traceHulls(data, getGroup, 2))
     }
 
-    tracehull[this.g_id] = this.trace_g.selectAll("path.trace")
-        .data(allyears)
-      .enter().append("path")
-        .attr("class", "trace")
-        .attr("d", drawCluster)
-        .style("opacity", 0.01)
-        .style("fill", function(d) { return gcolor(d.group); });
+    // tracehull[this.g_id] = this.trace_g.selectAll("path.trace")
+    //     .data(allyears)
+    //   .enter().append("path")
+    //     .attr("class", "trace")
+    //     .attr("d", drawCluster)
+    //     .style("opacity", 0.01)
+    //     .style("fill", function(d) { return gcolor(d.group); });
 
     var allyearmeans = [];
     for (var i in years) {

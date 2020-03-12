@@ -40,13 +40,13 @@ def get_focus_range(groups, axes, V):
 
     for g in groups:
         spreadv = {v["year"]:0 for v in V[g][axes[0]]}
-        for a in axes:
+        for a in ["Y"]:
             # print(a, [(v["year"], v["value"]) for v in V[g][a]])
             #### (1) when there is a sharp change in value
             yrange = []
             minv = min([v["min"] for v in V[g][a]])
             maxv = max([v["max"] for v in V[g][a]])
-            threshold = (maxv-minv)*0.03
+            threshold = (maxv-minv)*0.1
             range[g][a] = {v["year"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) > threshold}
             for y, thd in range[g][a].items():
                 if len(yrange) > 0 and y - yrange[-1] >= cont_threshold:
@@ -70,18 +70,18 @@ def get_focus_range(groups, axes, V):
                 })
 
             #### (2) when most spread
-            for v in V[g][a]:
-                if a != "S":
-                    spreadv[v["year"]] += v["diff"]/maxv
-        if g == 0:
-            mostspread = sorted(spreadv.items(), key=lambda x:x[1], reverse=True)[0]
-            output.append({
-                "reason": "spr",
-                "pattern": "mostspread",
-                "g": g,
-                "a": ["X", "Y"],
-                "years": [mostspread[0], mostspread[0]+1]
-            })
+        #     for v in V[g][a]:
+        #         if a != "S":
+        #             spreadv[v["year"]] += v["diff"]/maxv
+        # if g == 0:
+        #     mostspread = sorted(spreadv.items(), key=lambda x:x[1], reverse=True)[0]
+        #     output.append({
+        #         "reason": "spr",
+        #         "pattern": "mostspread",
+        #         "g": g,
+        #         "a": ["X", "Y"],
+        #         "years": [mostspread[0], mostspread[0]+1]
+        #     })
     # print(output)
     return output
 

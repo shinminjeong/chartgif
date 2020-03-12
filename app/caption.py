@@ -25,7 +25,9 @@ label_map = {
     "income": {"low": "poor", "high": "rich"},
     "fertility": {"low": "few", "high": "many"},
     "lifespan": {"low": "sick", "high": "healthy"},
-    "none": {"low": "", "high": ""},
+    "confirmed": {"low": "few", "high": "many"},
+    "death": {"low": "few", "high": "many"},
+    "numdays": {"low": "", "high": ""},
 }
 unit_map = {
     "income": "dollars",

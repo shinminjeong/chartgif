@@ -3,7 +3,7 @@ var overlap_offset = 0;
 class LineChart {
 
   constructor(div_id, w, h, axis_h) {
-    this.margin = {top: 5, right: 0, bottom: 25, left:left_offset};
+    this.margin = {top: 5, right: 0, bottom: 15, left:left_offset};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
@@ -55,12 +55,12 @@ class LineChart {
     var y_scale = {};
     var names = this.div_id.split("_");
 
-    for (var i = 0; i < 3; i++) {
+      var i = 1;
       var axis = selectedAxis[i];
       // console.log([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })]);
       y_scale[axis] = d3.scaleLinear()
         .domain([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })])
-        .range([ (i+1)*this.height/3.0+overlap_offset, i*this.height/3.0-overlap_offset ]);
+        .range([ this.height,0 ]);
         // .range([ this.height, 0 ]);
 
       var axis_name = data_options[axis.toLowerCase()]["id"];
@@ -68,7 +68,7 @@ class LineChart {
       // console.log("name_len", name_len)
       var y_min = data[axis][0].value;
       // var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-22*(1-i));
-      var y_pos = (i+0.5)*this.height/3.0
+      var y_pos = (i+0.5)*this.height/2.0
       path_svg.append("rect")
         .attr("x", function() {
           return line_xscale(minYear)-10-name_len-5;
@@ -136,10 +136,10 @@ class LineChart {
         )
         .on("mouseover", mouseOverPaths)
         .on("mouseout", mouseOutPaths)
-    }
+
 
     var canvas = {};
-    for (var a = 0; a < 3; a++) {
+      var a = 1
       canvas[selectedAxis[a]] = document.getElementById(this.div_id+"_"+selectedAxis[a]);
       canvas[selectedAxis[a]].onmousemove = function(e) { draw_rect_move(e, this); };
       canvas[selectedAxis[a]].onmouseover = function(e) {
@@ -149,7 +149,6 @@ class LineChart {
         this.style.backgroundColor = "transparent";
       }
       canvas[selectedAxis[a]].onclick = function(e) { draw_rect_click (e, this); };
-    }
 
   }
 }

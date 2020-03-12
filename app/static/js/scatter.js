@@ -6,7 +6,7 @@ var hullOffset = 10;
 class ScatterPlot {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 10, bottom: 25, left:25};
+    this.margin = {top: 5, right: 10, bottom: 25, left:30};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
@@ -30,7 +30,8 @@ class ScatterPlot {
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    this.years = range(1800, 2019);
+    // this.years = range(1800, 2019);
+    this.years = range(1800, 1849);
     this.data = {}
     this.xrange = [10000000, 0];
     this.yrange = [10000000, 0];
@@ -75,9 +76,9 @@ class ScatterPlot {
       xScale = d3.scaleLinear().range([0, this.width]).domain(this.xrange).nice();
     }
     if (data_options["yScale"]["id"] == "log") {
-      this.yrange[0] = Math.max(1, this.yrange[0]);
+      this.yrange[0] = Math.max(100, this.yrange[0]);
       y_tickvalues = getTickValues(this.yrange, true);
-      yScale = d3.scaleLog().range([this.height, 0]).domain(this.yrange);
+      yScale = d3.scaleLog().range([this.height, 0]).domain(this.yrange).nice();
     } else {
       y_tickvalues = getTickValues(this.yrange, false);
       yScale = d3.scaleLinear().range([this.height, 0]).domain(this.yrange).nice();
