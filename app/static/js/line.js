@@ -166,7 +166,7 @@ function draw_rect_input(yrange, div_id, axes, reason) {
       y_end = yrange[yrange.length-1];
   var ys = line_xscale(y_start-0.5),
       ye = line_xscale(y_end+0.5);
-  console.log("draw_rect_input", range, ys, ye, div_id, axes);
+  // console.log("draw_rect_input", range, ys, ye, div_id, axes);
   for (var i in axes) {
     var names = div_id.split("_");
     var canvas = document.getElementById(div_id+"_"+axes[i]);

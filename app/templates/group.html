@@ -345,7 +345,7 @@ function removeFrame(id) {
 }
 
 function drawFrame(yrange, group, axes, reason, pattern) {
-  console.log("drawFrame", yrange, group, axes)
+  // console.log("drawFrame", yrange, group, axes)
   // axis: X, Y, S or (overlay == input from the linecharts)
   r = [yrange[0], yrange[yrange.length-1]];
   for (var i = r[0]; i < r[1]; i++) {
@@ -596,7 +596,6 @@ function changeSlider(el, curFrame, play, focus) {
 
   if (timeFrames[curFrame].split("_")[0] == "init") {
     preFrame = curFrame;
-    console.log("**", timeFrames[curFrame]);
     updateLineTimebar();
     updateBackgoundYear("");
     chart.clear();
@@ -606,10 +605,10 @@ function changeSlider(el, curFrame, play, focus) {
   var preYear = parseInt(timeFrames[preFrame]),
       curYear = parseInt(timeFrames[curFrame]);
   if (yearmap[curYear]["delay"] > 1) {
-    focus = flag_focus = true;
+    focus = true;
   } else {
     changeSelectedConts([0,1,2,3,4]);
-    focus = flag_focus = false;
+    focus = false;
   }
   if (focus && (preYear == minYear || preYear != curYear)) {
     var delaytime = yearmap[curYear]["delay"]*timeunit;

@@ -134,7 +134,7 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
-    console.log("addFrame", gindex, y_start, y_end, s, e, delay);
+    // console.log("addFrame", gindex, y_start, y_end, s, e, delay);
 
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
