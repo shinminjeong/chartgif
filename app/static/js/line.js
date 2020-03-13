@@ -60,7 +60,7 @@ class LineChart {
       // console.log([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })]);
       y_scale[axis] = d3.scaleLinear()
         .domain([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })])
-        .range([ (i+1)*this.height/3.0+overlap_offset, i*this.height/3.0-overlap_offset ]);
+        .range([ (i+1)*this.height/2.0+overlap_offset, i*this.height/2.0-overlap_offset ]);
         // .range([ this.height, 0 ]);
 
       var axis_name = data_options[axis.toLowerCase()]["id"];
