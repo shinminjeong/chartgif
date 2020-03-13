@@ -21,7 +21,7 @@ class LineChart {
       .attr('transform', 'translate('+this.margin.left+',0)');
 
     line_xscale = d3.scaleLinear()
-      .domain(d3.extent(data["X"], function(d) { return +d.year; }))
+      .domain(d3.extent(data["X"], function(d) { return d.time; }))
       .range([ 0, this.width ]);
 
     svg.append("g")
@@ -115,7 +115,7 @@ class LineChart {
         .attr("opacity", 0.6)
         .attr("stroke", "none")
         .attr("d", d3.area()
-          .x(function(d) { return line_xscale(d.year) })
+          .x(function(d) { return line_xscale(d.time) })
           .y0(function(d) { return y_scale[axis](d.min) })
           .y1(function(d) { return y_scale[axis](d.max) })
         )
@@ -131,7 +131,7 @@ class LineChart {
         .attr("stroke", axisColors[i])
         .attr("stroke-width", 1.5)
         .attr("d", d3.line()
-          .x(function(d) { return line_xscale(d.year) })
+          .x(function(d) { return line_xscale(d.time) })
           .y(function(d) { return y_scale[axis](d.value) })
         )
         .on("mouseover", mouseOverPaths)
@@ -164,9 +164,9 @@ var mouse = {
 function draw_rect_input(yrange, div_id, axes, reason) {
   var y_start = yrange[0],
       y_end = yrange[yrange.length-1];
-  var ys = line_xscale(y_start-0.5),
-      ye = line_xscale(y_end+0.5);
-  // console.log("draw_rect_input", range, ys, ye, div_id, axes);
+  var ys = line_xscale(y_start)-0.5,
+      ye = line_xscale(y_end)+0.5;
+  // console.log("draw_rect_input", yrange, ys, ye, div_id, axes);
   for (var i in axes) {
     var names = div_id.split("_");
     var canvas = document.getElementById(div_id+"_"+axes[i]);

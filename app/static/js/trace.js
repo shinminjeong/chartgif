@@ -12,7 +12,6 @@ class TraceChart {
   }
 
   draw(data2d, data_options, population, continent, group) {
-    var year = "1800";
     if (group.length == 0)
       group = undefined;
 
@@ -28,11 +27,11 @@ class TraceChart {
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    var years = range(1800, 2019);
+    var years = time_arr;
     this.data = {}
     this.xrange = [10000000, 0];
     this.yrange = [10000000, 0];
-    for (var i in years) {
+    for (var i=0; i < years.length; i++) {
       var year = years[i];
       this.data[year] = [];
       for (var index in this.countries) {
@@ -72,7 +71,7 @@ class TraceChart {
     this.trace_g = this.svg.append('g');
 
     var allyears = [];
-    for (var i in years) {
+    for (var i=0; i < years.length; i++) {
       var data = this.data[years[i]];
       allyears = allyears.concat(traceHulls(data, getGroup, 2))
     }
@@ -86,7 +85,7 @@ class TraceChart {
         .style("fill", function(d) { return gcolor(d.group); });
 
     var allyearmeans = [];
-    for (var i in years) {
+    for (var i=0; i < years.length; i++) {
       var data = this.data[years[i]];
       allyearmeans = allyearmeans.concat(traceMean(years[i], data, getGroup))
     }
@@ -96,8 +95,8 @@ class TraceChart {
         .data(allyearmeans)
       .enter().append("circle")
         .attr("class", "tbubble")
-        .attr("id", d => this.g_id+"_"+d.year)
-        .attr("year", d => d.year)
+        .attr("id", d => this.g_id+"_"+d.time)
+        .attr("year", d => d.time)
         .attr('cx', d => t_xScale(d.x))
         .attr('cy', d => t_yScale(d.y))
         .attr('r', 1)
@@ -109,7 +108,7 @@ class TraceChart {
 
 const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
 
-function traceMean(year, nodes, index) {
+function traceMean(time, nodes, index) {
   // console.log("traceMean")
   var xs = {}, ys = {};
   for (var k=0; k<nodes.length; ++k) {
@@ -123,7 +122,7 @@ function traceMean(year, nodes, index) {
   }
   var pathset = [];
   for (i in xs) {
-    pathset.push({year: year, group: i, x: arrAvg(xs[i]), y: arrAvg(ys[i])});
+    pathset.push({time: time, group: i, x: arrAvg(xs[i]), y: arrAvg(ys[i])});
   }
   return pathset;
 }

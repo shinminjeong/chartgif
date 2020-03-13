@@ -162,6 +162,13 @@ body {
 	position: relative;
 	overflow-y: scroll;
 }
+.time-legend {
+	position: absolute;
+	text-align: right;
+	padding-right: 10px;
+	width: 100px;
+}
+
 .time-slice {
 	position: absolute;
 	background-color: #666;

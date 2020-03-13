@@ -51,16 +51,13 @@ class TimeLine {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
-    this.legend_d = this.svg.append("g")
-      .attr('transform', 'translate(0,' + this.margin.top + ')');
-
     for (var g = 0; g < gname.length; g++) {
-      this.legend_d.append("text")
-        .attr("x", this.margin.left-20)
-        .attr("y", this.margin.top_g+(this.caption_h+this.slice_h)*g+30)
-        .attr("text-anchor", "end")
-        .style("fill", "black")
-        .text(gname[g]);
+      var legend_d = document.createElement("div");
+      legend_d.className = "time-legend";
+      legend_d.style.top = this.margin.top_g+(this.caption_h+this.slice_h)*g+15;
+      legend_d.style.left = 0;
+      legend_d.innerHTML = gname[g];
+      this.framepanel.appendChild(legend_d);
     }
 
     this.updateXaxis(timeframes);

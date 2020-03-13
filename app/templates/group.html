@@ -112,6 +112,7 @@ let gcolor = function(i){
   }
 };
 
+var time_arr = {{time_arr|safe}};
 var data_plot = {{data|safe}};
 var data_options = {{options|safe}};
 var data_population = {{population|safe}};
@@ -159,7 +160,8 @@ var outerbound = {};
 var caption = {};
 var innergrp = {};
 
-var minYear = 1800, maxYear = 2018;
+var minYear = time_arr[0],
+    maxYear = time_arr[time_arr.length-1];
 var curFrame = 0, preFrame = 0;
 var timeFrames = [];
 var play_timer = undefined;

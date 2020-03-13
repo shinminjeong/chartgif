@@ -14,7 +14,6 @@ class ScatterPlot {
   }
 
   initChart(data2d, data_options, population, continent, group) {
-    var year = "1800";
     if (group.length == 0)
       group = undefined;
 
@@ -30,7 +29,7 @@ class ScatterPlot {
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    this.years = range(1800, 2019);
+    this.years = time_arr;
     this.data = {}
     this.xrange = [10000000, 0];
     this.yrange = [10000000, 0];
@@ -297,7 +296,7 @@ class ScatterPlot {
     this.trace_path_g.selectAll("circle.tbubble").remove();
     if (flagTrace) {
       var allyearmeans = [];
-      for (var i in this.years) {
+      for (var i=0; i < this.years.length; i++) {
         var data = this.data[this.years[i]];
         allyearmeans = allyearmeans.concat(traceMean(this.years[i], data, getGroup))
       }
@@ -306,7 +305,7 @@ class ScatterPlot {
           .data(allyearmeans)
         .enter().append("circle")
           .attr("class", "tbubble")
-          .attr("year", d => d.year)
+          .attr("year", d => d.time)
           .attr('cx', d => xScale(d.x))
           .attr('cy', d => yScale(d.y))
           .attr('r', 1)
@@ -332,18 +331,18 @@ class ScatterPlot {
     this.hull_label_g.selectAll("text.hull-label").remove();
   }
 
-  updateFocus(year, swtvalues, innergrp, delay) {
-    console.log("updateFocus", swtvalues, innergrp[year]["group"])
+  updateFocus(time, swtvalues, innergrp, delay) {
+    console.log("updateFocus", swtvalues, innergrp[time]["group"])
     this.bubble_g.selectAll("*").remove();
     this.trace_path_g.selectAll("circle.tbubble").remove();
 
-    var data = this.data[year];
+    var data = this.data[time];
     var flag_world = swtvalues["groups"][0];
     for (var d in data) {
       var group = flag_world?0:data[d].group;
-      if (swtvalues["groups"][group] && group in innergrp[year]["group"]) {
-        data[d].ingroup = innergrp[year]["group"][group][data[d].id];
-        data[d].ingdesc = innergrp[year]["desc"][group][data[d].ingroup];
+      if (swtvalues["groups"][group] && group in innergrp[time]["group"]) {
+        data[d].ingroup = innergrp[time]["group"][group][data[d].id];
+        data[d].ingdesc = innergrp[time]["desc"][group][data[d].ingroup];
       } else {
         data[d].ingroup = -1;
       }
