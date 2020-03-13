@@ -76,7 +76,7 @@ class ScatterPlot {
       xScale = d3.scaleLinear().range([0, this.width]).domain(this.xrange).nice();
     }
     if (data_options["yScale"]["id"] == "log") {
-      this.yrange[0] = Math.max(100, this.yrange[0]);
+      this.yrange[0] = Math.max(50, this.yrange[0]);
       y_tickvalues = getTickValues(this.yrange, true);
       yScale = d3.scaleLog().range([this.height, 0]).domain(this.yrange).nice();
     } else {
