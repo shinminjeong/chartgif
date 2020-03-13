@@ -9,6 +9,7 @@ from django.conf import settings
 import os, sys, csv, json
 import pandas as pd
 import numpy as np
+from datetime import datetime
 from .utils import *
 from .caption import *
 
@@ -44,10 +45,11 @@ K = 12 # group 0 for the entire world
 
 values = None
 kgroups = None
-numYears = 0
 countries = None
+timeseries = []
+numTicks = 0
 def main(request):
-    global values, kgroups, options, numYears, countries
+    global values, kgroups, options, timeseries, numTicks, countries
     for k, v in options.items():
         if k in request.GET:
             id = request.GET.get(k)
@@ -58,16 +60,18 @@ def main(request):
     # print(options)
     selectedAxis = []
 
-    years = [str(y) for y in range(1800, 1849)]
-    # years = ["1/22/20","1/23/20","1/24/20","1/25/20","1/26/20","1/27/20","1/28/20","1/29/20","1/30/20","1/31/20"]
-    # ,2/1/20,2/2/20,2/3/20,2/4/20,2/5/20,2/6/20,2/7/20,2/8/20,2/9/20,2/10/20,2/11/20,2/12/20,2/13/20,2/14/20,2/15/20,2/16/20,2/17/20,2/18/20,2/19/20,2/20/20,2/21/20,2/22/20,2/23/20,2/24/20,2/25/20,2/26/20,2/27/20,2/28/20,2/29/20,3/1/20,3/2/20,3/3/20,3/4/20,3/5/20,3/6/20,3/7/20,3/8/20,3/9/20,3/10/20,3/11/20]
-    numYears = len(years)
-    df_x = pd.read_csv(file_map[options["x"]["id"]])[['country']+years].dropna()
-    df_y = pd.read_csv(file_map[options["y"]["id"]])[['country']+years].dropna()
+    pd_x = pd.read_csv(file_map[options["x"]["id"]])
+    pd_y = pd.read_csv(file_map[options["y"]["id"]])
+    heads = [datetime.strptime(x, "%Y") for x,y in zip(pd_x.columns.tolist()[1:], pd_y.columns.tolist()[1:]) if x==y]
+    timeseries = [datetime.strftime(y, "%Y") for y in heads]
+
+    numTicks = len(timeseries)
+    df_x = pd_x[['country']+timeseries].dropna()
+    df_y = pd_y[['country']+timeseries].dropna()
     map = pd.merge(df_x, df_y, on='country', how='inner')
     countries = map['country'].tolist()
 
-    df_s = pd.read_csv(file_map[options["s"]["id"]])[['country']+years]
+    df_s = pd.read_csv(file_map[options["s"]["id"]])[['country']+timeseries]
     df_s = df_s.loc[df_s['country'].isin(countries)].reset_index()
     df_c = pd.read_csv(file_map[options["c"]["id"]])
     df_c = df_c.loc[df_c['country'].isin(countries)].reset_index()
@@ -76,29 +80,29 @@ def main(request):
     # kgroups = {k:{"index": i, "group": c_group[df_c.iloc[i]["continent"]], "sub": df_c.iloc[i]["sub_region"]} for i, k in enumerate(countries)}
     kgroups = {k:{"index": i, "group": c_group[df_c.iloc[i]["continent"]], "sub": ""} for i, k in enumerate(countries)}
     values = map.drop(columns='country').fillna(-1)
-    values[["{}_s".format(y) for y in years]] = df_s[years].astype("float")
+    values[["{}_s".format(y) for y in timeseries]] = df_s[timeseries].astype("float")
 
     print(values)
     # calculate average variance
     avg_v = {}
-    groups = range(0, K)
+    groups = list(c_group_inv.keys())
     for group_index in groups:
         if group_index == 0:
             X = values.to_numpy()
         else:
             cset = [v["index"] for k, v in kgroups.items() if v["group"] == group_index] # X value
             X = values.iloc[cset, :].to_numpy()
-        D, minD, maxD = avg_value(X, numYears)
-        # D, minD, maxD = avg_variance(X, numYears)
+        D, minD, maxD = avg_value(X, numTicks)
+        # D, minD, maxD = avg_variance(X, numTicks)
         avg_v[group_index] = {}
         for i, a in enumerate(selectedAxis):
-            f = i*numYears
-            t = (i+1)*numYears
-            avg_v[group_index][a] = [{"year":int(y), "value":v, "min": m1, "max": m2, "diff": m2-m1} for y, v, m1, m2 in zip(years, D.tolist()[f:t], minD.tolist()[f:t], maxD.tolist()[f:t])]
+            f = i*numTicks
+            t = (i+1)*numTicks
+            avg_v[group_index][a] = [{"time":y, "value":v, "min": m1, "max": m2, "diff": m2-m1} for y, v, m1, m2 in zip(timeseries, D.tolist()[f:t], minD.tolist()[f:t], maxD.tolist()[f:t])]
     # print(avg_v)
-    focus_range = get_focus_range(groups, selectedAxis, avg_v);
+    focus_range = get_focus_range(timeseries, groups, selectedAxis, avg_v);
 
-    G, minmax = minmax_for_group(years, K, kgroups, selectedAxis, values)
+    G, minmax = minmax_for_group(timeseries, K, kgroups, selectedAxis, values)
     clusterinfo = {
         "K": K,
         "groups": range(0, K),
@@ -106,6 +110,7 @@ def main(request):
     }
     # print(kgroups)
     return render(request, "group.html", {
+        "time_arr": timeseries,
         "data": map.to_json(),
         "options": options,
         "population": df_s.to_json(),
@@ -119,7 +124,7 @@ def main(request):
 
 @csrf_exempt
 def get_caption(request):
-    global values, kgroups, options, numYears, countries
+    global values, kgroups, options, timeseries, numTicks, countries
     outerbound = request.POST
     head_y = int(outerbound.get("head"))
     tail_y = int(outerbound.get("tail"))+1
@@ -148,12 +153,14 @@ def get_caption(request):
         selectedCol = []
         axes = ["X", "Y", "S"]
         selectedAxis = list(v["axis"])
-        yrange = [int(y) for y in v["yrange"]]
+        yrange = v["yrange"]
+        ys = timeseries.index(yrange[0])
+        ye = timeseries.index(yrange[-1])
         for r in range(0, len(axes)): # selected years
             if axes[r] in selectedAxis:
-                selectedCol.extend(list(range((yrange[0]-1800)+numYears*r, (yrange[-1]+1-1800)+numYears*r)))
+                selectedCol.extend(list(range(ys+numTicks*r, (ye+1)+numTicks*r)))
         # print("---- group {} ---- {} ----".format(g, selectedAxis), selectedCol)
-
+        # print(values.iloc[cset, selectedCol])
         ## cluster vector
         X = values.iloc[cset, selectedCol].to_numpy()
         # X = normalizeVector(X, tail_y-head_y)

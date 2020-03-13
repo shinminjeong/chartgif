@@ -112,6 +112,7 @@ let gcolor = function(i){
   }
 };
 
+var time_arr = {{time_arr|safe}};
 var data_plot = {{data|safe}};
 var data_options = {{options|safe}};
 var data_population = {{population|safe}};
@@ -159,7 +160,8 @@ var outerbound = {};
 var caption = {};
 var innergrp = {};
 
-var minYear = 1800, maxYear = 1848; //maxYear = 2018;
+var minYear = time_arr[0],
+    maxYear = time_arr[time_arr.length-1];
 var curFrame = 0, preFrame = 0;
 var timeFrames = [];
 var play_timer = undefined;
@@ -171,6 +173,7 @@ var slowdown = {
 };
 var el, newPoint, timebar;
 var linecharts_v = {};
+var trace_chart = {};
 var gname = ["World", "China", "Japan", "Hong Kong", "Singapore", "S Korea", "Iran", "France", "US", "Italy", "UK", "Spain"];
 var infodiv = document.getElementById("clusterinfo");
 
@@ -202,7 +205,7 @@ function initClusterinfo() {
   var numGroup = cluster_info["K"];
   var minmax = cluster_info["minmax"];
   var group_h = h/numGroup+1;
-  var axis_h = (group_h-20)/1;
+  var axis_h = (group_h-20)/2;
   for (var g = 0; g < numGroup; g++) {
     var div_group = document.createElement("div");
     div_group.style = "display:block; padding: 0 10px; height: "+group_h+"px;";
@@ -223,10 +226,10 @@ function initClusterinfo() {
     div_group_timeline_avg_v.style = "width:"+line_w+"px; height: "+group_h+"px; position: absolute; top:10; z-index:0";
     div_group_timeline.appendChild(div_group_timeline_avg_v);
 
-    for (var a = 1; a < 2; a++) {
+    for (var a = 0; a < 2; a++) {
       var div_group_timeline_avg_a = document.createElement("div");
       div_group_timeline_avg_a.id = div_group_timeline_avg_v.id+"_"+selectedAxis[a];
-      div_group_timeline_avg_a.style = "width:"+(line_w-left_offset)+"px; height: "+axis_h+"px; position: absolute; top:"+10+"; left: "+left_offset+"; z-index:1";
+      div_group_timeline_avg_a.style = "width:"+(line_w-left_offset)+"px; height: "+axis_h+"px; position: absolute; top:"+(10+axis_h*a)+"; left: "+left_offset+"; z-index:1";
       div_group_timeline.appendChild(div_group_timeline_avg_a);
     }
 
@@ -276,9 +279,8 @@ function updateClusterinfo(year) {
 }
 
 function drawTraceCharts(numGroup) {
-  var trace_chart = {};
   for (var g = 0; g < numGroup; g++) {
-    console.log("drawTraceCharts", g)
+    // console.log("drawTraceCharts", g)
     trace_chart[g] = new TraceChart("trace_chart_", g);
     trace_chart[g].draw(data_plot, data_options, data_population, data_continent, data_group);
   }

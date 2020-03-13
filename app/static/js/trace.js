@@ -1,4 +1,6 @@
 var t_xScale, t_yScale;
+var xrange = [10000000, 0],
+    yrange = [10000000, 0];
 var tracehull = {};
 var traceline = {};
 
@@ -12,7 +14,6 @@ class TraceChart {
   }
 
   draw(data2d, data_options, population, continent, group) {
-    var year = "1800";
     if (group.length == 0)
       group = undefined;
 
@@ -28,12 +29,9 @@ class TraceChart {
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    // var years = range(1800, 2019);
-    var years = range(1800, 1849);
+    var years = time_arr;
     this.data = {}
-    this.xrange = [10000000, 0];
-    this.yrange = [10000000, 0];
-    for (var i in years) {
+    for (var i=0; i < years.length; i++) {
       var year = years[i];
       this.data[year] = [];
       for (var index in this.countries) {
@@ -47,37 +45,36 @@ class TraceChart {
             "y": data2d[year+"_y"][index],
             "group": (this.g_id>0 ? group[this.countries[index]]["group"] : 0)
           }
-          this.xrange[0] = Math.min(this.xrange[0], d.x);
-          this.xrange[1] = Math.max(this.xrange[1], d.x);
-          this.yrange[0] = Math.min(this.yrange[0], d.y);
-          this.yrange[1] = Math.max(this.yrange[1], d.y);
+          xrange[0] = Math.min(xrange[0], d.x);
+          xrange[1] = Math.max(xrange[1], d.x);
+          yrange[0] = Math.min(yrange[0], d.y);
+          yrange[1] = Math.max(yrange[1], d.y);
           this.data[year].push(d)
         }
       }
     }
 
     if (data_options["xScale"]["id"] == "log") {
-      this.xrange[0] = Math.max(1, this.xrange[0]);
-      t_xScale = d3.scaleLog().range([0, this.trace_width]).domain(this.xrange);
+      xrange[0] = Math.max(1, xrange[0]);
+      t_xScale = d3.scaleLog().range([0, this.trace_width]).domain(xrange);
     } else {
-      t_xScale = d3.scaleLinear().range([0, this.trace_width]).domain(this.xrange).nice();
+      t_xScale = d3.scaleLinear().range([0, this.trace_width]).domain(xrange).nice();
     }
     if (data_options["yScale"]["id"] == "log") {
-      this.yrange[0] = Math.max(1, this.yrange[0]);
-      t_yScale = d3.scaleLog().range([this.trace_height, 0]).domain(this.yrange).nice();
+      yrange[0] = Math.max(1, yrange[0]);
+      t_yScale = d3.scaleLog().range([this.trace_height, 0]).domain(yrange).nice();
     } else {
-      t_yScale = d3.scaleLinear().range([this.trace_height, 0]).domain(this.yrange).nice();
+      t_yScale = d3.scaleLinear().range([this.trace_height, 0]).domain(yrange).nice();
     }
 
     this.trace_path_g = this.svg.append('g');
     this.trace_g = this.svg.append('g');
 
-    var allyears = [];
-    for (var i in years) {
-      var data = this.data[years[i]];
-      allyears = allyears.concat(traceHulls(data, getGroup, 2))
-    }
-
+    // var allyears = [];
+    // for (var i=0; i < years.length; i++) {
+    //   var data = this.data[years[i]];
+    //   allyears = allyears.concat(traceHulls(data, getGroup, 2))
+    // }
     // tracehull[this.g_id] = this.trace_g.selectAll("path.trace")
     //     .data(allyears)
     //   .enter().append("path")
@@ -87,20 +84,18 @@ class TraceChart {
     //     .style("fill", function(d) { return gcolor(d.group); });
 
     var allyearmeans = [];
-    for (var i in years) {
+    for (var i=0; i < years.length; i++) {
       var data = this.data[years[i]];
       allyearmeans = allyearmeans.concat(traceMean(years[i], data, getGroup))
     }
-    // console.log(allyearmeans)
-
     traceline[this.g_id] = this.trace_path_g.selectAll(".tbubble")
         .data(allyearmeans)
       .enter().append("circle")
         .attr("class", "tbubble")
-        .attr("id", d => this.g_id+"_"+d.year)
-        .attr("year", d => d.year)
-        .attr('cx', d => t_xScale(d.x))
-        .attr('cy', d => t_yScale(d.y))
+        .attr("id", d => this.g_id+"_"+d.time)
+        .attr("year", d => d.time)
+        .attr('cx', d => isFinite(t_xScale(d.x)) ? t_xScale(d.x) : t_xScale(1))
+        .attr('cy', d => isFinite(t_yScale(d.y)) ? t_yScale(d.y) : t_yScale(1))
         .attr('r', 1)
         .style("opacity", 1)
         .style("fill", function(d) { return gcolor(d.group); });
@@ -110,7 +105,7 @@ class TraceChart {
 
 const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
 
-function traceMean(year, nodes, index) {
+function traceMean(time, nodes, index) {
   // console.log("traceMean")
   var xs = {}, ys = {};
   for (var k=0; k<nodes.length; ++k) {
@@ -124,7 +119,7 @@ function traceMean(year, nodes, index) {
   }
   var pathset = [];
   for (i in xs) {
-    pathset.push({year: year, group: i, x: arrAvg(xs[i]), y: arrAvg(ys[i])});
+    pathset.push({time: time, group: i, x: arrAvg(xs[i]), y: arrAvg(ys[i])});
   }
   return pathset;
 }
