@@ -4,11 +4,11 @@ var traceline = {};
 
 class TraceChart {
 
-  constructor(div_form, g_id) {
+  constructor(div_form, g_id, height) {
     this.div_id = div_form + g_id;
     this.g_id = g_id;
     this.trace_width = document.getElementById(this.div_id).offsetWidth;
-    this.trace_height = this.trace_width*0.8;
+    this.trace_height = height;
   }
 
   draw(data2d, data_options, population, continent, group) {
