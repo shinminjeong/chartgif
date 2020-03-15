@@ -606,7 +606,6 @@ function changeSlider(el, curFrame, play, focus) {
     })
     .text(function() {
       yy = timeFrames[curFrame].split("_")[0];
-      console.log("changeSlider", yy);
       if (timemap[yy]) return timemap[yy];
       else return yy;
     })
