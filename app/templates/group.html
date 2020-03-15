@@ -125,7 +125,7 @@ var cluster_info = {{clusterinfo|safe}};
 var data_avg_velocity = {{avg_velocity|safe}};
 var data_focus_range = {{focus_range|safe}};
 var gname = {{gname|safe}};
-var legendCount = gname.length;
+var legendCount = Object.keys(gname).length;
 
 var selectedAxis = ["X", "Y", "S"];
 var params = {
