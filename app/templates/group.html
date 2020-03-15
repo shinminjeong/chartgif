@@ -124,6 +124,8 @@ var data_group = {{kgroup|safe}};
 var cluster_info = {{clusterinfo|safe}};
 var data_avg_velocity = {{avg_velocity|safe}};
 var data_focus_range = {{focus_range|safe}};
+var gname = {{gname|safe}};
+var legendCount = gname.length;
 
 var selectedAxis = ["X", "Y", "S"];
 var params = {
@@ -177,7 +179,6 @@ var slowdown = {
 var el, newPoint, timebar;
 var linecharts_v = {};
 var trace_chart = {};
-var gname = ["World", "China", "Japan", "Hong Kong", "Singapore", "S Korea", "Iran", "France", "US", "Italy", "UK", "Spain"];
 var infodiv = document.getElementById("clusterinfo");
 infodiv.style.height = h+20;
 
@@ -547,7 +548,6 @@ function traceTimeline() {
 }
 
 
-var legendCount = 12;
 var swtvalues = {
   "trace": true,
   "hull": false,
@@ -604,7 +604,12 @@ function changeSlider(el, curFrame, play, focus) {
       "font-size": 10,
       "color": "#000"
     })
-    .text(timeFrames[curFrame].split("_")[0]);
+    .text(function() {
+      yy = timeFrames[curFrame].split("_")[0];
+      console.log("changeSlider", yy);
+      if (timemap[yy]) return timemap[yy];
+      else return yy;
+    })
   if (play) {
     el.val(curFrame);
   }

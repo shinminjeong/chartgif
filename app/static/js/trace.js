@@ -74,18 +74,18 @@ class TraceChart {
     this.trace_path_g = this.svg.append('g');
     this.trace_g = this.svg.append('g');
 
-    // var allyears = [];
-    // for (var i=0; i < years.length; i++) {
-    //   var data = this.data[years[i]];
-    //   allyears = allyears.concat(traceHulls(data, getGroup, 2))
-    // }
-    // tracehull[this.g_id] = this.trace_g.selectAll("path.trace")
-    //     .data(allyears)
-    //   .enter().append("path")
-    //     .attr("class", "trace")
-    //     .attr("d", drawCluster)
-    //     .style("opacity", 0.01)
-    //     .style("fill", function(d) { return gcolor(d.group); });
+    var allyears = [];
+    for (var i=0; i < years.length; i++) {
+      var data = this.data[years[i]];
+      allyears = allyears.concat(traceHulls(data, getGroup, 2))
+    }
+    tracehull[this.g_id] = this.trace_g.selectAll("path.trace")
+        .data(allyears)
+      .enter().append("path")
+        .attr("class", "trace")
+        .attr("d", drawCluster)
+        .style("opacity", 0.01)
+        .style("fill", function(d) { return gcolor(d.group); });
 
     var allyearmeans = [];
     for (var i=0; i < years.length; i++) {
