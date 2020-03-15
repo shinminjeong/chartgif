@@ -23,14 +23,16 @@ file_map = {
     # "continent": "app/static/data/additional_data.csv",
     "confirmed": "app/static/data/covid-confirmed.csv",
     "death": "app/static/data/covid-death.csv",
+    "recovered": "app/static/data/covid-recovered.csv",
     "numdays": "app/static/data/covid-numdays.csv",
     "continent": "app/static/data/covid-country.csv",
     "size": "app/static/data/covid-size.csv",
+    "timemap": "app/static/data/covid-timemap.csv",
 }
 
 options = {
-    "x": {"id": "confirmed", "name": "Confirmed"},
-    "y": {"id": "death", "name": "Death"},
+    "x": {"id": "numdays", "name": "Num days since 100th case"},
+    "y": {"id": "confirmed", "name": "Confirmed"},
     "s": {"id": "size", "name": "Population"},
     "c": {"id": "continent", "name": "Continent"},
     "xScale": {"id": "lin", "name": "Lin"},
@@ -62,8 +64,12 @@ def main(request):
 
     pd_x = pd.read_csv(file_map[options["x"]["id"]])
     pd_y = pd.read_csv(file_map[options["y"]["id"]])
-    heads = [datetime.strptime(x, "%Y") for x,y in zip(pd_x.columns.tolist()[1:], pd_y.columns.tolist()[1:]) if x==y]
-    timeseries = [datetime.strftime(y, "%Y") for y in heads]
+    timeseries = [x for x,y in zip(pd_x.columns.tolist()[1:], pd_y.columns.tolist()[1:]) if x==y]
+
+    reader = csv.reader(open(file_map["timemap"]))
+    heads = next(reader)
+    timemap = {k:r for k, r in zip(heads, next(reader))}
+    print("timemap", timemap)
 
     numTicks = len(timeseries)
     df_x = pd_x[['country']+timeseries].dropna()
@@ -111,6 +117,7 @@ def main(request):
     # print(kgroups)
     return render(request, "group.html", {
         "time_arr": timeseries,
+        "timemap": timemap,
         "data": map.to_json(),
         "options": options,
         "population": df_s.to_json(),

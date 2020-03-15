@@ -20,6 +20,7 @@ name_map = {
     "continent": "Continent",
     "confirmed": "Confirmed",
     "death": "Deaths",
+    "recovered": "Recovered",
     "numdays": "Num days since 100th case",
     "size": "Size",
     "log": "Log",
@@ -30,6 +31,7 @@ label_map = {
     "fertility": {"low": "few", "high": "many"},
     "lifespan": {"low": "sick", "high": "healthy"},
     "confirmed": {"low": "few", "high": "many"},
+    "recovered": {"low": "few", "high": "many"},
     "death": {"low": "few", "high": "many"},
     "numdays": {"low": "", "high": ""},
 }

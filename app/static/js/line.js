@@ -28,7 +28,7 @@ class LineChart {
       .attr("transform", "translate(0,"+ this.height+")")
       .attr('class', 'line-x-axis')
       .call(d3.axisBottom(line_xscale)
-        .tickFormat(d3.format("d"))
+        .tickFormat(d => timemap[d])
       );
     svg.append('g')
       .attr("class", "grid")

@@ -99,7 +99,7 @@ class TimeLine {
       .attr("transform", "translate(0," + this.margin.top_g + ")")
       .attr('class', 'timeline-x-axis')
       .call(d3.axisTop(this.timeScale)
-        .tickFormat(d3.format("d"))
+        .tickFormat(d => timemap[d])
         .tickValues(this.tickNumber)
       );
     this.x_2
