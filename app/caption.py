@@ -18,6 +18,10 @@ name_map = {
     "lifespan": "Life Expectancy",
     "population": "Population",
     "continent": "Continent",
+    "confirmed": "Confirmed",
+    "death": "Deaths",
+    "numdays": "Num days since 100th case",
+    "size": "Size",
     "log": "Log",
     "lin": "Lin",
 }

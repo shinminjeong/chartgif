@@ -29,8 +29,8 @@ file_map = {
 }
 
 options = {
-    "x": {"id": "numdays", "name": "Num Days since 100th case"},
-    "y": {"id": "confirmed", "name": "Confirmed"},
+    "x": {"id": "confirmed", "name": "Confirmed"},
+    "y": {"id": "death", "name": "Death"},
     "s": {"id": "size", "name": "Population"},
     "c": {"id": "continent", "name": "Continent"},
     "xScale": {"id": "lin", "name": "Lin"},

@@ -27,9 +27,9 @@
         {{ options.y.name }}
       </button>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_Y">
-        <a class="dropdown-item" name="y" id="lifespan" href="#">Life Expectancy</a>
-        <a class="dropdown-item" name="y" id="fertility" href="#">Babies per woman</a>
-        <a class="dropdown-item" name="y" id="income" href="#">Income</a>
+        <a class="dropdown-item" name="y" id="confirmed" href="#">Confirmed</a>
+        <a class="dropdown-item" name="y" id="death" href="#">Deaths</a>
+        <a class="dropdown-item" name="y" id="numdays" href="#">Num days since 100th case</a>
       </div>
     </div>
     <div class="col-md-6" style="padding-left: 50px;">
@@ -40,9 +40,9 @@
             {{ options.x.name }}
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_X">
-            <a class="dropdown-item" name="x" id="lifespan" href="#">Life Expectancy</a>
-            <a class="dropdown-item" name="x" id="fertility" href="#">Babies per woman</a>
-            <a class="dropdown-item" name="x" id="income" href="#">Income</a>
+            <a class="dropdown-item" name="x" id="confirmed" href="#">Confirmed</a>
+            <a class="dropdown-item" name="x" id="death" href="#">Deaths</a>
+            <a class="dropdown-item" name="x" id="numdays" href="#">Num days since 100th case</a>
           </div>
         </div>
         <div id="dropdown_X_scale" class="dropdown">
@@ -124,10 +124,10 @@ var data_focus_range = {{focus_range|safe}};
 
 var selectedAxis = ["X", "Y", "S"];
 var params = {
-  "x": "income",
+  "x": "confirmed",
   "xScale": "log",
-  "y": "lifespan",
-  "yScale": "lin",
+  "y": "death",
+  "yScale": "log",
   "s": "population"
 }
 var w = document.getElementById("myChart").offsetWidth,

@@ -45,6 +45,12 @@ class TraceChart {
             "y": data2d[year+"_y"][index],
             "group": (this.g_id>0 ? group[this.countries[index]]["group"] : 0)
           }
+          if (data_options["xScale"]["id"] == "log") {
+            d.x = Math.max(1, d.x);
+          }
+          if (data_options["yScale"]["id"] == "log") {
+            d.y = Math.max(1, d.y);
+          }
           xrange[0] = Math.min(xrange[0], d.x);
           xrange[1] = Math.max(xrange[1], d.x);
           yrange[0] = Math.min(yrange[0], d.y);
@@ -55,13 +61,11 @@ class TraceChart {
     }
 
     if (data_options["xScale"]["id"] == "log") {
-      xrange[0] = Math.max(1, xrange[0]);
       t_xScale = d3.scaleLog().range([0, this.trace_width]).domain(xrange);
     } else {
       t_xScale = d3.scaleLinear().range([0, this.trace_width]).domain(xrange).nice();
     }
     if (data_options["yScale"]["id"] == "log") {
-      yrange[0] = Math.max(1, yrange[0]);
       t_yScale = d3.scaleLog().range([this.trace_height, 0]).domain(yrange).nice();
     } else {
       t_yScale = d3.scaleLinear().range([this.trace_height, 0]).domain(yrange).nice();
@@ -94,8 +98,8 @@ class TraceChart {
         .attr("class", "tbubble")
         .attr("id", d => this.g_id+"_"+d.time)
         .attr("year", d => d.time)
-        .attr('cx', d => isFinite(t_xScale(d.x)) ? t_xScale(d.x) : t_xScale(1))
-        .attr('cy', d => isFinite(t_yScale(d.y)) ? t_yScale(d.y) : t_yScale(1))
+        .attr('cx', d => t_xScale(d.x))
+        .attr('cy', d => t_yScale(d.y))
         .attr('r', 1)
         .style("opacity", 1)
         .style("fill", function(d) { return gcolor(d.group); });
