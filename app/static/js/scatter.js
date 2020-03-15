@@ -51,6 +51,14 @@ class ScatterPlot {
           "pre_population": population[pre_year][index]/40000,
           "group": (group? group[this.countries[index]]["group"] : -1)
         }
+        if (data_options["xScale"]["id"] == "log") {
+          d.x = Math.max(1, d.x);
+          d.pre_x = Math.max(1, d.pre_x);
+        }
+        if (data_options["yScale"]["id"] == "log") {
+          d.y = Math.max(1, d.y);
+          d.pre_y = Math.max(1, d.pre_y);
+        }
         this.xrange[0] = Math.min(this.xrange[0], d.x);
         this.xrange[1] = Math.max(this.xrange[1], d.x);
         this.yrange[0] = Math.min(this.yrange[0], d.y);
@@ -66,7 +74,6 @@ class ScatterPlot {
     // if (data_options["y"]["id"] == "income") {this.yrange[0] = Math.max(250, this.yrange[0]);}
 
     if (data_options["xScale"]["id"] == "log") {
-      this.xrange[0] = Math.max(1, this.xrange[0]);
       x_tickvalues = getTickValues(this.xrange, true);
       xScale = d3.scaleLog().range([0, this.width]).domain(this.xrange);
     } else {
@@ -74,7 +81,6 @@ class ScatterPlot {
       xScale = d3.scaleLinear().range([0, this.width]).domain(this.xrange).nice();
     }
     if (data_options["yScale"]["id"] == "log") {
-      this.yrange[0] = Math.max(1, this.yrange[0]);
       y_tickvalues = getTickValues(this.yrange, true);
       yScale = d3.scaleLog().range([this.height, 0]).domain(this.yrange);
     } else {
