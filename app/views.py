@@ -49,9 +49,10 @@ values = None
 kgroups = None
 countries = None
 timeseries = []
+timemap = {}
 numTicks = 0
 def main(request):
-    global values, kgroups, options, timeseries, numTicks, countries
+    global values, kgroups, options, timemap, timeseries, numTicks, countries
     for k, v in options.items():
         if k in request.GET:
             id = request.GET.get(k)
@@ -131,7 +132,7 @@ def main(request):
 
 @csrf_exempt
 def get_caption(request):
-    global values, kgroups, options, timeseries, numTicks, countries
+    global values, kgroups, options, timemap, timeseries, numTicks, countries
     outerbound = request.POST
     head_y = int(outerbound.get("head"))
     tail_y = int(outerbound.get("tail"))+1
@@ -181,7 +182,7 @@ def get_caption(request):
             groupdesc[g][c] = summarizeGroup(kgroups, [countries[vv] for vv in clist])
 
         axisNames = [options[a.lower()] for a in selectedAxis]
-        caption[id] = generateCaption(groups[g], axisNames, v["reason"][0], v["pattern"][0], yrange[0], yrange[-1], g == 0)
+        caption[id] = generateCaption(groups[g], axisNames, v["reason"][0], v["pattern"][0], timemap[yrange[0]], timemap[yrange[-1]], g == 0)
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")
     # print(groupdesc)
