@@ -34,7 +34,7 @@ options = {
 
 c_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":-1}
 c_group_inv = {0: "the world", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
-K = 5 # group 0 for the entire world
+K = len(c_group_inv)
 
 values = None
 kgroups = None
@@ -103,6 +103,7 @@ def main(request):
     return render(request, "group.html", {
         "time_arr": timeseries,
         "data": map.to_json(),
+        "gname": c_group_inv,
         "options": options,
         "population": df_s.to_json(),
         "continent": df_c.to_json(),

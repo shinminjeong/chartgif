@@ -121,6 +121,8 @@ var data_group = {{kgroup|safe}};
 var cluster_info = {{clusterinfo|safe}};
 var data_avg_velocity = {{avg_velocity|safe}};
 var data_focus_range = {{focus_range|safe}};
+var gname = {{gname|safe}};
+var legendCount = Object.keys(gname).length;
 
 var selectedAxis = ["X", "Y", "S"];
 var params = {
@@ -174,7 +176,6 @@ var slowdown = {
 var el, newPoint, timebar;
 var linecharts_v = {};
 var trace_chart = {};
-var gname = ["World", "Asia", "Europe", "America", "Africa"];
 var infodiv = document.getElementById("clusterinfo");
 infodiv.style.height = h+20;
 
@@ -210,7 +211,6 @@ function initClusterinfo() {
     group_h = 65;
   }
   var axis_h = (group_h-20)/3;
-  console.log(group_h, axis_h)
   for (var g = 0; g < numGroup; g++) {
     var div_group = document.createElement("div");
     div_group.style = "display:block; padding: 0 10px; height: "+group_h+"px;";
@@ -471,6 +471,7 @@ function getCaption(bound) {
 }
 
 function changeSelectedConts(continents) {
+  // console.log("-- changeSelectedConts", legendCount, continents, continents.indexOf(0));
   swtvalues["trace"] = false;
   swtvalues["hull"] = false;
   for (var c = 0; c < legendCount; c++) {
@@ -490,7 +491,7 @@ function traceTimeline() {
   var curYear = timeFrames[curFrame];
   var nextYear = timeFrames[curFrame+1];
   var curNames = curYear.split("_");
-  console.log("traceTimeline", curFrame, curNames, flag_focus, focus_until);
+  console.log("traceTimeline", curFrame, curNames, flag_focus, focus_until, focus_index, swtvalues);
   // if init sequence
   if (curNames[0] == "init") {
     if (curNames[2] == '0') {
@@ -543,7 +544,6 @@ function traceTimeline() {
 }
 
 
-var legendCount = 5;
 var swtvalues = {
   "trace": false,
   "hull": false,
@@ -609,7 +609,7 @@ function changeSlider(el, curFrame, play, focus) {
     chart.clear();
     return;
   }
-  console.log("changeSlider", focus, curFrame, timeFrames[preFrame], timeFrames[curFrame]);
+  // console.log("changeSlider", focus, curFrame, timeFrames[preFrame], timeFrames[curFrame]);
   var preYear = parseInt(timeFrames[preFrame]),
       curYear = parseInt(timeFrames[curFrame]);
   if (yearmap[curYear]["delay"] > 1) {
