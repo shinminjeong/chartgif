@@ -78,22 +78,22 @@ def get_focus_range(timeseries, groups, axes, V):
             maxv = max([v["max"] for v in V[g][a]])
             threshold_min = (maxv-minv)*0.0001
             range_min[g][a] = {v["time"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) < threshold_min}
-            for y, thd in range_min[g][a].items():
-                pre = timeseries[timeseries.index(y)-1]
-                if pre in yrange:
-                    yrange.append(y)
-                elif len(yrange) == 0 or timeseries.index(y) - timeseries.index(yrange[-1]) <= 1:
-                    yrange.extend([pre, y])
-                else:
-                    if len(yrange) > 20:
-                        output.append({
-                            "reason": "noc",
-                            "pattern": "nochange",
-                            "g": g,
-                            "a": [a],
-                            "years": yrange
-                        })
-                    yrange = [pre, y]
+            # for y, thd in range_min[g][a].items():
+            #     pre = timeseries[timeseries.index(y)-1]
+            #     if pre in yrange:
+            #         yrange.append(y)
+            #     elif len(yrange) == 0 or timeseries.index(y) - timeseries.index(yrange[-1]) <= 1:
+            #         yrange.extend([pre, y])
+            #     else:
+            #         if len(yrange) > 20:
+            #             output.append({
+            #                 "reason": "noc",
+            #                 "pattern": "nochange",
+            #                 "g": g,
+            #                 "a": [a],
+            #                 "years": yrange
+            #             })
+            #         yrange = [pre, y]
 
             #### (3) when most spread
         #     for v in V[g][a]:
