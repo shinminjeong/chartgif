@@ -108,7 +108,7 @@ def get_focus_range(timeseries, groups, axes, V):
                 "a": ["X", "Y"],
                 "years": [mostspread[0], next]
             })
-    print(output)
+    # print(output)
     return output
 
 def avg_value(X, len):
