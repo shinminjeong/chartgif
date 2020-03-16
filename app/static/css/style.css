@@ -112,7 +112,12 @@ body {
 .fa-play {
 	padding-left: 2px;
 }
-
+.select_rectangle_noc {
+  border: 1px solid #007bff;
+  position: absolute;
+	font-size: 10px;
+	padding-top: 20px;
+}
 .select_rectangle_var {
   border: 1px solid #17a2b8;
   position: absolute;
