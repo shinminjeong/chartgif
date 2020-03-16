@@ -51,7 +51,7 @@ class TimeLine {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
-    for (var g = 0; g < gname.length; g++) {
+    for (var g = 0; g < legendCount; g++) {
       var legend_d = document.createElement("div");
       legend_d.className = "time-legend";
       legend_d.style.top = this.margin.top_g+(this.caption_h+this.slice_h)*g+15;

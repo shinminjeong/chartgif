@@ -109,7 +109,7 @@ def get_focus_range(timeseries, groups, axes, V):
         #         "a": ["X", "Y"],
         #         "years": [mostspread[0], next]
         #     })
-    print(output)
+    # print(output)
     return output
 
 def avg_value(X, len):
@@ -159,7 +159,7 @@ def cluster_AP(X):
 
 
 def cluster_MeanShift(X):
-    clustering = MeanShift(bin_seeding=True).fit(X)
+    clustering = MeanShift().fit(X)
     labels = clustering.labels_
     cluster_centers = clustering.cluster_centers_
     labels_unique = np.unique(labels)
