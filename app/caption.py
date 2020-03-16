@@ -62,6 +62,12 @@ def summarizeGroup(info, countries):
 def cap_mostSpread(y_s, y_e):
     return "In {}, differences between the countries of the world was wider than ever".format(y_s)
 
+def cap_noChange(y_s, y_e, gname, axes):
+    cap = ""
+    for axis in axes:
+        cap += "{} in {} STUCK between {} and {}".format(axis["name"], gname, y_s, y_e)
+    return cap
+
 def cap_valueChange(y_s, y_e, gname, axes, pattern):
     cap = ""
     for axis in axes:
@@ -73,6 +79,8 @@ def generateCaption(gname, axes, reason, pattern, head_y, tail_y, year=False):
     # print("generateCaption", gname, axes)
     if reason == "spr":
         caption = cap_mostSpread(head_y, tail_y)
+    if reason == "noc":
+        caption = cap_noChange(head_y, tail_y, gname, axes)
     if reason == "var":
         caption = cap_valueChange(head_y, tail_y, gname, axes, pattern)
     return caption
