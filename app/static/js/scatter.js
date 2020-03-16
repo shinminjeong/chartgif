@@ -2,6 +2,7 @@ var xScale, yScale, radius;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
 var hullOffset = 10;
+var hull_labels, hull_label_force, pre_group;
 
 class ScatterPlot {
 
@@ -233,7 +234,7 @@ class ScatterPlot {
   }
 
   updateChart(year, swtvalues) {
-    console.log("updateChart", year);
+    // console.log("updateChart", year);
     this.clear();
     var data = this.data[year];
 
@@ -338,7 +339,7 @@ class ScatterPlot {
   }
 
   updateFocus(time, swtvalues, innergrp, delay) {
-    console.log("updateFocus", swtvalues, innergrp[time]["group"])
+    console.log("updateFocus", swtvalues, time, pre_group == JSON.stringify(swtvalues))
     this.bubble_g.selectAll("*").remove();
     this.trace_path_g.selectAll("circle.tbubble").remove();
 
@@ -440,7 +441,8 @@ class ScatterPlot {
         .attr("id", function(d) { return d.group; })
         .attr("d", drawPreCluster)
         .style("opacity", 0.5)
-        .style("fill", function(d) { return "#666"; })
+        .style("stroke", "#000")
+        .style("fill", function(d) { return "#bbb"; })
         .style('visibility', function(d) {
           if (d.group >= 0 && d.items < 1000) return 'visible';
           else return 'hidden';
@@ -449,40 +451,52 @@ class ScatterPlot {
         .duration(delay)
         .attr("d", drawCluster);
 
+    // update hull labels for a new group
+    if (pre_group != JSON.stringify(swtvalues)) {
 
-    this.hull_label_g.selectAll("text.hull-label").remove();
-    let text = this.hull_label_g.selectAll('.hull-label')
-        .data(dataCvxHulls)
-      .enter().append('text')
-        .attr('id', d => d.group)
-        .attr('class', function(d){ return 'hull-label wrap g'+d.group; })
-        .attr('x', d => d.pre_x)
-        .attr('y', d => d.pre_y)
-        .attr('font-size', 10)
-        .attr('text-anchor', 'start')
-        .style('visibility', function(d) {
-          if (d.group >= 0 && d.items < 1000) return 'visible';
-          else return 'hidden';
-        })
+      this.hull_label_g.selectAll("text.hull-label").remove();
+      hull_labels = this.hull_label_g.selectAll('.hull-label')
+          .data(dataCvxHulls)
+        .enter().append('text')
+          .attr('id', d => d.group)
+          .attr('class', function(d){ return 'hull-label wrap g'+d.group; })
+          // .attr('x', d => d.pre_x)
+          // .attr('y', d => d.pre_y)
+          .attr('font-size', 10)
+          .attr('text-anchor', 'start')
+          .style('visibility', function(d) {
+            if (d.group >= 0 && d.items < 1000) return 'visible';
+            else return 'hidden';
+          })
 
-    text.selectAll("text.hull-label")
-      .data(d => d.desc.split(";"))
-      .enter().append("tspan")
-        .attr("class", "text")
-        .text(d => d)
-        .attr("dx", d => -5*d.length)
-        .attr("dy", 12);
+      hull_labels.selectAll("text.hull-label")
+        .data(d => d.desc.split(";"))
+        .enter().append("tspan")
+          .attr("class", "text")
+          .text(d => d)
+          .attr("dx", d => -5*d.length)
+          .attr("dy", 12);
 
-    text.transition()
-      .duration(delay)
-      .attr('x', d => d.x)
-      .attr('y', d => d.y)
+      // this.hull_labels.transition()
+      //   .duration(delay)
+      //   .attr('x', d => d.x)
+      //   .attr('y', d => d.y)
 
+      hull_label_force = d3.forceSimulation(dataCvxHulls).alpha(0.1)
+        .force("center", d3.forceCenter(dataCvxHulls[0].avg_x, dataCvxHulls[0].avg_y))
+        .force('collide', d3.forceCollide().radius(50))
+        .force('charge', d3.forceManyBody().strength(-30).distanceMin(30).distanceMax(300))
+        .on("tick", this.ticked)
     }
-}
 
-function splitText() {
+    pre_group = JSON.stringify(swtvalues);
+  }
 
+  ticked() {
+    hull_labels
+      .attr("x", function (d) { return Math.min(w-30, Math.max(100, d.x)); })
+      .attr("y", function (d) { return Math.max(30, Math.min(h-120, d.y)); })
+  }
 }
 
 function getTickValues(r, logflag) {
@@ -516,13 +530,16 @@ function convexHulls(nodes, index, offset, pre) {
   var hulls = {};
   var phulls = {};
   var desc = {};
+  var xs = {}, ys = {};
   // create point sets
   for (var k=0; k<nodes.length; ++k) {
     var n = nodes[k];
     if (n.size) continue;
     var i = index(n),
         l = hulls[i] || (hulls[i] = []),
-        p = phulls[i] || (phulls[i] = []);
+        p = phulls[i] || (phulls[i] = []),
+        x_arr = xs[i] || (xs[i] = []),
+        y_arr = ys[i] || (ys[i] = []);
     var rOffset = radius(n.population)*1.3+1;
     if (pre) {
       p.push([xScale(n.pre_x)-rOffset-offset, yScale(n.pre_y)-rOffset-offset]);
@@ -534,6 +551,8 @@ function convexHulls(nodes, index, offset, pre) {
     l.push([xScale(n.x)-rOffset-offset, yScale(n.y)+rOffset+offset]);
     l.push([xScale(n.x)+rOffset+offset, yScale(n.y)-rOffset-offset]);
     l.push([xScale(n.x)+rOffset+offset, yScale(n.y)+rOffset+offset]);
+    x_arr.push(xScale(n.pre_x));
+    y_arr.push(yScale(n.pre_y));
     desc[i] = n.ingdesc?n.ingdesc:"";
   }
   // console.log(hulls)
@@ -547,6 +566,8 @@ function convexHulls(nodes, index, offset, pre) {
         items: hulls[i].length,
         x: hulls[i][0][0],
         y: hulls[i][0][1],
+        avg_x: arrAvg(xs[i]),
+        avg_y: arrAvg(ys[i]),
         path: d3.polygonHull(hulls[i]),
         pre_x: phulls[i][0][0],
         pre_y: phulls[i][0][1],
