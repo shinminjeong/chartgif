@@ -325,6 +325,9 @@ function updateSlider() {
   for (var y = 0; y < 10; y++) timeFrames.push("init_Y_"+y);
   for (var y = 0; y < 10; y++) timeFrames.push("init_X_"+y);
   for (var y = 0; y < 20; y++) timeFrames.push("init_trend_"+y);
+  for (var g = 1; g < legendCount; g++) {
+    for (var y = 0; y < 10; y++) timeFrames.push("init_"+g+"_"+y);
+  }
 
   for (var y = minYear; y <= maxYear; y++) {
     for (var d = 0; d < yearmap[y]["delay"]; d++) {
@@ -497,10 +500,16 @@ function traceTimeline() {
   if (curNames[0] == "init") {
     if (curNames[2] == '0') {
       if (curNames[1] == "Y") chart.highlightYaxis(5*timeunit);
-      if (curNames[1] == "X") chart.highlightXaxis(5*timeunit);
-      if (curNames[1] == "trend") chart.highlightDirect(5*timeunit);
+      else if (curNames[1] == "X") chart.highlightXaxis(5*timeunit);
+      else if (curNames[1] == "trend") chart.highlightDirect(5*timeunit);
+      else {
+        chart.hideDesc(0);
+        chart.showGroup(minYear, curNames[1]);
+        updateBackgoundYear(minYear);
+      }
     }
   } else {
+    updateBackgoundYear("");
     chart.hideDesc(timeunit);
   }
 
@@ -606,8 +615,6 @@ function changeSlider(el, curFrame, play, focus) {
   if (timeFrames[curFrame].split("_")[0] == "init") {
     preFrame = curFrame;
     updateLineTimebar();
-    updateBackgoundYear("");
-    chart.clear();
     return;
   }
   // console.log("changeSlider", focus, curFrame, timeFrames[preFrame], timeFrames[curFrame]);
