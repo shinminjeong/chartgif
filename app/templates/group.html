@@ -297,7 +297,7 @@ function initTimeFrame() {
     yearmap[y] = {
       "group":[],
       "delay":1,
-      "reason":[]
+      "reason":{}
     };
   }
 }
@@ -313,6 +313,10 @@ function generateFrames() {
     drawFrame(range, g, a, reason, pattern);
     draw_rect_input(range, "lines_"+g, a, reason);
   }
+  updateCaptions();
+}
+
+function updateCaptions() {
   for (var v in outerbound) {
     getCaption(outerbound[v]);
   }
@@ -342,13 +346,16 @@ function updateSlider() {
 }
 
 function removeFrame(id) {
+  console.log("removeFrame", id)
   var ids = id.split("_");
   for (var y = ids[0]; y <= ids[1]; y++) {
+    // remove group number from yearmap
     var idx = yearmap[y]["group"].indexOf(ids[2]);
     yearmap[y]["group"].splice(idx, 1);
+    delete yearmap[y]["reason"][id];
     if (yearmap[y]["group"].length == 0) {
       yearmap[y]["delay"] = 1;
-      yearmap[y]["reason"] = [];
+      yearmap[y]["reason"] = {};
     }
   }
   updateSlider();
@@ -363,13 +370,14 @@ function drawFrame(yrange, group, axes, reason, pattern) {
   for (var i = r[0]; i < r[1]; i++) {
     yearmap[i]["group"].push(+group)
     yearmap[i]["delay"] = slowdown[reason];
-    yearmap[i]["reason"].push({
+    id = r[0]+"_"+r[1]+"_"+ group;
+    yearmap[i]["reason"][id] = {
       "yrange": yrange,
       "group": group,
       "axis": axes,
       "reason": reason,
       "pattern": pattern,
-    })
+    }
     if (!timeslices[i]) {
       timeslices[i] = {};
     }
@@ -422,7 +430,7 @@ function calculateOuterbound() {
     if (yearmap[y]["group"].length > 0) {
       // console.log("-", y, head_y, tail_y)
       groups = groups.concat(yearmap[y]["group"]);
-      for (var r = 0; r < yearmap[y]["reason"].length; r++) {
+      for (var r in yearmap[y]["reason"]) {
         var rr = yearmap[y]["reason"][r];
         var id = rr["yrange"][0]+"_"+rr["yrange"][rr["yrange"].length-1]+"_"+rr["group"];
         reasons[id] = rr;

@@ -38,6 +38,7 @@ unit_map = {
     "population": "",
 }
 
+
 def summarizeGroup(info, countries):
     # print("--- summarizeGroup", countries)
     if len(countries) == 1:
@@ -55,28 +56,36 @@ def summarizeGroup(info, countries):
     # print(desc)
     return desc
 
-def cap_mostSpread(y_s, y_e):
-    return "In {}, differences between the countries of the world was wider than ever".format(y_s)
+def cap_mostSpread(y_s, y_e, gname, axes, pattern):
+    return "In {}, differences between the countries of the world was wider than ever.".format(y_s)
 
-def cap_noChange(y_s, y_e, gname, axes):
+def cap_noChange(y_s, y_e, gname, axes, pattern):
     cap = ""
     for axis in axes:
-        cap += "{} in {} STUCK between {} and {}".format(axis["name"], gname, y_s, y_e)
+        cap += "{} in {} STUCK between {} and {}.".format(axis["name"], gname, y_s, y_e)
     return cap
 
 def cap_valueChange(y_s, y_e, gname, axes, pattern):
     cap = ""
     for axis in axes:
         how = pattern.upper() if pattern else "" ## by n unit_map[axis["id"]]
-        cap += "{} in {} {} between {} and {}".format(axis["name"], gname, how, y_s, y_e)
+        cap += "{} in {} {} between {} and {}.".format(axis["name"], gname, how, y_s, y_e)
     return cap
+
+def cap_userGenerated(y_s, y_e, gname, axes, pattern):
+    cap = ""
+    for axis in axes:
+        cap += "{} in {}, Something happened between {} and {}.".format(axis["name"], gname, y_s, y_e)
+    return cap
+
+caption_generator = {
+    "spr": cap_mostSpread,
+    "var": cap_valueChange,
+    "noc": cap_noChange,
+    "user": cap_userGenerated
+}
 
 def generateCaption(gname, axes, reason, pattern, head_y, tail_y, year=False):
     # print("generateCaption", gname, axes)
-    if reason == "spr":
-        caption = cap_mostSpread(head_y, tail_y)
-    if reason == "noc":
-        caption = cap_noChange(head_y, tail_y, gname, axes)
-    if reason == "var":
-        caption = cap_valueChange(head_y, tail_y, gname, axes, pattern)
+    caption = caption_generator[reason](head_y, tail_y, gname, axes, pattern)
     return caption
