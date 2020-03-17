@@ -233,6 +233,29 @@ class ScatterPlot {
       .style("opacity", 0);
   }
 
+  showGroup(year, g) {
+    console.log("showGroup", year, g);
+    var data = this.data[year];
+    var bubble = this.bubble_g.append('g').selectAll('.bubble')
+        .data(data)
+      .enter().append('circle')
+        .attr('id', function(d){return d.id;})
+        .attr('class', function(d){ return 'bubble g'+d.group; })
+        .attr('cx', function(d){return xScale(d.x);})
+        .attr('cy', function(d){ return yScale(d.y); })
+        .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
+        .style('stroke', 'black')
+        .style('stroke-width', 0.5)
+        .style('fill', function(d){
+          if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
+          else return gcolor(d.group);
+        })
+        .style('display', function(d) {
+          if (g == d.group) return 'block';
+          else return 'none';
+        })
+  }
+
   updateChart(year, swtvalues) {
     // console.log("updateChart", year);
     this.clear();

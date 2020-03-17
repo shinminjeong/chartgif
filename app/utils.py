@@ -159,7 +159,7 @@ def cluster_AP(X):
 
 
 def cluster_MeanShift(X):
-    clustering = MeanShift().fit(X)
+    clustering = MeanShift(bin_seeding=True).fit(X)
     labels = clustering.labels_
     cluster_centers = clustering.cluster_centers_
     labels_unique = np.unique(labels)
