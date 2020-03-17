@@ -156,6 +156,7 @@ body {
 	left: 114px;
 	height: 280px;
 	background-color: #007bff;
+	z-index: 100;
 }
 .timeline-background {
 	top: 20px;
@@ -207,6 +208,7 @@ body {
 	overflow-x: hidden;
 	white-space: nowrap;
 	opacity: 1;
+	resize: none;
 }
 
 .line-timebar {

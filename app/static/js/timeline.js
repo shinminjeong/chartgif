@@ -179,14 +179,14 @@ class TimeLine {
         gindex = names[2];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
-    var tframe = document.createElement("div");
+    var tframe = document.createElement("textarea");
     tframe.className = "time-caption"
     tframe.id = gid;
     tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(+gindex);
     tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.caption_h;
-    tframe.innerHTML = caption;
+    tframe.value = caption;
 
     tframe.setAttribute("data-s-year", y_start);
     tframe.setAttribute("data-e-year", y_end);
@@ -208,6 +208,11 @@ class TimeLine {
       e.target.style.zIndex = 8;
       e.target.style.backgroundColor = "#002654";
     });
+    tframe.addEventListener("change", function(e) {
+      // console.log("caption changed", e.target, e.target.value);
+      updateCaption(e.target.id, e.target.value);
+    })
+
     this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
   }

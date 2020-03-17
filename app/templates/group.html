@@ -257,9 +257,9 @@ function updateBackgoundYear(year) {
   var info_year = document.getElementById("infoCurYear");
   info_year.innerHTML = year;
 }
-function updateCaptionText(frame, gid, groups) {
+function updateCaptionPanel(frame, gid, groups) {
   var year = parseInt(timeFrames[frame]);
-  // console.log("updateCaptionText", year, gid, caption[year])
+  // console.log("updateCaptionPanel", year, gid, caption[year])
   var caption_year = document.getElementById("caption");
   if (gid == -1) {
     caption_year.innerHTML = "";
@@ -313,10 +313,10 @@ function generateFrames() {
     drawFrame(range, g, a, reason, pattern);
     draw_rect_input(range, "lines_"+g, a, reason);
   }
-  updateCaptions();
+  generateCaptions();
 }
 
-function updateCaptions() {
+function generateCaptions() {
   for (var v in outerbound) {
     getCaption(outerbound[v]);
   }
@@ -482,6 +482,14 @@ function getCaption(bound) {
   });
 }
 
+function updateCaption(id, value) {
+  var ids = id.split("_");
+  // console.log("updateCaption", ids, parseInt(id[2]))
+  for (var y = ids[0]; y <= ids[1]; y++) {
+    caption[y][ids[2]] = value;
+  }
+}
+
 function changeSelectedConts(continents) {
   // console.log("-- changeSelectedConts", legendCount, continents, continents.indexOf(0));
   swtvalues["trace"] = false;
@@ -558,7 +566,7 @@ function traceTimeline() {
     }
   }
 
-  updateCaptionText(curFrame, focus_index, focus_groups);
+  updateCaptionPanel(curFrame, focus_index, focus_groups);
 }
 
 
