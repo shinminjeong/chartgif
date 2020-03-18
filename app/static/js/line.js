@@ -175,7 +175,7 @@ function draw_rect_input(yrange, div_id, axes, reason) {
     var e = document.createElement('div');
     // console.log("select_rectangle_", reason)
     e.className = 'select_rectangle_'+reason;
-    e.id = y_start+"_"+y_end+"_"+names[1]+"_"+selectedAxis[i];
+    e.id = [y_start, y_end, names[1], selectedAxis[i]].join("-");
     e.style.left = ys + 'px';
     e.style.top = 0;
     e.style.width = Math.abs(ye - ys) + 'px';
