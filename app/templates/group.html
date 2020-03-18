@@ -124,6 +124,7 @@ var data_group = {{kgroup|safe}};
 var cluster_info = {{clusterinfo|safe}};
 var data_avg_velocity = {{avg_velocity|safe}};
 var data_focus_range = {{focus_range|safe}};
+var o_trend = ("{{ otrend }}" == "True");
 var gname = {{gname|safe}};
 var legendCount = Object.keys(gname).length;
 
@@ -176,6 +177,13 @@ var slowdown = {
   "spr": 20,
   "user": 10,
 };
+var initdelay = {
+  "X": 10,
+  "Y": 10,
+  "S": 10,
+  "G": 10,
+  "Trend": 20
+}
 var el, newPoint, timebar;
 var linecharts_v = {};
 var trace_chart = {};
@@ -262,8 +270,8 @@ function updateBackgoundYear(year) {
     info_year.innerHTML = timemap[year].replace("/20", "");
 }
 function updateCaptionPanel(frame, gid, groups) {
-  var year = parseInt(timeFrames[frame]);
-  // console.log("updateCaptionPanel", year, gid, caption[year])
+  var year = timeFrames[frame].split("_")[0];
+  // console.log("updateCaptionPanel", year, gid, caption[year][gid])
   var caption_year = document.getElementById("caption");
   if (gid == -1) {
     caption_year.innerHTML = "";
@@ -328,12 +336,10 @@ function generateCaptions() {
 function updateSlider() {
   timeFrames = [];
   // init sequence
-  timeFrames.push("init_start");
-  for (var y = 0; y < 10; y++) timeFrames.push("init_Y_"+y);
-  for (var y = 0; y < 10; y++) timeFrames.push("init_X_"+y);
-  for (var y = 0; y < 20; y++) timeFrames.push("init_trend_"+y);
-  for (var g = 1; g < legendCount; g++) {
-    for (var y = 0; y < 10; y++) timeFrames.push("init_"+g+"_"+y);
+  timeFrames.push("initStart");
+  var torder = ["Y", "X", "Trend", "G", "S"];
+  for (var type in torder) {
+    for (var y = 0; y < initdelay[torder[type]]; y++) timeFrames.push("init"+torder[type]+"_"+y);
   }
 
   for (var y = minYear; y <= maxYear; y++) {
@@ -349,7 +355,7 @@ function updateSlider() {
 }
 
 function removeFrame(id) {
-  console.log("removeFrame", id)
+  // console.log("removeFrame", id)
   var ids = id.split("-");
   for (var y = ids[0]; y <= ids[1]; y++) {
     // remove group number from yearmap
@@ -367,13 +373,17 @@ function removeFrame(id) {
 }
 
 function drawFrame(yrange, group, axes, reason, pattern) {
-  // console.log("drawFrame", yrange, group, axes)
+  console.log("drawFrame", yrange, group, axes)
   // axis: X, Y, S or (overlay == input from the linecharts)
   if (yrange[0] == "init") {
     a = axes[0];
-    y_s = "init_"+a+"_0", y_e = timeFrames[timeFrames.indexOf(y_s)+10];
-    timeline.addFrame([y_s, y_e], 0, "init", reason, a, 1);
-    // timeline.addCaption(
+    y_s = "init"+a+"_0", y_e = timeFrames[timeFrames.indexOf(y_s)+initdelay[a]];
+
+    timeline.addFrame([y_s, y_e], group, "init", reason, a, 1);
+    timeline.addCaption([y_s, y_e, group].join("-"), pattern);
+    if (caption["init"+a] == undefined) caption["init"+a] = {};
+    caption["init"+a][group] = pattern;
+
   } else {
     r = [yrange[0], yrange[yrange.length-1]];
     for (var i = r[0]; i < r[1]; i++) {
@@ -514,26 +524,50 @@ var flag_focus = false;
 var focus_index = -1,
     focus_start = focus_until = -1,
     focus_groups = [];
+function traceInitSeq(curNames, curYear) {
+  var type = curNames[0].slice(4);
+  if (curNames[1] == '0') {
+    if (curFrame == focus_until && focus_index < legendCount-1) {
+      curFrame -= initdelay["G"];
+      curYear = timeFrames[curFrame];
+      type = "G";
+      // console.log("@@@ curFrame changed", curFrame, curYear, type, focus_index)
+    }
+    if (type == "Y") {
+      chart.highlightYaxis(5*timeunit);
+      focus_index = 0, focus_groups = [0];
+    } else if (type == "X") {
+      chart.highlightXaxis(5*timeunit);
+      focus_index = 0, focus_groups = [0];
+    } else if (type == "S") {
+      chart.highlightSaxis(5*timeunit);
+      focus_index = 0, focus_groups = [0];
+    } else if (type == "Trend") {
+      if (o_trend) chart.highlightDirect(5*timeunit);
+      else chart.highlightInverse(5*timeunit);
+      focus_index = 0, focus_groups = [0];
+    } else if (type == "G") {
+      chart.hideDesc(0);
+      chart.showGroup(minYear, ++focus_index);
+      updateBackgoundYear(minYear);
+      focus_until = timeFrames.indexOf(curYear)+initdelay["G"];
+      focus_groups = Object.keys(gname);
+      // console.log("@@@ type G", focus_index, curFrame, focus_until)
+    }
+  }
+}
 function traceTimeline() {
   var curYear = timeFrames[curFrame];
   var nextYear = timeFrames[curFrame+1];
   var curNames = curYear.split("_");
   console.log("traceTimeline", curFrame, curNames, flag_focus, focus_until, focus_index, swtvalues);
   // if init sequence
-  if (curNames[0] == "init") {
-    if (curNames[2] == '0') {
-      if (curNames[1] == "Y") chart.highlightYaxis(5*timeunit);
-      else if (curNames[1] == "X") chart.highlightXaxis(5*timeunit);
-      else if (curNames[1] == "trend") chart.highlightDirect(5*timeunit);
-      else {
-        chart.hideDesc(0);
-        chart.showGroup(minYear, curNames[1]);
-        updateBackgoundYear(minYear);
-      }
-    }
+  if (curNames[0].slice(0,4) == "init") {
+    traceInitSeq(curNames, curYear);
   } else {
     updateBackgoundYear("");
     chart.hideDesc(timeunit);
+    focus_index = -1, focus_groups = [];
   }
 
   // if in focus mode
@@ -642,7 +676,7 @@ function changeSlider(el, curFrame, play, focus) {
     el.val(curFrame);
   }
 
-  if (timeFrames[curFrame].split("_")[0] == "init") {
+  if (timeFrames[curFrame].split("_")[0].slice(0,4) == "init") {
     preFrame = curFrame;
     updateLineTimebar();
     return;

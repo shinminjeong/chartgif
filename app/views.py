@@ -56,13 +56,14 @@ numTicks = 0
 def main(request):
     global values, kgroups, options, timemap, timeseries, numTicks, countries
     for k, v in options.items():
+        id = v["id"]
         if k in request.GET:
             id = request.GET.get(k)
             options[k] = {"id": id, "name": name_map[id]}
-        if v["id"] in label_map:
-            options[k]["label"] = label_map[v["id"]]
+        if id in label_map:
+            options[k]["label"] = label_map[id]
 
-    # print(options)
+    print(options)
     selectedAxis = []
 
     pd_x = pd.read_csv(file_map[options["x"]["id"]])
@@ -108,7 +109,7 @@ def main(request):
             f = i*numTicks
             t = (i+1)*numTicks
             avg_v[group_index][a] = [{"time":y, "value":v, "min": m1, "max": m2, "diff": m2-m1} for y, v, m1, m2 in zip(timeseries, D.tolist()[f:t], minD.tolist()[f:t], maxD.tolist()[f:t])]
-    # print(avg_v)
+
     focus_range = get_focus_range(timeseries, groups, selectedAxis, avg_v);
     G, minmax = minmax_for_group(timeseries, K, kgroups, selectedAxis, values)
     clusterinfo = {
@@ -116,7 +117,7 @@ def main(request):
         "groups": range(0, K),
         "minmax": minmax
     }
-    initseq = generateInitSeq(options, c_group_inv)
+    initseq, trend = generateInitSeq(options, c_group_inv, avg_v[0])
     focus_range.extend(initseq)
     # print(kgroups)
     return render(request, "group.html", {
@@ -131,7 +132,8 @@ def main(request):
         "clusterinfo": clusterinfo,
         "kgroup": kgroups,
         "avg_velocity": avg_v,
-        "focus_range": focus_range
+        "focus_range": focus_range,
+        "otrend": trend,
     })
 
 @csrf_exempt

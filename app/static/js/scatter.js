@@ -196,6 +196,9 @@ class ScatterPlot {
       .style("opacity", 1);
   }
 
+  highlightSaxis(delay) {
+  }
+
   highlightDirect(delay) {
     this.bottomleft.transition()
       .duration(delay)
