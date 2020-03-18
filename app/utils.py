@@ -32,12 +32,10 @@ def change_pattern(yrange, V):
     if maxvalue > max(leftmost, rightmost): ## go up then down
         return "updown"
 
-def get_focus_range(timeseries, groups, axes, V):
+def get_evt_rapid_change(timeseries, groups, axes, V):
     range_max = {g:{} for g in groups}
-    range_min = {g:{} for g in groups}
     output = []
     cont_threshold = 5
-
     for g in groups:
         spreadv = {v["time"]:0 for v in V[g][axes[0]]}
         for a in axes:
@@ -69,7 +67,13 @@ def get_focus_range(timeseries, groups, axes, V):
                     "a": [a],
                     "years": yrange
                 })
+    return output
 
+def get_evt_no_change(timeseries, groups, axes, V):
+    output = []
+    range_min = {g:{} for g in groups}
+    cont_threshold = 20
+    for g in groups:
         for a in axes:
             # print(a, [(v["year"], v["value"]) for v in V[g][a]])
             #### (2) when there is almost no change in value
@@ -78,38 +82,50 @@ def get_focus_range(timeseries, groups, axes, V):
             maxv = max([v["max"] for v in V[g][a]])
             threshold_min = (maxv-minv)*0.0001
             range_min[g][a] = {v["time"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) < threshold_min}
-            # for y, thd in range_min[g][a].items():
-            #     pre = timeseries[timeseries.index(y)-1]
-            #     if pre in yrange:
-            #         yrange.append(y)
-            #     elif len(yrange) == 0 or timeseries.index(y) - timeseries.index(yrange[-1]) <= 1:
-            #         yrange.extend([pre, y])
-            #     else:
-            #         if len(yrange) > 20:
-            #             output.append({
-            #                 "reason": "noc",
-            #                 "pattern": "nochange",
-            #                 "g": g,
-            #                 "a": [a],
-            #                 "years": yrange
-            #             })
-            #         yrange = [pre, y]
+            for y, thd in range_min[g][a].items():
+                pre = timeseries[timeseries.index(y)-1]
+                if pre in yrange:
+                    yrange.append(y)
+                elif len(yrange) == 0 or timeseries.index(y) - timeseries.index(yrange[-1]) <= 1:
+                    yrange.extend([pre, y])
+                else:
+                    if len(yrange) > cont_threshold:
+                        output.append({
+                            "reason": "noc",
+                            "pattern": "nochange",
+                            "g": g,
+                            "a": [a],
+                            "years": yrange
+                        })
+                    yrange = [pre, y]
+    return output
 
-            #### (3) when most spread
-        #     for v in V[g][a]:
-        #         if a != "S":
-        #             spreadv[v["time"]] += v["diff"]/maxv
-        # if g == 0:
-        #     mostspread = sorted(spreadv.items(), key=lambda x:x[1], reverse=True)[0]
-        #     next = timeseries[timeseries.index(mostspread[0])+1]
-        #     output.append({
-        #         "reason": "spr",
-        #         "pattern": "mostspread",
-        #         "g": g,
-        #         "a": ["X", "Y"],
-        #         "years": [mostspread[0], next]
-        #     })
-    # print(output)
+def get_evt_most_spread(timeseries, groups, axes, V):
+    output = []
+    for g in groups:
+        spreadv = {v["time"]:0 for v in V[g][axes[0]]}
+        for a in axes:
+            maxv = max([v["max"] for v in V[g][a]])
+            for v in V[g][a]:
+                if a != "S":
+                    spreadv[v["time"]] += v["diff"]/maxv
+        if g == 0:
+            mostspread = sorted(spreadv.items(), key=lambda x:x[1], reverse=True)[0]
+            next = timeseries[timeseries.index(mostspread[0])+1]
+            output.append({
+                "reason": "spr",
+                "pattern": "mostspread",
+                "g": g,
+                "a": ["X", "Y"],
+                "years": [mostspread[0], next]
+            })
+    return output
+
+def get_focus_range(timeseries, groups, axes, V):
+    output = []
+    output.extend(get_evt_rapid_change(timeseries, groups, axes, V))
+    # output.extend(get_evt_no_change(timeseries, groups, axes, V))
+    # output.extend(get_evt_most_spread(timeseries, groups, axes, V))
     return output
 
 def avg_value(X, len):
