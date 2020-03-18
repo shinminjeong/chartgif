@@ -1,5 +1,6 @@
 var t_xScale, t_yScale;
-var xrange, yrange;
+var xrange = [10000000, 0],
+    yrange = [10000000, 0];
 var tracehull = {};
 var traceline = {};
 
@@ -30,8 +31,6 @@ class TraceChart {
 
     var years = time_arr;
     this.data = {}
-    xrange = [10000000, 0];
-    yrange = [10000000, 0];
     for (var i=0; i < years.length; i++) {
       var year = years[i];
       this.data[year] = [];
