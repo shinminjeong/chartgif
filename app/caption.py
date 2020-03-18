@@ -26,10 +26,11 @@ name_map = {
     "lin": "Lin",
 }
 label_map = {
-    "income": {"low": "poor", "high": "rich"},
-    "fertility": {"low": "few", "high": "many"},
-    "lifespan": {"low": "sick", "high": "healthy"},
-    "none": {"low": "", "high": ""},
+    "income": {"desc": "wealth", "low": "poor", "high": "rich"},
+    "fertility": {"desc": "family size", "low": "few", "high": "many"},
+    "lifespan": {"desc": "health", "low": "sick", "high": "healthy"},
+    "population": {"desc": "population", "low": "few", "high": "many"},
+    "none": {"desc": "", "high": ""},
 }
 unit_map = {
     "income": "dollars",
@@ -85,18 +86,45 @@ caption_generator = {
     "user": cap_userGenerated
 }
 
-def generateInitSeq(options, groups):
+def cap_axis(a, options):
+    key = a.lower()
+    return "An axis for {}, {}.".format(label_map[options[key]["id"]]["desc"], options[key]["name"])
+
+def cap_trend(options, x_move, y_move):
+    x_key = options["x"]["id"]
+    y_key = options["y"]["id"]
+    if x_move == y_move:
+        return "Bottom left is {} and {}, upper right is {} and {}.".format(
+            label_map[x_key]["low"], label_map[y_key]["low"],
+            label_map[x_key]["high"], label_map[y_key]["high"])
+    else:
+        return "Upper left is {} and {}, bottom right is {} and {}.".format(
+            label_map[x_key]["low"], label_map[y_key]["high"],
+            label_map[x_key]["high"], label_map[y_key]["low"])
+
+def cap_size(a, options):
+    key = a.lower()
+    return "The size of the bubbles shows the size of {}.".format(options[key]["name"])
+
+def generateInitSeq(options, groups, values):
     print("generateInitSeq", groups, options)
     output = []
-    for a in ["X", "Y", "trend"]:
-        output.append({
-            "reason": "init",
-            "pattern": a,
-            "g": 0,
-            "a": [a],
-            "years": ["init"]
-        })
-    return output
+
+    # X and Y axes
+    for a in ["X", "Y"]:
+        output.append({ "reason": "init", "pattern": cap_axis(a, options), "g": 0, "a": [a], "years": ["init"] })
+    # Overall trend
+    x_move = (values["X"][-1]["value"]-values["X"][0]["value"])>0 # positive when going up otherwise negative
+    y_move = (values["Y"][-1]["value"]-values["Y"][0]["value"])>0 # positive when going up otherwise negative
+    output.append({ "reason": "init", "pattern": cap_trend(options, x_move, y_move), "g": 0, "a": ["Trend"], "years": ["init"] })
+    # Introduce groups
+    for k, v in groups.items():
+        if k == 0: continue
+        output.append({ "reason": "init", "pattern": "{}.".format(v), "g": k, "a": ["G"], "years": ["init"] })
+    # Size
+    output.append({ "reason": "init", "pattern": cap_size("S", options), "g": 0, "a": ["S"], "years": ["init"] })
+
+    return output, x_move == y_move
 
 
 def generateCaption(gname, axes, reason, pattern, head_y, tail_y, year=False):
