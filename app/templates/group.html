@@ -315,7 +315,6 @@ function generateFrames() {
     g = d["g"];
     a = d["a"];
     drawFrame(range, g, a, reason, pattern);
-    draw_rect_input(range, "lines_"+g, a, reason);
   }
   generateCaptions();
 }
@@ -351,7 +350,7 @@ function updateSlider() {
 
 function removeFrame(id) {
   console.log("removeFrame", id)
-  var ids = id.split("_");
+  var ids = id.split("-");
   for (var y = ids[0]; y <= ids[1]; y++) {
     // remove group number from yearmap
     var idx = yearmap[y]["group"].indexOf(ids[2]);
@@ -370,27 +369,35 @@ function removeFrame(id) {
 function drawFrame(yrange, group, axes, reason, pattern) {
   // console.log("drawFrame", yrange, group, axes)
   // axis: X, Y, S or (overlay == input from the linecharts)
-  r = [yrange[0], yrange[yrange.length-1]];
-  for (var i = r[0]; i < r[1]; i++) {
-    yearmap[i]["group"].push(+group)
-    yearmap[i]["delay"] = slowdown[reason];
-    id = r[0]+"_"+r[1]+"_"+ group;
-    yearmap[i]["reason"][id] = {
-      "yrange": yrange,
-      "group": group,
-      "axis": axes,
-      "reason": reason,
-      "pattern": pattern,
+  if (yrange[0] == "init") {
+    a = axes[0];
+    y_s = "init_"+a+"_0", y_e = timeFrames[timeFrames.indexOf(y_s)+10];
+    timeline.addFrame([y_s, y_e], 0, "init", reason, a, 1);
+    // timeline.addCaption(
+  } else {
+    r = [yrange[0], yrange[yrange.length-1]];
+    for (var i = r[0]; i < r[1]; i++) {
+      yearmap[i]["group"].push(+group)
+      yearmap[i]["delay"] = slowdown[reason];
+      id = [r[0],r[1],group].join("-");
+      yearmap[i]["reason"][id] = {
+        "yrange": yrange,
+        "group": group,
+        "axis": axes,
+        "reason": reason,
+        "pattern": pattern,
+      }
     }
+    names = [];
+    for (var i in axes) {
+      names.push(data_options[axes[i].toLowerCase()]["id"])
+    }
+    updateSlider();
+    timeline.updateXaxis(timeFrames);
+    timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
+    calculateOuterbound();
+    draw_rect_input(yrange, "lines_"+group, axes, reason);
   }
-  names = [];
-  for (var i in axes) {
-    names.push(data_options[axes[i].toLowerCase()]["id"])
-  }
-  updateSlider();
-  timeline.updateXaxis(timeFrames);
-  timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
-  calculateOuterbound();
 }
 
 initClusterinfo();
@@ -432,7 +439,7 @@ function calculateOuterbound() {
       groups = groups.concat(yearmap[y]["group"]);
       for (var r in yearmap[y]["reason"]) {
         var rr = yearmap[y]["reason"][r];
-        var id = rr["yrange"][0]+"_"+rr["yrange"][rr["yrange"].length-1]+"_"+rr["group"];
+        var id = [rr["yrange"][0],rr["yrange"][rr["yrange"].length-1],rr["group"]].join("-");
         reasons[id] = rr;
       }
       if (head_y > 0) {
@@ -471,7 +478,7 @@ function getCaption(bound) {
         innergrp[y] = res["innergrp"];
       }
       for (var g in res["caption"]) {
-        var id = g.split("_");
+        var id = g.split("-");
         for (var y = id[0]; y <= id[1]; y++) {
           if (caption[y] == undefined) caption[y] = {};
           caption[y][id[2]] = res["caption"][g];
@@ -483,7 +490,7 @@ function getCaption(bound) {
 }
 
 function updateCaption(id, value) {
-  var ids = id.split("_");
+  var ids = id.split("-");
   // console.log("updateCaption", ids, parseInt(id[2]))
   for (var y = ids[0]; y <= ids[1]; y++) {
     caption[y][ids[2]] = value;

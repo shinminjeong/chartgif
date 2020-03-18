@@ -135,7 +135,7 @@ class TimeLine {
 
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
-    tframe.id = y_start+"_"+y_end+"_"+gindex;
+    tframe.id = [y_start, y_end, gindex].join("-");
     if (gindex >= 0) {
       tframe.style = "border: 0.5px solid #333; background-color:"+gcolor(gindex);
     }
@@ -173,7 +173,7 @@ class TimeLine {
 
   addCaption(gid, caption) {
     // console.log("addCaption", gid, caption)
-    var names = gid.split("_");
+    var names = gid.split("-");
     var y_start = names[0],
         y_end = names[1],
         gindex = names[2];
@@ -222,7 +222,7 @@ function removeTimeSlice(e) {
   var id = e.target.parentElement.id;
   // console.log("removebutton clicked", id)
   $("div#"+id+".time-slice").remove();
-  $("div#"+id+".time-caption").remove();
+  $("textarea#"+id+".time-caption").remove();
   removeFrame(id);
 }
 

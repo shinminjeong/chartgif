@@ -110,13 +110,14 @@ def main(request):
             avg_v[group_index][a] = [{"time":y, "value":v, "min": m1, "max": m2, "diff": m2-m1} for y, v, m1, m2 in zip(timeseries, D.tolist()[f:t], minD.tolist()[f:t], maxD.tolist()[f:t])]
     # print(avg_v)
     focus_range = get_focus_range(timeseries, groups, selectedAxis, avg_v);
-
     G, minmax = minmax_for_group(timeseries, K, kgroups, selectedAxis, values)
     clusterinfo = {
         "K": K,
         "groups": range(0, K),
         "minmax": minmax
     }
+    initseq = generateInitSeq(options, c_group_inv)
+    focus_range.extend(initseq)
     # print(kgroups)
     return render(request, "group.html", {
         "time_arr": timeseries,

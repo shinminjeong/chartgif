@@ -95,6 +95,20 @@ caption_generator = {
     "user": cap_userGenerated
 }
 
+def generateInitSeq(options, groups):
+    print("generateInitSeq", groups, options)
+    output = []
+    for a in ["X", "Y", "trend"]:
+        output.append({
+            "reason": "init",
+            "pattern": a,
+            "g": 0,
+            "a": [a],
+            "years": ["init"]
+        })
+    return output
+
+
 def generateCaption(gname, axes, reason, pattern, head_y, tail_y, year=False):
     # print("generateCaption", gname, axes)
     caption = caption_generator[reason](head_y, tail_y, gname, axes, pattern)
