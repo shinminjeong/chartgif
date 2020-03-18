@@ -156,7 +156,6 @@ $(".dropdown-menu a").click(function () {
   window.location.href = "?"+$.param( params );
 });
 
-var timeslices = {};
 var yearmap = {};
 var outerbound = {};
 var caption = {};
@@ -378,10 +377,6 @@ function drawFrame(yrange, group, axes, reason, pattern) {
       "reason": reason,
       "pattern": pattern,
     }
-    if (!timeslices[i]) {
-      timeslices[i] = {};
-    }
-    timeslices[i] = {"g":[+group], "until":r[1]};
   }
   names = [];
   for (var i in axes) {
