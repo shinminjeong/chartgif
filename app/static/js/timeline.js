@@ -117,8 +117,13 @@ class TimeLine {
           y_end = f.getAttribute("data-e-year");
       var s = this.timeScale(y_start),
           e = this.timeScale(y_end);
-      f.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
-      f.style.width = e-s;
+      var newleft = this.margin.left+s+this.timeScale.bandwidth()/2,
+          newwidth = e-s;
+      f.style.left = newleft;
+      f.style.width = newwidth;
+      var orderbtn = $("div#"+f.id+".time-slice-order")[0];
+      if (orderbtn != undefined) orderbtn.style.left = newwidth;
+
       if (f.className == "time-caption") {
         f.setAttribute("data-o-width", e-s);
         f.setAttribute("data-o-height", this.caption_h);
@@ -136,16 +141,35 @@ class TimeLine {
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
     tframe.id = [y_start, y_end, gindex].join("-");
-    if (gindex >= 0) {
-      tframe.style = "border: 0.5px solid #333; background-color:"+gcolor(gindex);
-    }
     tframe.setAttribute("data-s-year", y_start);
     tframe.setAttribute("data-e-year", y_end);
-    tframe.style.top = this.margin.top_g+this.caption_h+(this.slice_h+this.caption_h)*(gindex);
-    tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
+
+    var top = this.margin.top_g+this.caption_h+(this.slice_h+this.caption_h)*(gindex),
+        left = this.margin.left+s+this.timeScale.bandwidth()/2;
+    tframe.style.top = top;
+    tframe.style.left = left;
     tframe.style.width = e-s;
     tframe.style.height = this.slice_h;
+    tframe.style.backgroundColor = gcolor(gindex);
     tframe.innerHTML = name + " " + pattern;
+
+    if (gindex > 0) {
+      var orderbtn = document.createElement("div");
+      orderbtn.className = "time-slice-order"
+      orderbtn.id = tframe.id;
+      orderbtn.style.top = 15;
+      orderbtn.style.left = e-s;
+
+      var downbtn = document.createElement("a");
+      downbtn.className = "down"
+      var order = document.createElement("label");
+      order.innerHTML = gindex;
+      orderbtn.appendChild(order);
+      orderbtn.appendChild(downbtn);
+      // orderbtn.addEventListener("click", removeTimeSlice);
+      // tframe.appendChild(orderbtn);
+      tframe.appendChild(orderbtn);
+    }
 
     tframe.addEventListener("mouseover", showOptions);
     tframe.addEventListener("mouseleave", hideOptions);
@@ -195,7 +219,7 @@ class TimeLine {
     tframe.addEventListener("mouseover", function(e) {
       e.target.style.overflowX = "visible";
       e.target.style.whiteSpace = "normal";
-      e.target.style.width = Math.max(120, e.target.getAttribute("data-o-width"));
+      e.target.style.width = Math.max(150, e.target.getAttribute("data-o-width"));
       e.target.style.height = "auto";
       e.target.style.zIndex = 10;
       e.target.style.backgroundColor = "#007bff";
@@ -228,18 +252,18 @@ function removeTimeSlice(e) {
 
 function showOptions(e) {
   e.target.style.opacity = 1;
-  if (e.target.getElementsByTagName("DIV").length > 0 || e.target.className != "time-slice") return;
+  if (e.target.getElementsByTagName("DIV").length > 1 || e.target.className != "time-slice") return;
   var removebtn = document.createElement("div");
   removebtn.className = "time-slice-remove"
   removebtn.id = e.target.id;
-  removebtn.style.left = parseFloat(e.target.style.width.replace('px',''))-20;
+  removebtn.style.left = parseFloat(e.target.style.width.replace('px',''))-2;
   removebtn.innerHTML = "<i class='fa fa-times'></i>"
   removebtn.addEventListener("click", removeTimeSlice);
   e.target.appendChild(removebtn);
 }
 
 function hideOptions(e) {
-  e.target.style.opacity = 0.5;
+  e.target.style.opacity = 0.6;
   // console.log("div#"+e.target.id+".time-slice-remove");
   $("div#"+e.target.id+".time-slice-remove").remove();
 }
