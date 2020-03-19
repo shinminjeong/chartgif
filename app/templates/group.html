@@ -204,7 +204,8 @@ function kFormatter(num) {
 }
 
 function updateLineTimebar() {
-  var curYear = timeFrames[curFrame];
+  var curYear = parseInt(timeFrames[curFrame]);
+  // console.log("updateLineTimebar", curFrame, curYear);
   if (isNaN(curYear)) curYear = minYear;
   timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+10) + "px";
   timebar.style.top = 10 + "px";
