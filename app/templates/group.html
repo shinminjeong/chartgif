@@ -339,8 +339,12 @@ function updateSlider() {
   timeFrames.push("initStart");
   var torder = ["Y", "X", "Trend", "G", "S"];
   for (var type in torder) {
-    for (var y = 0; y < initdelay[torder[type]]; y++) timeFrames.push("init"+torder[type]+"_"+y);
+    for (var y = 0; y < initdelay[torder[type]]; y++) {
+      if (y == 0) timeFrames.push("init"+torder[type]+"");
+      else timeFrames.push("init"+torder[type]+"_"+y);
+    }
   }
+  timeFrames.push("initFinish");
 
   for (var y = minYear; y <= maxYear; y++) {
     for (var d = 0; d < yearmap[y]["delay"]; d++) {
@@ -377,7 +381,7 @@ function drawFrame(yrange, group, axes, reason, pattern) {
   // axis: X, Y, S or (overlay == input from the linecharts)
   if (yrange[0] == "init") {
     a = axes[0];
-    y_s = "init"+a+"_0", y_e = timeFrames[timeFrames.indexOf(y_s)+initdelay[a]];
+    y_s = "init"+a, y_e = timeFrames[timeFrames.indexOf(y_s)+initdelay[a]];
 
     timeline.addFrame([y_s, y_e], group, "init", reason, a, 1);
     timeline.addCaption([y_s, y_e, group].join("-"), pattern);
@@ -526,7 +530,8 @@ var focus_index = -1,
     focus_groups = [];
 function traceInitSeq(curNames, curYear) {
   var type = curNames[0].slice(4);
-  if (curNames[1] == '0') {
+  // console.log("traceInitSeq", curNames[1], type)
+  if (curNames[1] == undefined) {
     if (curFrame == focus_until && focus_index < legendCount-1) {
       curFrame -= initdelay["G"];
       curYear = timeFrames[curFrame];
@@ -553,6 +558,10 @@ function traceInitSeq(curNames, curYear) {
       focus_until = timeFrames.indexOf(curYear)+initdelay["G"];
       focus_groups = Object.keys(gname);
       // console.log("@@@ type G", focus_index, curFrame, focus_until)
+    } else if (type == "Finish") {
+      chart.hideDesc(timeunit);
+      focus_index = -1, focus_groups = [];
+      focus_start = focus_until = -1;
     }
   }
 }
@@ -564,10 +573,6 @@ function traceTimeline() {
   // if init sequence
   if (curNames[0].slice(0,4) == "init") {
     traceInitSeq(curNames, curYear);
-  } else {
-    updateBackgoundYear("");
-    chart.hideDesc(timeunit);
-    focus_index = -1, focus_groups = [];
   }
 
   // if in focus mode
