@@ -137,6 +137,20 @@ class ScatterPlot {
         .attr('transform', 'rotate(-90)')
         .text(data_options["y"]["name"]);
 
+    this.saxis = this.svg.append('g').attr("class", "chart-desc");
+    this.saxis.append("text")
+        .attr("x", this.width/2)
+        .attr("y", this.height/4+10)
+        .attr("text-anchor", "middle")
+        .text("size = "+data_options["s"]["name"]);
+    this.saxis.append("circle")
+        .attr('cx', this.width/2)
+        .attr('cy', this.height/4+40)
+        .attr('r', 15)
+        .style('stroke', 'black')
+        .style('stroke-width', 0.5)
+        .style('fill', gcolor(1));
+
     this.bottomleft = this.svg.append('g').attr("class", "chart-desc");
     this.bottomright = this.svg.append('g').attr("class", "chart-desc");
     this.upperleft = this.svg.append('g').attr("class", "chart-desc");
@@ -197,6 +211,10 @@ class ScatterPlot {
   }
 
   highlightSaxis(delay) {
+    this.saxis.transition()
+      .duration(delay)
+      .style("visibility", "visible")
+      .style("opacity", 1);
   }
 
   highlightDirect(delay) {
@@ -231,6 +249,10 @@ class ScatterPlot {
       .style("visibility", "hidden")
       .style("opacity", 0);
     this.yaxis.transition()
+      .duration(delay)
+      .style("visibility", "hidden")
+      .style("opacity", 0);
+    this.saxis.transition()
       .duration(delay)
       .style("visibility", "hidden")
       .style("opacity", 0);
