@@ -188,37 +188,42 @@ body {
 }
 .time-slice-order {
 	position: absolute;
-	width: 15px;
-	height: 30px;
-	margin-left: -1px;
+	width: 31px;
+	height: 16px;
+	margin: -1px 0 0 -10px;
 }
 .time-slice-order > label {
-	width: 100%;
-	height: 15px;
+	width: 15px;
+	height: 16px;
 	font-size: 10px;
 	padding: 0px 3.5px;
 	background-color: #eee;
 	border: 1px solid #000;
 	border-radius: 3px;
 	text-align: center;
-	margin: 0 0 0 -1;
+	margin: 0;
 }
 .time-slice-order > a {
+	margin-top: 2px;
   display: inline-block;
 	border-style: solid;
+	visibility: hidden;
+	z-index: 200px;
 }
 .time-slice-order > a.up {
-	border-width: 0 6.5px 8px 6.5px;
-	border-color: transparent transparent #002654 transparent;
+	float: right;
+	border-width: 6px 1px 6px 7px;
+	border-color: transparent transparent transparent #002654;
 }
 .time-slice-order > a.down {
-	border-width: 8px 6.5px 0 6.5px;
-	border-color: #002654 transparent transparent transparent;
+	float: left;
+	border-width: 6px 7px 6px 1px;
+	border-color: transparent #002654 transparent transparent;
 }
 
 .time-slice-remove {
 	position: absolute;
-	top: 0;
+	top: -1;
 	width: 15px;
 	height: 15px;
 	font-size: 11px;

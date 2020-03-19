@@ -157,21 +157,36 @@ class TimeLine {
       var orderbtn = document.createElement("div");
       orderbtn.className = "time-slice-order"
       orderbtn.id = tframe.id;
-      orderbtn.style.top = 15;
+      orderbtn.style.top = 14;
       orderbtn.style.left = e-s;
-
-      var downbtn = document.createElement("a");
-      downbtn.className = "down"
       var order = document.createElement("label");
       order.innerHTML = gindex;
       orderbtn.appendChild(order);
+      var downbtn = document.createElement("a");
+      downbtn.className = "down";
+      downbtn.role = "button"
+      downbtn.addEventListener("click", function(e) { changeFrameOrder("down", orderbtn.id) });
+      var upbtn = document.createElement("a");
+      upbtn.className = "up";
+      upbtn.role = "button"
+      upbtn.addEventListener("click", function(e) { changeFrameOrder("up", orderbtn.id) });
       orderbtn.appendChild(downbtn);
-      // orderbtn.addEventListener("click", removeTimeSlice);
-      // tframe.appendChild(orderbtn);
+      orderbtn.appendChild(upbtn);
+
+      orderbtn.addEventListener("mouseenter", function(e) {
+        var btns = orderbtn.getElementsByTagName("A");
+        btns[0].style.visibility = "visible";
+        btns[1].style.visibility = "visible";
+      });
+      orderbtn.addEventListener("mouseleave", function(e) {
+        var btns = orderbtn.getElementsByTagName("A");
+        btns[0].style.visibility = "hidden";
+        btns[1].style.visibility = "hidden";
+      });
       tframe.appendChild(orderbtn);
     }
 
-    tframe.addEventListener("mouseover", showOptions);
+    tframe.addEventListener("mouseenter", showOptions);
     tframe.addEventListener("mouseleave", hideOptions);
     this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
@@ -242,6 +257,11 @@ class TimeLine {
   }
 }
 
+function changeFrameOrder(direction, id) {
+  console.log("changeFrameOrder", direction, id);
+
+}
+
 function removeTimeSlice(e) {
   var id = e.target.parentElement.id;
   // console.log("removebutton clicked", id)
@@ -251,15 +271,20 @@ function removeTimeSlice(e) {
 }
 
 function showOptions(e) {
-  e.target.style.opacity = 1;
-  if (e.target.getElementsByTagName("DIV").length > 1 || e.target.className != "time-slice") return;
+  var target;
+  if (e.target.className == "time-slice") target = e.target;
+  else if (e.target.className == "time-slice-order") target = e.target.parentNode;
+  else return;
+  // console.log("showOption", target, target.style.width);
+
+  target.style.opacity = 1;
   var removebtn = document.createElement("div");
   removebtn.className = "time-slice-remove"
-  removebtn.id = e.target.id;
-  removebtn.style.left = parseFloat(e.target.style.width.replace('px',''))-2;
+  removebtn.id = target.id;
+  removebtn.style.left = parseFloat(target.style.width.replace('px',''))-2;
   removebtn.innerHTML = "<i class='fa fa-times'></i>"
   removebtn.addEventListener("click", removeTimeSlice);
-  e.target.appendChild(removebtn);
+  target.appendChild(removebtn);
 }
 
 function hideOptions(e) {
