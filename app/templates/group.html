@@ -474,6 +474,18 @@ function calculateOuterbound() {
       reasons = {};
     }
   }
+  organizeFrames();
+}
+
+function organizeFrames() {
+  for (var y in outerbound) {
+    var idx = 1;
+    for (var f in outerbound[y]["reason"]) {
+      $("div#"+f+".time-slice-order").attr("data-outerbound", y)
+      if (f.split("-")[2] == 0) continue;
+      $("div#"+f+".time-slice-order").children("label")[0].innerHTML = idx++;
+    }
+  }
 }
 
 function getCaption(bound) {
