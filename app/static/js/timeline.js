@@ -165,11 +165,11 @@ class TimeLine {
       var downbtn = document.createElement("a");
       downbtn.className = "down";
       downbtn.role = "button"
-      downbtn.addEventListener("click", function(e) { changeFrameOrder("down", orderbtn.id) });
+      downbtn.addEventListener("click", function(e) { changeFrameOrder("down", orderbtn, order) });
       var upbtn = document.createElement("a");
       upbtn.className = "up";
       upbtn.role = "button"
-      upbtn.addEventListener("click", function(e) { changeFrameOrder("up", orderbtn.id) });
+      upbtn.addEventListener("click", function(e) { changeFrameOrder("up", orderbtn, order) });
       orderbtn.appendChild(downbtn);
       orderbtn.appendChild(upbtn);
 
@@ -257,9 +257,14 @@ class TimeLine {
   }
 }
 
-function changeFrameOrder(direction, id) {
-  console.log("changeFrameOrder", direction, id);
-
+function changeFrameOrder(direction, btn, order) {
+  console.log("changeFrameOrder", direction, btn.id, order);
+  // console.log(btn.closest("time-slice-outer"))
+  if (direction == "up") {
+    order.innerHTML = Math.min(1, parseInt(order.innerHTML)+1);
+  } else if (direction == "down") {
+    order.innerHTML = parseInt(order.innerHTML)-1;
+  }
 }
 
 function removeTimeSlice(e) {
