@@ -199,8 +199,9 @@ class TimeLine {
   addOuterBound(yrange) {
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
-    var s = this.timeScale(y_start),
+    var s = this.timeScale(parseInt(y_start)),
         e = this.timeScale(1+parseInt(y_end));
+    // console.log("addOuterBound", y_start, y_end, s, e)
     var tframe = document.createElement("div");
     tframe.className = "time-slice-outer"
     tframe.style.top = 0;

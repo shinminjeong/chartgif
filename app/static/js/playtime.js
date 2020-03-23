@@ -96,8 +96,7 @@ class PlayTime {
         y_end = [yrange[yrange.length-1]-1,gindex,delay-1].join("_");
     var s = this.timeScale(playTime.indexOf(y_start)),
         e = this.timeScale(playTime.indexOf(y_end));
-    console.log("@@ playtime - addFrame", gindex, yrange, y_start, y_end, s, e);
-    console.log(playTime)
+    // console.log("@@ playtime - addFrame", gindex, yrange, y_start, y_end, s, e);
 
     var tframe = document.createElement("div");
     tframe.className = "playtime-slice"

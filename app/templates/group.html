@@ -66,12 +66,12 @@
       <div id="clusterinfo" class="row"></div>
     </div>
   </div>
-  <div class="row" id="playtime-panel" style="padding-top: 20px;">
+  <!-- <div class="row" id="playtime-panel" style="padding-top: 20px;">
     <div class="col-md-12">
       <div class="playtime playtime-background" id="playtime-background"></div>
       <div class="playtime playtime-frame" id="playtime"></div>
     </div>
-  </div>
+  </div> -->
   <div class="row" id="timeline-panel" style="padding-top: 20px;">
     <div class="custom-control custom-switch-play">
       <label>
@@ -201,8 +201,8 @@ var timeline_w = document.getElementById("timeline-background").offsetWidth;
 var timeline_h = 275;
 var timeline = new TimeLine("timeline", timeline_w, timeline_h);
 timeline.initChart(timeFrames, minYear, maxYear, gname);
-var playtime = new PlayTime("playtime", timeline_w, 30);
-playtime.initChart(playTime, minYear, maxYear, gname);
+// var playtime = new PlayTime("playtime", timeline_w, 30);
+// playtime.initChart(playTime, minYear, maxYear, gname);
 
 function kFormatter(num) {
     if (Math.abs(num) > 999999)
@@ -344,11 +344,8 @@ function updateSlider() {
   var torder = ["Y", "X", "Trend", "G", "S"];
   for (var type in torder) {
     for (var y = 0; y < initdelay[torder[type]]; y++) {
-      if (y == 0) {
-        timeFrames.push("init"+torder[type]+"");
-      } else {
-        timeFrames.push("init"+torder[type]+"_"+y);
-      }
+      if (y == 0) timeFrames.push("init"+torder[type]+"");
+      else timeFrames.push("init"+torder[type]+"_"+y);
     }
   }
   timeFrames.push("initFinish");
@@ -366,34 +363,34 @@ function updateSlider() {
   slider.value = 0;
 }
 
-function updatePlaytime() {
-  playTime = [];
-  // init sequence
-  playTime.push("initStart");
-  var torder = ["Y", "X", "Trend", "G", "S"];
-  for (var type in torder) {
-    for (var y = 0; y < initdelay[torder[type]]; y++) {
-      if (y == 0) {
-        playTime.push("init"+torder[type]);
-      }
-    }
-  }
-  playTime.push("initFinish");
-  for (var y = minYear; y <= maxYear; y++) {
-    if (outerbound[y] != undefined) {
-      for (var g in outerbound[y]["reason"]) {
-        var r = g.split("-");
-        for (var j = r[0]; j < r[1]; j++) {
-          for (var d = 0; d < yearmap[j]["delay"]; d++)
-            playTime.push(j+"_"+r[2]+"_"+d);
-        }
-      }
-      y = r[1]-1;
-    } else {
-      playTime.push(y);
-    }
-  }
-}
+// function updatePlaytime() {
+//   playTime = [];
+//   // init sequence
+//   playTime.push("initStart");
+//   var torder = ["Y", "X", "Trend", "G", "S"];
+//   for (var type in torder) {
+//     for (var y = 0; y < initdelay[torder[type]]; y++) {
+//       if (y == 0) {
+//         playTime.push("init"+torder[type]);
+//       }
+//     }
+//   }
+//   playTime.push("initFinish");
+//   for (var y = minYear; y <= maxYear; y++) {
+//     if (outerbound[y] != undefined) {
+//       for (var g in outerbound[y]["reason"]) {
+//         var r = g.split("-");
+//         for (var j = r[0]; j < r[1]; j++) {
+//           for (var d = 0; d < yearmap[j]["delay"]; d++)
+//             playTime.push(j+"_"+r[2]+"_"+d);
+//         }
+//       }
+//       y = r[1]-1;
+//     } else {
+//       playTime.push(y);
+//     }
+//   }
+// }
 
 function removeFrame(id) {
   // console.log("removeFrame", id)
@@ -411,11 +408,11 @@ function removeFrame(id) {
   updateSlider();
   timeline.updateXaxis(timeFrames);
   calculateOuterbound();
-  playtime.updateXaxis(playTime);
+  // playtime.updateXaxis(playTime);
 }
 
 function drawFrame(yrange, group, axes, reason, pattern) {
-  console.log("drawFrame", yrange, group, axes)
+  // console.log("drawFrame", yrange, group, axes)
   // axis: X, Y, S or (overlay == input from the linecharts)
   if (yrange[0] == "init") {
     a = axes[0];
@@ -430,7 +427,7 @@ function drawFrame(yrange, group, axes, reason, pattern) {
     r = [yrange[0], yrange[yrange.length-1]];
     for (var i = r[0]; i < r[1]; i++) {
       yearmap[i]["group"].push(+group)
-      yearmap[i]["delay"] = slowdown[reason];
+      if (reason != "sum") yearmap[i]["delay"] = slowdown[reason];
       id = [r[0],r[1],group].join("-");
       yearmap[i]["reason"][id] = {
         "yrange": yrange,
@@ -450,10 +447,31 @@ function drawFrame(yrange, group, axes, reason, pattern) {
     calculateOuterbound();
     draw_rect_input(yrange, "lines_"+group, axes, reason);
 
-    updatePlaytime();
-    playtime.updateXaxis(playTime);
-    playtime.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
+    // updatePlaytime();
+    // playtime.updateXaxis(playTime);
+    // playtime.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
   }
+}
+
+function drawSummaryFrame(yrange, group, axes, reason, pattern) {
+  r = [yrange[0], yrange[yrange.length-1]];
+  for (var i = r[0]; i < r[1]; i++) {
+    yearmap[i]["group"].push(+group)
+    if (reason != "sum") yearmap[i]["delay"] = slowdown[reason];
+    id = [r[0],r[1],group].join("-");
+    yearmap[i]["reason"][id] = {
+      "yrange": yrange,
+      "group": group,
+      "axis": axes,
+      "reason": reason,
+      "pattern": pattern,
+    }
+  }
+  names = [];
+  for (var i in axes) {
+    names.push(data_options[axes[i].toLowerCase()]["id"])
+  }
+  timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
 }
 
 initClusterinfo();
@@ -521,17 +539,20 @@ function calculateOuterbound() {
     }
   }
   organizeFrames();
-  addGeneralFrames();
+  summarizeOuterbound();
 }
 
-function addGeneralFrames() {
+function summarizeOuterbound() {
   for (var b in outerbound) {
     var bound = outerbound[b];
     var gid = [bound["head"], bound["tail"], 0].join("-")
-    console.log("** addGeneralFrames", b, bound["groups"], gid)
-    if ($("div#"+gid+".time-slice").length == 0) { // has no group 0
-      timeline.addFrame([bound["head"], bound["tail"]], 0, [""], "", "", yearmap[bound["head"]]["delay"]);
-      timeline.addCaption(gid, "Something happened in this period.");
+    if (!bound["groups"].includes(0) && $("div#"+gid+".time-slice").length == 0) { // has no group 0
+      var axes = [];
+      for (var r in bound["reason"]) {
+        axes = axes.concat(bound["reason"][r]["axis"])
+      }
+      years = Array.from(new Array(bound["tail"]-bound["head"]+1), (x,i) => i + bound["head"])
+      drawSummaryFrame(years, 0, Array.from(new Set(axes)), "sum", "");
     }
   }
 }

@@ -79,11 +79,15 @@ def cap_userGenerated(y_s, y_e, gname, axes, pattern):
         cap += "{} in {}, Something happened between {} and {}.".format(axis["name"], gname, y_s, y_e)
     return cap
 
+def cap_summary(y_s, y_e, gname, axes, pattern):
+    return "Summary for outerbound."
+
 caption_generator = {
     "spr": cap_mostSpread,
     "var": cap_valueChange,
     "noc": cap_noChange,
-    "user": cap_userGenerated
+    "user": cap_userGenerated,
+    "sum": cap_summary
 }
 
 def cap_axis(a, options):
