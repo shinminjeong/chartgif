@@ -395,9 +395,9 @@ function updateSlider() {
 function removeFrame(id) {
   // console.log("removeFrame", id)
   var ids = id.split("-");
-  for (var y = ids[0]; y <= ids[1]; y++) {
+  for (var y = ids[0]; y < ids[1]; y++) {
     // remove group number from yearmap
-    var idx = yearmap[y]["group"].indexOf(ids[2]);
+    var idx = yearmap[y]["group"].indexOf(parseInt(ids[2]));
     yearmap[y]["group"].splice(idx, 1);
     delete yearmap[y]["reason"][id];
     if (yearmap[y]["group"].length == 0) {
@@ -453,7 +453,7 @@ function drawFrame(yrange, group, axes, reason, pattern) {
   }
 }
 
-function drawSummaryFrame(yrange, group, axes, reason, pattern) {
+function drawSummaryFrame(yrange, group, axes, reason, included_frames) {
   r = [yrange[0], yrange[yrange.length-1]];
   for (var i = r[0]; i < r[1]; i++) {
     yearmap[i]["group"].push(+group)
@@ -546,13 +546,31 @@ function summarizeOuterbound() {
   for (var b in outerbound) {
     var bound = outerbound[b];
     var gid = [bound["head"], bound["tail"], 0].join("-")
-    if (!bound["groups"].includes(0) && $("div#"+gid+".time-slice").length == 0) { // has no group 0
+    console.log("summarizeOuterbound", gid, $("div#"+gid+".time-slice").length)
+    if ($("div#"+gid+".time-slice").length == 0) {
+      var included_frames = [];
+      if (bound["groups"].includes(0)) {// has group 0
+        for (var r in bound["reason"]) {
+          var ids = r.split("-");
+          if (ids[2] == "0") {
+            included_frames.push(bound["reason"][r])
+            $("div#"+r+".time-slice").remove();
+            $("textarea#"+r+".time-caption").remove();
+            // remove previous frame
+            for (var y = ids[0]; y < ids[1]; y++) {
+              var idx = yearmap[y]["group"].indexOf(parseInt(ids[2]));
+              yearmap[y]["group"].splice(idx, 1);
+              delete yearmap[y]["reason"][r];
+            }
+          }
+        }
+      }
       var axes = [];
       for (var r in bound["reason"]) {
         axes = axes.concat(bound["reason"][r]["axis"])
       }
       years = Array.from(new Array(bound["tail"]-bound["head"]+1), (x,i) => i + bound["head"])
-      drawSummaryFrame(years, 0, Array.from(new Set(axes)), "sum", "");
+      drawSummaryFrame(years, 0, Array.from(new Set(axes)), "sum", included_frames);
     }
   }
 }
