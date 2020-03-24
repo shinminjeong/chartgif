@@ -286,9 +286,6 @@ class ScatterPlot {
     this.clear();
     var data = this.data[year];
 
-    var flagTrace = swtvalues["trace"],
-        flagConvexHulls = swtvalues["hull"];
-
     // console.log("updateChart", year, flagConvexHulls);
     var bubble = this.bubble_g.selectAll('.bubble')
         .data(data)
@@ -331,46 +328,6 @@ class ScatterPlot {
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles);
-
-    this.hull_g.selectAll("path.hull").remove();
-    if (flagConvexHulls) {
-      this.hull_g.selectAll("path.hull")
-          .data(convexHulls(data, getGroup, hullOffset, false))
-        .enter().append("path")
-          .attr("class", "hull")
-          .attr("id", function(d) { return d.group; })
-          .attr("d", drawCluster)
-          .style("opacity", 0.2)
-          .style("fill", function(d) { return gcolor(d.group); })
-          .style('visibility', function(d) {
-            if (swtvalues["groups"][d.group]) return 'visible';
-            else return 'hidden';
-          });
-    }
-
-    this.trace_path_g.selectAll("circle.tbubble").remove();
-    if (flagTrace) {
-      var allyearmeans = [];
-      for (var i=0; i < this.years.length; i++) {
-        var data = this.data[this.years[i]];
-        allyearmeans = allyearmeans.concat(traceMean(this.years[i], data, getGroup))
-      }
-
-      this.trace_path_g.selectAll(".tbubble")
-          .data(allyearmeans)
-        .enter().append("circle")
-          .attr("class", "tbubble")
-          .attr("year", d => d.time)
-          .attr('cx', d => xScale(d.x))
-          .attr('cy', d => yScale(d.y))
-          .attr('r', 1)
-          .style("opacity", 1)
-          .style("fill", function(d) { return gcolor(d.group); })
-          .style('visibility', function(d) {
-            if (swtvalues["groups"][d.group]) return 'visible';
-            else return 'hidden';
-          });
-    }
   }
 
   clearFocus() {

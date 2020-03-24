@@ -72,16 +72,6 @@
         <input type="checkbox" class="custom-control-input" id="switchPlay">
       <i id="play_icon" class="fa fa-play"></i></label>
     </div>
-    <!-- <div class="col-md-1">
-      <div class="custom-control custom-switch">
-        <input type="checkbox" class="custom-control-input" id="switchTrace">
-        <label class="custom-control-label" for="switchTrace">Trace</label>
-      </div>
-      <div class="custom-control custom-switch">
-        <input type="checkbox" class="custom-control-input" id="switchHull">
-        <label class="custom-control-label" for="switchHull">Hull</label>
-      </div>
-    </div> -->
     <div class="col-md-12">
       <div class="timeline timeline-background" id="timeline-background"></div>
       <div class="timeline timeline-frame" id="timeline"></div>
@@ -226,7 +216,6 @@ function initClusterinfo() {
 
     var div_group_label = document.createElement("div");
     div_group_label.style = "display:inline-block; vertical-align:top; width:"+label_w+"px; height: "+group_h+"px;";
-    div_group_label.innerHTML += "<input type='checkbox' class='switchLegend' id='"+gname[g]+"' checked>";
     div_group_label.innerHTML += "<span class='badge'>" + gname[g] + "</span><br>";
     // div_group_label.innerHTML += "<div class='group_label'><span id='infoMinMax_"+g+"'></span></div>"
     div_group_label.innerHTML += "<div class='group_trace' id='trace_chart_" + g + "'></div>"
@@ -564,8 +553,6 @@ function updateCaption(id, value) {
 
 function changeSelectedConts(continents) {
   // console.log("-- changeSelectedConts", legendCount, continents, continents.indexOf(0));
-  swtvalues["trace"] = false;
-  swtvalues["hull"] = false;
   for (var c = 0; c < legendCount; c++) {
     swtvalues["groups"][c] = false;
   }
@@ -668,33 +655,8 @@ function traceTimeline() {
 
 
 var swtvalues = {
-  "trace": false,
-  "hull": false,
   "groups": {0: true, 1:true, 2:true, 3:true, 4:true},
 };
-// var traceon = document.querySelectorAll("input#switchTrace");
-// traceon[0].addEventListener("change", function(e) {
-//   console.log("traceon", e.target.checked);
-//   swtvalues["trace"] = e.target.checked;
-//   chart.updateChart(curFrame, swtvalues);
-// });
-// var hullon = document.querySelectorAll("input#switchHull");
-// hullon[0].addEventListener("change", function(e) {
-//   console.log("hullon", e.target.checked);
-//   swtvalues["hull"] = e.target.checked;
-//   chart.updateChart(curFrame, swtvalues);
-// });
-
-var switchLegends = document.querySelectorAll("input.switchLegend");
-for (var s = 0; s < legendCount; s++) {
-  switchLegends[s].addEventListener("change", function(e) {
-    console.log("switchLegends", this.id, e.target.checked);
-    swtvalues["groups"][gname.indexOf(this.id)] = e.target.checked;
-    chart.updateChart(curFrame, swtvalues);
-  });
-}
-
-
 $('input[type=range]').on('input', function () {
   $(this).trigger('change');
 });
