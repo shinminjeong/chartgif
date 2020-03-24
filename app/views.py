@@ -169,7 +169,7 @@ def get_caption(request):
             groupdesc[g][c] = summarizeGroup(kgroups, [countries[vv] for vv in clist])
 
         axisNames = [options[a.lower()] for a in selectedAxis]
-        caption[id] = generateCaption(groups[g], axisNames, v["reason"][0], v["pattern"][0], yrange[0], yrange[-1], g == 0)
+        caption[id] = generateCaption(groups, g, axisNames, v["reason"][0], v["pattern"][0], yrange[0], yrange[-1], allgroup = reasons)
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")
     # print(groupdesc)

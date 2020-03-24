@@ -546,7 +546,7 @@ function summarizeOuterbound() {
   for (var b in outerbound) {
     var bound = outerbound[b];
     var gid = [bound["head"], bound["tail"], 0].join("-")
-    console.log("summarizeOuterbound", gid, $("div#"+gid+".time-slice").length)
+    // console.log("summarizeOuterbound", gid, $("div#"+gid+".time-slice").length)
     if ($("div#"+gid+".time-slice").length == 0) {
       var included_frames = [];
       if (bound["groups"].includes(0)) {// has group 0

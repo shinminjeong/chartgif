@@ -57,30 +57,34 @@ def summarizeGroup(info, countries):
     # print(desc)
     return desc
 
-def cap_mostSpread(y_s, y_e, gname, axes, pattern):
+def cap_mostSpread(y_s, y_e, groups, g, axes, pattern, allgroup):
     return "In {}, differences between the countries of the world was wider than ever.".format(y_s)
 
-def cap_noChange(y_s, y_e, gname, axes, pattern):
+def cap_noChange(y_s, y_e, groups, g, axes, pattern, allgroup):
     cap = ""
     for axis in axes:
-        cap += "{} in {} STUCK between {} and {}.".format(axis["name"], gname, y_s, y_e)
+        cap += "{} in {} STUCK between {} and {}.".format(axis["name"], groups[g], y_s, y_e)
     return cap
 
-def cap_valueChange(y_s, y_e, gname, axes, pattern):
+def cap_valueChange(y_s, y_e, groups, g, axes, pattern, allgroup):
     cap = ""
     for axis in axes:
         how = pattern.upper() if pattern else "" ## by n unit_map[axis["id"]]
-        cap += "{} in {} {} between {} and {}.".format(axis["name"], gname, how, y_s, y_e)
+        cap += "{} in {} {} between {} and {}.".format(axis["name"], groups[g], how, y_s, y_e)
     return cap
 
-def cap_userGenerated(y_s, y_e, gname, axes, pattern):
+def cap_userGenerated(y_s, y_e, groups, g, axes, pattern, allgroup):
     cap = ""
     for axis in axes:
-        cap += "{} in {}, Something happened between {} and {}.".format(axis["name"], gname, y_s, y_e)
+        cap += "{} in {}, Something happened between {} and {}.".format(axis["name"], groups[g], y_s, y_e)
     return cap
 
-def cap_summary(y_s, y_e, gname, axes, pattern):
-    return "Summary for outerbound."
+def cap_summary(y_s, y_e, groups, g, axes, pattern, allgroup):
+    continents = [c for i, c in groups.items() if i > 0]
+    cap = "From {} to {}, ".format(y_s, y_e)
+    for axis, p in zip(axes, pattern):
+        cap += "{} of {} {}.".format(axis["name"], " and ".join(continents), p)
+    return cap
 
 caption_generator = {
     "spr": cap_mostSpread,
@@ -131,7 +135,7 @@ def generateInitSeq(options, groups, values):
     return output, x_move == y_move
 
 
-def generateCaption(gname, axes, reason, pattern, head_y, tail_y, year=False):
+def generateCaption(groups, g, axes, reason, pattern, head_y, tail_y, allgroup):
     # print("generateCaption", gname, axes)
-    caption = caption_generator[reason](head_y, tail_y, gname, axes, pattern)
+    caption = caption_generator[reason](head_y, tail_y, groups, g, axes, pattern, allgroup)
     return caption
