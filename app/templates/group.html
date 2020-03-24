@@ -66,12 +66,6 @@
       <div id="clusterinfo" class="row"></div>
     </div>
   </div>
-  <!-- <div class="row" id="playtime-panel" style="padding-top: 20px;">
-    <div class="col-md-12">
-      <div class="playtime playtime-background" id="playtime-background"></div>
-      <div class="playtime playtime-frame" id="playtime"></div>
-    </div>
-  </div> -->
   <div class="row" id="timeline-panel" style="padding-top: 20px;">
     <div class="custom-control custom-switch-play">
       <label>
@@ -106,7 +100,6 @@
 <script src="{% static 'js/scatter.js' %}"></script>
 <script src="{% static 'js/trace.js' %}"></script>
 <script src="{% static 'js/line.js' %}"></script>
-<script src="{% static 'js/playtime.js' %}"></script>
 <script src="{% static 'js/timeline.js' %}"></script>
 <script>
 var morecolor = d3.scaleOrdinal(d3.schemeCategory10);
@@ -172,7 +165,7 @@ var innergrp = {};
 var minYear = time_arr[0],
     maxYear = time_arr[time_arr.length-1];
 var curFrame = 0, preFrame = 0;
-var timeFrames = [], playTime = [];
+var timeFrames = [];
 var play_timer = undefined;
 var flagConvexHulls = false;
 var slowdown = {
@@ -201,8 +194,6 @@ var timeline_w = document.getElementById("timeline-background").offsetWidth;
 var timeline_h = 275;
 var timeline = new TimeLine("timeline", timeline_w, timeline_h);
 timeline.initChart(timeFrames, minYear, maxYear, gname);
-// var playtime = new PlayTime("playtime", timeline_w, 30);
-// playtime.initChart(playTime, minYear, maxYear, gname);
 
 function kFormatter(num) {
     if (Math.abs(num) > 999999)
@@ -363,35 +354,6 @@ function updateSlider() {
   slider.value = 0;
 }
 
-// function updatePlaytime() {
-//   playTime = [];
-//   // init sequence
-//   playTime.push("initStart");
-//   var torder = ["Y", "X", "Trend", "G", "S"];
-//   for (var type in torder) {
-//     for (var y = 0; y < initdelay[torder[type]]; y++) {
-//       if (y == 0) {
-//         playTime.push("init"+torder[type]);
-//       }
-//     }
-//   }
-//   playTime.push("initFinish");
-//   for (var y = minYear; y <= maxYear; y++) {
-//     if (outerbound[y] != undefined) {
-//       for (var g in outerbound[y]["reason"]) {
-//         var r = g.split("-");
-//         for (var j = r[0]; j < r[1]; j++) {
-//           for (var d = 0; d < yearmap[j]["delay"]; d++)
-//             playTime.push(j+"_"+r[2]+"_"+d);
-//         }
-//       }
-//       y = r[1]-1;
-//     } else {
-//       playTime.push(y);
-//     }
-//   }
-// }
-
 function removeFrame(id) {
   // console.log("removeFrame", id)
   var ids = id.split("-");
@@ -408,7 +370,6 @@ function removeFrame(id) {
   updateSlider();
   timeline.updateXaxis(timeFrames);
   calculateOuterbound();
-  // playtime.updateXaxis(playTime);
 }
 
 function drawFrame(yrange, group, axes, reason, pattern) {
@@ -446,10 +407,6 @@ function drawFrame(yrange, group, axes, reason, pattern) {
     timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
     calculateOuterbound();
     draw_rect_input(yrange, "lines_"+group, axes, reason);
-
-    // updatePlaytime();
-    // playtime.updateXaxis(playTime);
-    // playtime.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
   }
 }
 
@@ -538,7 +495,6 @@ function calculateOuterbound() {
       reasons = {};
     }
   }
-  organizeFrames();
   summarizeOuterbound();
 }
 
@@ -571,17 +527,6 @@ function summarizeOuterbound() {
       }
       years = Array.from(new Array(bound["tail"]-bound["head"]+1), (x,i) => i + bound["head"])
       drawSummaryFrame(years, 0, Array.from(new Set(axes)), "sum", included_frames);
-    }
-  }
-}
-
-function organizeFrames() {
-  for (var y in outerbound) {
-    var idx = 1;
-    for (var f in outerbound[y]["reason"]) {
-      $("div#"+f+".time-slice-order").attr("data-outerbound", y)
-      if (f.split("-")[2] == 0) continue;
-      $("div#"+f+".time-slice-order").children("label")[0].innerHTML = idx++;
     }
   }
 }

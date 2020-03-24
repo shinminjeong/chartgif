@@ -170,32 +170,6 @@ body {
 	overflow-y: scroll;
 }
 
-.playtime {
-	position: absolute;
-}
-.playtime-background {
-	top: 20px;
-	height: 280px;
-	background: #666;
-}
-.playtime-frame {
-	top: 20px;
-	height: 280px;
-	position: relative;
-	overflow-y: scroll;
-}
-.playtime-slice {
-	position: absolute;
-	line-height: 12px;
-	background-color: #666;
-	border-radius: 3px;
-	border: 1px solid #000;
-	opacity: 0.6;
-	font-size: 10px;
-	padding: 1px 0 2px 2px;
-}
-
-
 .time-legend {
 	position: absolute;
 	text-align: right;
@@ -211,40 +185,6 @@ body {
 	opacity: 0.6;
 	font-size: 10px;
 	padding: 1px 0 2px 2px;
-}
-.time-slice-order {
-	position: absolute;
-	width: 31px;
-	height: 16px;
-	margin: -1px 0 0 -10px;
-}
-.time-slice-order > label {
-	width: 15px;
-	height: 16px;
-	font-size: 10px;
-	padding: 0px 3.5px;
-	background-color: #eee;
-	border: 1px solid #000;
-	border-radius: 3px;
-	text-align: center;
-	margin: 0;
-}
-.time-slice-order > a {
-	margin-top: 2px;
-  display: inline-block;
-	border-style: solid;
-	visibility: hidden;
-	z-index: 200px;
-}
-.time-slice-order > a.up {
-	float: right;
-	border-width: 6px 1px 6px 7px;
-	border-color: transparent transparent transparent #002654;
-}
-.time-slice-order > a.down {
-	float: left;
-	border-width: 6px 7px 6px 1px;
-	border-color: transparent #002654 transparent transparent;
 }
 
 .time-slice-remove {

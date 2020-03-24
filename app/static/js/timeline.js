@@ -121,9 +121,6 @@ class TimeLine {
           newwidth = e-s;
       f.style.left = newleft;
       f.style.width = newwidth;
-      var orderbtn = $("div#"+f.id+".time-slice-order")[0];
-      if (orderbtn != undefined) orderbtn.style.left = newwidth;
-
       if (f.className == "time-caption") {
         f.setAttribute("data-o-width", e-s);
         f.setAttribute("data-o-height", this.caption_h);
@@ -152,39 +149,6 @@ class TimeLine {
     tframe.style.height = this.slice_h;
     tframe.style.backgroundColor = gcolor(gindex);
     tframe.innerHTML = name + " " + pattern;
-
-    if (gindex > 0) {
-      var orderbtn = document.createElement("div");
-      orderbtn.className = "time-slice-order"
-      orderbtn.id = tframe.id;
-      orderbtn.style.top = 14;
-      orderbtn.style.left = e-s;
-      var order = document.createElement("label");
-      order.innerHTML = gindex;
-      orderbtn.appendChild(order);
-      var downbtn = document.createElement("a");
-      downbtn.className = "down";
-      downbtn.role = "button"
-      downbtn.addEventListener("click", function(e) { changeFrameOrder("down", orderbtn, order) });
-      var upbtn = document.createElement("a");
-      upbtn.className = "up";
-      upbtn.role = "button"
-      upbtn.addEventListener("click", function(e) { changeFrameOrder("up", orderbtn, order) });
-      orderbtn.appendChild(downbtn);
-      orderbtn.appendChild(upbtn);
-
-      orderbtn.addEventListener("mouseenter", function(e) {
-        var btns = orderbtn.getElementsByTagName("A");
-        btns[0].style.visibility = "visible";
-        btns[1].style.visibility = "visible";
-      });
-      orderbtn.addEventListener("mouseleave", function(e) {
-        var btns = orderbtn.getElementsByTagName("A");
-        btns[0].style.visibility = "hidden";
-        btns[1].style.visibility = "hidden";
-      });
-      tframe.appendChild(orderbtn);
-    }
 
     tframe.addEventListener("mouseenter", showOptions);
     tframe.addEventListener("mouseleave", hideOptions);
@@ -255,17 +219,6 @@ class TimeLine {
 
     this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
-  }
-}
-
-function changeFrameOrder(direction, btn, order) {
-  console.log("changeFrameOrder", direction, btn.id, order);
-  outerbound_id = btn.getAttribute("data-outerbound");
-  console.log(outerbound_id, outerbound[outerbound_id]["groups"])
-  if (direction == "up") {
-    order.innerHTML = parseInt(order.innerHTML)+1;
-  } else if (direction == "down") {
-    order.innerHTML = Math.max(1, parseInt(order.innerHTML)-1);
   }
 }
 
