@@ -90,6 +90,7 @@
 <script src="{% static 'js/scatter.js' %}"></script>
 <script src="{% static 'js/trace.js' %}"></script>
 <script src="{% static 'js/line.js' %}"></script>
+<script src="{% static 'js/timeframes.js' %}"></script>
 <script src="{% static 'js/timeline.js' %}"></script>
 <script>
 var morecolor = d3.scaleOrdinal(d3.schemeCategory10);
@@ -102,7 +103,7 @@ let gcolor = function(i){
   }
 };
 
-var time_arr = {{time_arr|safe}};
+var timeseries = {{timeseries|safe}};
 var data_plot = {{data|safe}};
 var data_options = {{options|safe}};
 var data_population = {{population|safe}};
@@ -123,8 +124,9 @@ var params = {
   "yScale": "log",
   "s": "population"
 }
+var timeunit = 200;
 var w = document.getElementById("myChart").offsetWidth,
-    h = w*0.7;
+    h = w;
 var timeline_w = document.getElementById("timeline-panel").offsetWidth;
 var label_w = Math.min(200, Math.max(120, w*0.2));
 var left_offset = 66, caption_h = 65;
@@ -147,43 +149,24 @@ $(".dropdown-menu a").click(function () {
   window.location.href = "?"+$.param( params );
 });
 
-var yearmap = {};
-var outerbound = {};
-var caption = {};
 var innergrp = {};
-
-var minYear = time_arr[0],
-    maxYear = time_arr[time_arr.length-1];
 var curFrame = 0, preFrame = 0;
 var timeFrames = [];
 var play_timer = undefined;
 var flagConvexHulls = false;
-var slowdown = {
-  "noc": 2,
-  "var": 15,
-  "spr": 20,
-  "user": 10,
-};
-var initdelay = {
-  "X": 10,
-  "Y": 10,
-  "S": 10,
-  "G": 10,
-  "Trend": 20
-}
 var el, newPoint, timebar;
 var linecharts_v = {};
 var trace_chart = {};
 var infodiv = document.getElementById("clusterinfo");
 infodiv.style.height = h+20;
-
-initTimeFrame();
-updateSlider();
+initClusterinfo();
 
 var timeline_w = document.getElementById("timeline-background").offsetWidth;
-var timeline_h = 275;
-var timeline = new TimeLine("timeline", timeline_w, timeline_h);
-timeline.initChart(timeFrames, minYear, maxYear, gname);
+var testtimeframes = new TimeFrames(timeseries, gname);
+var timeline = new TimeLine("timeline", timeline_w);
+testtimeframes.addFrames(data_focus_range);
+timeline.initChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
+
 
 function kFormatter(num) {
     if (Math.abs(num) > 999999)
@@ -269,18 +252,6 @@ function updateCaptionPanel(frame, gid, groups) {
   }
 }
 
-function updateClusterinfo(year) {
-  var numGroup = cluster_info["K"];
-  var minmax = cluster_info["minmax"];
-  for (var g = 0; g < numGroup; g++) {
-    var info_minmax = document.getElementById("infoMinMax_"+g);
-    info_minmax.innerHTML = "";
-    for (var a in minmax[g][year]) {
-      info_minmax.innerHTML += a + ": " + kFormatter(minmax[g][year][a]["min"]) + "~" + kFormatter(minmax[g][year][a]["max"]) + "<br>";
-    }
-  }
-}
-
 function drawTraceCharts(numGroup, height) {
   for (var g = 0; g < numGroup; g++) {
     // console.log("drawTraceCharts", g)
@@ -289,236 +260,237 @@ function drawTraceCharts(numGroup, height) {
   }
 }
 
-function initTimeFrame() {
-  for (var y = minYear; y <= maxYear; y++) {
-    yearmap[y] = {
-      "group":[],
-      "delay":1,
-      "reason":{}
-    };
-  }
-}
+// function initTimeFrame() {
+//   for (var y = minYear; y <= maxYear; y++) {
+//     yearmap[y] = {
+//       "group":[],
+//       "delay":1,
+//       "reason":{}
+//     };
+//   }
+// }
+//
+// function generateFrames() {
+//
+//   for (var i in data_focus_range) {
+//     d = data_focus_range[i];
+//     reason = d["reason"];
+//     pattern = d["pattern"];
+//     range = d["years"];
+//     g = d["g"];
+//     a = d["a"];
+//     drawFrame(range, g, a, reason, pattern);
+//   }
+//   generateCaptions();
+// }
+//
+// function generateCaptions() {
+//   for (var v in outerbound) {
+//     getCaption(outerbound[v]);
+//   }
+// }
+// function updateSlider() {
+//   timeFrames = [];
+//   // init sequence
+//   timeFrames.push("initStart");
+//   var torder = ["Y", "X", "Trend", "G", "S"];
+//   for (var type in torder) {
+//     for (var y = 0; y < initdelay[torder[type]]; y++) {
+//       if (y == 0) timeFrames.push("init"+torder[type]+"");
+//       else timeFrames.push("init"+torder[type]+"_"+y);
+//     }
+//   }
+//   timeFrames.push("initFinish");
+//
+//   for (var y = minYear; y <= maxYear; y++) {
+//     for (var d = 0; d < yearmap[y]["delay"]; d++) {
+//       if (d == 0) timeFrames.push(y + "");
+//       else timeFrames.push(y + "_" + d);
+//     }
+//   }
+//
+//   var slider = document.getElementById("mySlider");
+//   slider.min = 0;
+//   slider.max = timeFrames.length;
+//   slider.value = 0;
+// }
+//
+// function removeFrame(id) {
+//   // console.log("removeFrame", id)
+//   var ids = id.split("-");
+//   for (var y = ids[0]; y < ids[1]; y++) {
+//     // remove group number from yearmap
+//     var idx = yearmap[y]["group"].indexOf(parseInt(ids[2]));
+//     yearmap[y]["group"].splice(idx, 1);
+//     delete yearmap[y]["reason"][id];
+//     if (yearmap[y]["group"].length == 0) {
+//       yearmap[y]["delay"] = 1;
+//       yearmap[y]["reason"] = {};
+//     }
+//   }
+//   updateSlider();
+//   timeline.updateXaxis(timeFrames);
+//   calculateOuterbound();
+// }
+//
+// function drawFrame(yrange, group, axes, reason, pattern) {
+//   // console.log("drawFrame", yrange, group, axes)
+//   // axis: X, Y, S or (overlay == input from the linecharts)
+//   if (yrange[0] == "init") {
+//     a = axes[0];
+//     y_s = "init"+a, y_e = timeFrames[timeFrames.indexOf(y_s)+initdelay[a]];
+//
+//     timeline.addFrame([y_s, y_e], group, "init", reason, a, 1);
+//     timeline.addCaption([y_s, y_e, group].join("-"), pattern);
+//     if (caption["init"+a] == undefined) caption["init"+a] = {};
+//     caption["init"+a][group] = pattern;
+//
+//   } else {
+//     r = [yrange[0], yrange[yrange.length-1]];
+//     for (var i = r[0]; i < r[1]; i++) {
+//       yearmap[i]["group"].push(+group)
+//       if (reason != "sum") yearmap[i]["delay"] = slowdown[reason];
+//       id = [r[0],r[1],group].join("-");
+//       yearmap[i]["reason"][id] = {
+//         "yrange": yrange,
+//         "group": group,
+//         "axis": axes,
+//         "reason": reason,
+//         "pattern": pattern,
+//       }
+//     }
+//     names = [];
+//     for (var i in axes) {
+//       names.push(data_options[axes[i].toLowerCase()]["id"])
+//     }
+//     updateSlider();
+//     timeline.updateXaxis(timeFrames);
+//     timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
+//     calculateOuterbound();
+//     draw_rect_input(yrange, "lines_"+group, axes, reason);
+//   }
+// }
+//
+// function drawSummaryFrame(yrange, group, axes, reason, included_frames) {
+//   r = [yrange[0], yrange[yrange.length-1]];
+//   for (var i = r[0]; i < r[1]; i++) {
+//     yearmap[i]["group"].push(+group)
+//     if (reason != "sum") yearmap[i]["delay"] = slowdown[reason];
+//     id = [r[0],r[1],group].join("-");
+//     yearmap[i]["reason"][id] = {
+//       "yrange": yrange,
+//       "group": group,
+//       "axis": axes,
+//       "reason": reason,
+//       "pattern": pattern,
+//     }
+//   }
+//   names = [];
+//   for (var i in axes) {
+//     names.push(data_options[axes[i].toLowerCase()]["id"])
+//   }
+//   timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
+// }
+//
+// initClusterinfo();
+// generateFrames()
+//
 
-function generateFrames() {
-  for (var i in data_focus_range) {
-    d = data_focus_range[i];
-    reason = d["reason"];
-    pattern = d["pattern"];
-    range = d["years"];
-    g = d["g"];
-    a = d["a"];
-    drawFrame(range, g, a, reason, pattern);
-  }
-  generateCaptions();
-}
-
-function generateCaptions() {
-  for (var v in outerbound) {
-    getCaption(outerbound[v]);
-  }
-}
-function updateSlider() {
-  timeFrames = [];
-  // init sequence
-  timeFrames.push("initStart");
-  var torder = ["Y", "X", "Trend", "G", "S"];
-  for (var type in torder) {
-    for (var y = 0; y < initdelay[torder[type]]; y++) {
-      if (y == 0) timeFrames.push("init"+torder[type]+"");
-      else timeFrames.push("init"+torder[type]+"_"+y);
-    }
-  }
-  timeFrames.push("initFinish");
-
-  for (var y = minYear; y <= maxYear; y++) {
-    for (var d = 0; d < yearmap[y]["delay"]; d++) {
-      if (d == 0) timeFrames.push(y + "");
-      else timeFrames.push(y + "_" + d);
-    }
-  }
-
-  var slider = document.getElementById("mySlider");
-  slider.min = 0;
-  slider.max = timeFrames.length;
-  slider.value = 0;
-}
-
-function removeFrame(id) {
-  // console.log("removeFrame", id)
-  var ids = id.split("-");
-  for (var y = ids[0]; y < ids[1]; y++) {
-    // remove group number from yearmap
-    var idx = yearmap[y]["group"].indexOf(parseInt(ids[2]));
-    yearmap[y]["group"].splice(idx, 1);
-    delete yearmap[y]["reason"][id];
-    if (yearmap[y]["group"].length == 0) {
-      yearmap[y]["delay"] = 1;
-      yearmap[y]["reason"] = {};
-    }
-  }
-  updateSlider();
-  timeline.updateXaxis(timeFrames);
-  calculateOuterbound();
-}
-
-function drawFrame(yrange, group, axes, reason, pattern) {
-  // console.log("drawFrame", yrange, group, axes)
-  // axis: X, Y, S or (overlay == input from the linecharts)
-  if (yrange[0] == "init") {
-    a = axes[0];
-    y_s = "init"+a, y_e = timeFrames[timeFrames.indexOf(y_s)+initdelay[a]];
-
-    timeline.addFrame([y_s, y_e], group, "init", reason, a, 1);
-    timeline.addCaption([y_s, y_e, group].join("-"), pattern);
-    if (caption["init"+a] == undefined) caption["init"+a] = {};
-    caption["init"+a][group] = pattern;
-
-  } else {
-    r = [yrange[0], yrange[yrange.length-1]];
-    for (var i = r[0]; i < r[1]; i++) {
-      yearmap[i]["group"].push(+group)
-      if (reason != "sum") yearmap[i]["delay"] = slowdown[reason];
-      id = [r[0],r[1],group].join("-");
-      yearmap[i]["reason"][id] = {
-        "yrange": yrange,
-        "group": group,
-        "axis": axes,
-        "reason": reason,
-        "pattern": pattern,
-      }
-    }
-    names = [];
-    for (var i in axes) {
-      names.push(data_options[axes[i].toLowerCase()]["id"])
-    }
-    updateSlider();
-    timeline.updateXaxis(timeFrames);
-    timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
-    calculateOuterbound();
-    draw_rect_input(yrange, "lines_"+group, axes, reason);
-  }
-}
-
-function drawSummaryFrame(yrange, group, axes, reason, included_frames) {
-  r = [yrange[0], yrange[yrange.length-1]];
-  for (var i = r[0]; i < r[1]; i++) {
-    yearmap[i]["group"].push(+group)
-    if (reason != "sum") yearmap[i]["delay"] = slowdown[reason];
-    id = [r[0],r[1],group].join("-");
-    yearmap[i]["reason"][id] = {
-      "yrange": yrange,
-      "group": group,
-      "axis": axes,
-      "reason": reason,
-      "pattern": pattern,
-    }
-  }
-  names = [];
-  for (var i in axes) {
-    names.push(data_options[axes[i].toLowerCase()]["id"])
-  }
-  timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
-}
-
-initClusterinfo();
-generateFrames()
-
-var timeunit = 200;
-var playon = document.querySelectorAll("input#switchPlay");
-playon[0].addEventListener("change", function(e) {
-  // console.log("playon", e.target.checked, curYear);
-  if (e.target.checked) {
-    document.getElementById("play_icon").className = "fa fa-pause";
-  } else {
-    document.getElementById("play_icon").className = "fa fa-play";
-  }
-
-  if (play_timer == undefined && e.target.checked && curFrame < timeFrames.length) {
-    play_timer = setInterval(function() {
-      curFrame += 1;
-      if (curFrame >= timeFrames.length-1) {
-        clearInterval(play_timer);
-      }
-      // console.log("original", timing, curYear, maxYear);
-      traceTimeline();
-    }, timeunit);
-  } else if (play_timer != undefined) {
-    clearInterval(play_timer);
-    play_timer = undefined;
-  }
-});
-
-function calculateOuterbound() {
-  outerbound = {};
-  timeline.clearOuterBound();
-  var head_y = -1, tail_y = -1;
-  var groups = [], reasons = {};
-  for (var y in yearmap) {
-    if (yearmap[y]["group"].length > 0) {
-      // console.log("-", y, head_y, tail_y)
-      groups = groups.concat(yearmap[y]["group"]);
-      for (var r in yearmap[y]["reason"]) {
-        var rr = yearmap[y]["reason"][r];
-        var id = [rr["yrange"][0],rr["yrange"][rr["yrange"].length-1],rr["group"]].join("-");
-        reasons[id] = rr;
-      }
-      if (head_y > 0) {
-        tail_y = y;
-      } else {
-        head_y = tail_y = y;
-      }
-    } else {
-      if (head_y > 0) {
-        // console.log("add", head_y, tail_y)
-        var bound = {
-          "head": +head_y,
-          "tail": parseInt(tail_y)+1,
-          "groups": Array.from(new Set(groups)).sort(),
-          "reason": reasons
-        }
-        outerbound[+head_y] = bound;
-        timeline.addOuterBound([head_y, tail_y]);
-      }
-      head_y = tail_y = -1;
-      groups = [];
-      reasons = {};
-    }
-  }
-  summarizeOuterbound();
-}
-
-function summarizeOuterbound() {
-  for (var b in outerbound) {
-    var bound = outerbound[b];
-    var gid = [bound["head"], bound["tail"], 0].join("-")
-    // console.log("summarizeOuterbound", gid, $("div#"+gid+".time-slice").length)
-    if ($("div#"+gid+".time-slice").length == 0) {
-      var included_frames = [];
-      if (bound["groups"].includes(0)) {// has group 0
-        for (var r in bound["reason"]) {
-          var ids = r.split("-");
-          if (ids[2] == "0") {
-            included_frames.push(bound["reason"][r])
-            $("div#"+r+".time-slice").remove();
-            $("textarea#"+r+".time-caption").remove();
-            // remove previous frame
-            for (var y = ids[0]; y < ids[1]; y++) {
-              var idx = yearmap[y]["group"].indexOf(parseInt(ids[2]));
-              yearmap[y]["group"].splice(idx, 1);
-              delete yearmap[y]["reason"][r];
-            }
-          }
-        }
-      }
-      var axes = [];
-      for (var r in bound["reason"]) {
-        axes = axes.concat(bound["reason"][r]["axis"])
-      }
-      years = Array.from(new Array(bound["tail"]-bound["head"]+1), (x,i) => i + bound["head"])
-      drawSummaryFrame(years, 0, Array.from(new Set(axes)), "sum", included_frames);
-    }
-  }
-}
+// var playon = document.querySelectorAll("input#switchPlay");
+// playon[0].addEventListener("change", function(e) {
+//   // console.log("playon", e.target.checked, curYear);
+//   if (e.target.checked) {
+//     document.getElementById("play_icon").className = "fa fa-pause";
+//   } else {
+//     document.getElementById("play_icon").className = "fa fa-play";
+//   }
+//
+//   if (play_timer == undefined && e.target.checked && curFrame < timeFrames.length) {
+//     play_timer = setInterval(function() {
+//       curFrame += 1;
+//       if (curFrame >= timeFrames.length-1) {
+//         clearInterval(play_timer);
+//       }
+//       // console.log("original", timing, curYear, maxYear);
+//       traceTimeline();
+//     }, timeunit);
+//   } else if (play_timer != undefined) {
+//     clearInterval(play_timer);
+//     play_timer = undefined;
+//   }
+// });
+//
+// function calculateOuterbound() {
+//   outerbound = {};
+//   timeline.clearOuterBound();
+//   var head_y = -1, tail_y = -1;
+//   var groups = [], reasons = {};
+//   for (var y in yearmap) {
+//     if (yearmap[y]["group"].length > 0) {
+//       // console.log("-", y, head_y, tail_y)
+//       groups = groups.concat(yearmap[y]["group"]);
+//       for (var r in yearmap[y]["reason"]) {
+//         var rr = yearmap[y]["reason"][r];
+//         var id = [rr["yrange"][0],rr["yrange"][rr["yrange"].length-1],rr["group"]].join("-");
+//         reasons[id] = rr;
+//       }
+//       if (head_y > 0) {
+//         tail_y = y;
+//       } else {
+//         head_y = tail_y = y;
+//       }
+//     } else {
+//       if (head_y > 0) {
+//         // console.log("add", head_y, tail_y)
+//         var bound = {
+//           "head": +head_y,
+//           "tail": parseInt(tail_y)+1,
+//           "groups": Array.from(new Set(groups)).sort(),
+//           "reason": reasons
+//         }
+//         outerbound[+head_y] = bound;
+//         timeline.addOuterBound([head_y, tail_y]);
+//       }
+//       head_y = tail_y = -1;
+//       groups = [];
+//       reasons = {};
+//     }
+//   }
+//   summarizeOuterbound();
+// }
+//
+// function summarizeOuterbound() {
+//   for (var b in outerbound) {
+//     var bound = outerbound[b];
+//     var gid = [bound["head"], bound["tail"], 0].join("-")
+//     // console.log("summarizeOuterbound", gid, $("div#"+gid+".time-slice").length)
+//     if ($("div#"+gid+".time-slice").length == 0) {
+//       var included_frames = [];
+//       if (bound["groups"].includes(0)) {// has group 0
+//         for (var r in bound["reason"]) {
+//           var ids = r.split("-");
+//           if (ids[2] == "0") {
+//             included_frames.push(bound["reason"][r])
+//             $("div#"+r+".time-slice").remove();
+//             $("textarea#"+r+".time-caption").remove();
+//             // remove previous frame
+//             for (var y = ids[0]; y < ids[1]; y++) {
+//               var idx = yearmap[y]["group"].indexOf(parseInt(ids[2]));
+//               yearmap[y]["group"].splice(idx, 1);
+//               delete yearmap[y]["reason"][r];
+//             }
+//           }
+//         }
+//       }
+//       var axes = [];
+//       for (var r in bound["reason"]) {
+//         axes = axes.concat(bound["reason"][r]["axis"])
+//       }
+//       years = Array.from(new Array(bound["tail"]-bound["head"]+1), (x,i) => i + bound["head"])
+//       drawSummaryFrame(years, 0, Array.from(new Set(axes)), "sum", included_frames);
+//     }
+//   }
+// }
 
 function getCaption(bound) {
   $.ajax({
@@ -543,13 +515,13 @@ function getCaption(bound) {
   });
 }
 
-function updateCaption(id, value) {
-  var ids = id.split("-");
-  // console.log("updateCaption", ids, parseInt(id[2]))
-  for (var y = ids[0]; y <= ids[1]; y++) {
-    caption[y][ids[2]] = value;
-  }
-}
+// function updateCaption(id, value) {
+//   var ids = id.split("-");
+//   // console.log("updateCaption", ids, parseInt(id[2]))
+//   for (var y = ids[0]; y <= ids[1]; y++) {
+//     caption[y][ids[2]] = value;
+//   }
+// }
 
 function changeSelectedConts(continents) {
   // console.log("-- changeSelectedConts", legendCount, continents, continents.indexOf(0));
@@ -561,97 +533,97 @@ function changeSelectedConts(continents) {
     swtvalues["groups"][continents[c]] = true;
   }
 }
-
-var flag_focus = false;
-var focus_index = -1,
-    focus_start = focus_until = -1,
-    focus_groups = [];
-function traceInitSeq(curNames, curYear) {
-  var type = curNames[0].slice(4);
-  // console.log("traceInitSeq", curNames[1], type)
-  if (curNames[1] == undefined) {
-    if (curFrame == focus_until && focus_index < legendCount-1) {
-      curFrame -= initdelay["G"];
-      curYear = timeFrames[curFrame];
-      type = "G";
-      // console.log("@@@ curFrame changed", curFrame, curYear, type, focus_index)
-    }
-    if (type == "Y") {
-      chart.highlightYaxis(5*timeunit);
-      focus_index = 0, focus_groups = [0];
-    } else if (type == "X") {
-      chart.highlightXaxis(5*timeunit);
-      focus_index = 0, focus_groups = [0];
-    } else if (type == "S") {
-      chart.highlightSaxis(5*timeunit);
-      focus_index = 0, focus_groups = [0];
-    } else if (type == "Trend") {
-      if (o_trend) chart.highlightDirect(5*timeunit);
-      else chart.highlightInverse(5*timeunit);
-      focus_index = 0, focus_groups = [0];
-    } else if (type == "G") {
-      chart.hideDesc(0);
-      chart.showGroup(minYear, ++focus_index);
-      updateBackgoundYear(minYear);
-      focus_until = timeFrames.indexOf(curYear)+initdelay["G"];
-      focus_groups = Object.keys(gname);
-      // console.log("@@@ type G", focus_index, curFrame, focus_until)
-    } else if (type == "Finish") {
-      chart.hideDesc(timeunit);
-      focus_index = -1, focus_groups = [];
-      focus_start = focus_until = -1;
-    }
-  }
-}
-function traceTimeline() {
-  var curYear = timeFrames[curFrame];
-  var nextYear = timeFrames[curFrame+1];
-  var curNames = curYear.split("_");
-  console.log("traceTimeline", curFrame, curNames, flag_focus, focus_until, focus_index, swtvalues);
-  // if init sequence
-  if (curNames[0].slice(0,4) == "init") {
-    traceInitSeq(curNames, curYear);
-  }
-
-  // if in focus mode
-  if (flag_focus && curFrame == focus_until) {
-    if (focus_index >= focus_groups.length-1) {
-      console.log("-- finish focusing", focus_index, focus_groups)
-      focus_index = -1;
-      flag_focus = false;
-      // chart.clearFocus();
-      changeSelectedConts([0,1,2,3,4]);
-      // resetPlaytimer(100); // go to the normal pace
-    } else {
-      focus_index += 1;
-      changeSelectedConts([focus_groups[focus_index]]);
-      console.log("-- move to the next group focusing", focus_index, focus_groups)
-      curFrame = focus_start;
-    }
-    chart.clearFocus();
-  } else {
-    // console.log(curYear, flag_focus);
-    changeSlider($("input[type='range']"), curFrame, true, flag_focus);
-    // update caption
-  }
-
-  // if next year is focus_year
-  if (outerbound[nextYear]) {
-    flag_focus = true;
-    focus_start = timeFrames.indexOf(""+outerbound[nextYear]["head"]);
-    focus_until = timeFrames.indexOf(""+outerbound[nextYear]["tail"])+1;
-    focus_groups = outerbound[nextYear]["groups"];
-    console.log("-- prepare focusing in ", nextYear)
-    console.log("==", focus_start, "~", focus_until, focus_groups)
-    if (focus_index == -1) {
-      focus_index = 0;
-      changeSelectedConts([focus_groups[focus_index]]);
-      // resetPlaytimer(1000);
-    }
-  }
-
-  updateCaptionPanel(curFrame, focus_index, focus_groups);
-}
+//
+// var flag_focus = false;
+// var focus_index = -1,
+//     focus_start = focus_until = -1,
+//     focus_groups = [];
+// function traceInitSeq(curNames, curYear) {
+//   var type = curNames[0].slice(4);
+//   // console.log("traceInitSeq", curNames[1], type)
+//   if (curNames[1] == undefined) {
+//     if (curFrame == focus_until && focus_index < legendCount-1) {
+//       curFrame -= initdelay["G"];
+//       curYear = timeFrames[curFrame];
+//       type = "G";
+//       // console.log("@@@ curFrame changed", curFrame, curYear, type, focus_index)
+//     }
+//     if (type == "Y") {
+//       chart.highlightYaxis(5*timeunit);
+//       focus_index = 0, focus_groups = [0];
+//     } else if (type == "X") {
+//       chart.highlightXaxis(5*timeunit);
+//       focus_index = 0, focus_groups = [0];
+//     } else if (type == "S") {
+//       chart.highlightSaxis(5*timeunit);
+//       focus_index = 0, focus_groups = [0];
+//     } else if (type == "Trend") {
+//       if (o_trend) chart.highlightDirect(5*timeunit);
+//       else chart.highlightInverse(5*timeunit);
+//       focus_index = 0, focus_groups = [0];
+//     } else if (type == "G") {
+//       chart.hideDesc(0);
+//       chart.showGroup(minYear, ++focus_index);
+//       updateBackgoundYear(minYear);
+//       focus_until = timeFrames.indexOf(curYear)+initdelay["G"];
+//       focus_groups = Object.keys(gname);
+//       // console.log("@@@ type G", focus_index, curFrame, focus_until)
+//     } else if (type == "Finish") {
+//       chart.hideDesc(timeunit);
+//       focus_index = -1, focus_groups = [];
+//       focus_start = focus_until = -1;
+//     }
+//   }
+// }
+// function traceTimeline() {
+//   var curYear = timeFrames[curFrame];
+//   var nextYear = timeFrames[curFrame+1];
+//   var curNames = curYear.split("_");
+//   console.log("traceTimeline", curFrame, curNames, flag_focus, focus_until, focus_index, swtvalues);
+//   // if init sequence
+//   if (curNames[0].slice(0,4) == "init") {
+//     traceInitSeq(curNames, curYear);
+//   }
+//
+//   // if in focus mode
+//   if (flag_focus && curFrame == focus_until) {
+//     if (focus_index >= focus_groups.length-1) {
+//       console.log("-- finish focusing", focus_index, focus_groups)
+//       focus_index = -1;
+//       flag_focus = false;
+//       // chart.clearFocus();
+//       changeSelectedConts([0,1,2,3,4]);
+//       // resetPlaytimer(100); // go to the normal pace
+//     } else {
+//       focus_index += 1;
+//       changeSelectedConts([focus_groups[focus_index]]);
+//       console.log("-- move to the next group focusing", focus_index, focus_groups)
+//       curFrame = focus_start;
+//     }
+//     chart.clearFocus();
+//   } else {
+//     // console.log(curYear, flag_focus);
+//     changeSlider($("input[type='range']"), curFrame, true, flag_focus);
+//     // update caption
+//   }
+//
+//   // if next year is focus_year
+//   if (outerbound[nextYear]) {
+//     flag_focus = true;
+//     focus_start = timeFrames.indexOf(""+outerbound[nextYear]["head"]);
+//     focus_until = timeFrames.indexOf(""+outerbound[nextYear]["tail"])+1;
+//     focus_groups = outerbound[nextYear]["groups"];
+//     console.log("-- prepare focusing in ", nextYear)
+//     console.log("==", focus_start, "~", focus_until, focus_groups)
+//     if (focus_index == -1) {
+//       focus_index = 0;
+//       changeSelectedConts([focus_groups[focus_index]]);
+//       // resetPlaytimer(1000);
+//     }
+//   }
+//
+//   updateCaptionPanel(curFrame, focus_index, focus_groups);
+// }
 
 
 var swtvalues = {
@@ -708,7 +680,6 @@ function changeSlider(el, curFrame, play, focus) {
     chart.updateChart(curYear, swtvalues);
   }
   highlightCurYear();
-  // updateClusterinfo(curYear);
   updateBackgoundYear(curYear);
   preFrame = curFrame;
 }

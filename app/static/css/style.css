@@ -154,18 +154,18 @@ body {
 	width: 2px;
 	top: 20px;
 	left: 114px;
-	height: 280px;
+	height: 120px;
 	background-color: #007bff;
 	z-index: 100;
 }
 .timeline-background {
 	top: 20px;
-	height: 280px;
+	height: 120px;
 	background: #666;
 }
 .timeline-frame {
 	top: 20px;
-	height: 280px;
+	height: 120px;
 	position: relative;
 	overflow-y: scroll;
 }
@@ -180,9 +180,9 @@ body {
 	position: absolute;
 	line-height: 12px;
 	background-color: #666;
-	border-radius: 3px;
+	border-radius: 5px;
 	border: 1px solid #000;
-	opacity: 0.6;
+	opacity: 0.7;
 	font-size: 10px;
 	padding: 1px 0 2px 2px;
 }
@@ -201,13 +201,16 @@ body {
 }
 .time-slice-outer {
 	position: absolute;
-	background-color: #000;
-	opacity: 0.3;
+	background-color: #666;
+	border: 1px solid #000;
+	border-radius: 5px;
+	opacity: 0.6;
+	color: #fff;
 }
 .time-caption {
 	position: absolute;
 	background-color: #002654;
-	border-radius: 3px;
+	border-radius: 5px;
 	border: 1px solid #000;
 	color: #fff;
 	font-size: 10px;

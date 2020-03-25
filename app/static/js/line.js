@@ -13,6 +13,8 @@ class LineChart {
 
   drawChart(data, data_options) {
     // console.log(data);
+    var minYear = timeseries[0];
+    
     var svg = d3.select("#"+this.div_id)
       .append('svg')
       .attr('width', this.width+this.margin.left+this.margin.right)

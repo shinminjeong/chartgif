@@ -1,19 +1,23 @@
+const zeroPad = (num, places) => String(num).padStart(places, '0');
+
 class TimeLine {
 
-  constructor(div_id, w, h) {
+  constructor(div_id, w) {
     this.margin = {top: 0, right: 35, bottom: 0, left:100, top_g: 25};
     this.width = w - this.margin.left - this.margin.right;
-    this.height = h - this.margin.top - this.margin.bottom;
     this.div_id_background = div_id + "-background";
     this.div_id = div_id;
 
-    this.slice_h = 30;
+    this.slice_h = 50;
     this.caption_h = 20;
+    this.year_h = 20;
+    this.height = this.slice_h+this.caption_h+this.year_h+this.margin.top_g-this.margin.top-this.margin.bottom;
 
     this.frames = [];
   }
 
-  initChart(timeframes, minYear, maxYear, gname) {
+  initChart(timeframes, forder, fmap, gname) {
+    console.log("Timeline -- initchart", timeframes, gname);
     this.framepanel = document.getElementById(this.div_id);
     this.bgpanel = document.getElementById(this.div_id_background);
     this.svg = d3.select("#"+this.div_id_background)
@@ -34,11 +38,11 @@ class TimeLine {
     this.grid = this.chart_g.append("g");
     this.x_1 = this.grid.append("g");
     this.x_2 = this.grid.append("g");
+    this.x_3 = this.grid.append("g");
 
-    var framelines = [], hh = this.caption_h+this.slice_h;
-    for (var l = hh; l < this.width; l += hh) {
-      framelines.push(l);
-    }
+    var framelines = [];
+    framelines.push(this.caption_h, this.caption_h+this.slice_h);
+
     this.grid.append("g")
       .attr("class", "grid")
       .selectAll("line")
@@ -51,39 +55,32 @@ class TimeLine {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
-    for (var g = 0; g < legendCount; g++) {
-      var legend_d = document.createElement("div");
-      legend_d.className = "time-legend";
-      legend_d.style.top = this.margin.top_g+(this.caption_h+this.slice_h)*g+15;
-      legend_d.style.left = 0;
-      legend_d.innerHTML = gname[g];
-      this.framepanel.appendChild(legend_d);
-    }
-
     this.updateXaxis(timeframes);
+
+    for (var f in forder) {
+      var outerbound = forder[f].outerbound;
+      console.log("outerbound", outerbound);
+      this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
+      for (var r in outerbound.reason) {
+        console.log("fmap", r, fmap[r]);
+        this.addFrame([fmap[r].head, fmap[r].tail], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+      }
+    }
   }
 
   calculateTickValues(timeframes) {
-    this.tickEveryYear = [];
-    this.tickNumber = [minYear];
-    for (var y in timeframes) {
-      // console.log("updateXaxis", y, timeframes[+y], timeframes[+y+1])
-      var l1 = +y-1 >= 0? timeframes[+y-1].length: 0;
-      var l2 = timeframes[+y].length;
-      var l3 = +y+1 < timeframes.length? timeframes[+y+1].length: 0;
-      // console.log("**", timeframes[+y], l1, l2, l3)
-      if (y == 0 || timeframes[+y]%20 == 0 || (l1 == l2 && l2 < l3) || (l2 == l3 && l2 < l1)) {
-        if (timeframes[+y] - this.tickNumber[this.tickNumber.length-1] >= 3) {
-          this.tickNumber.push(timeframes[+y]); // do not put numbers too close
-        }
-      }
-      if (l2 == 4) this.tickEveryYear.push(timeframes[+y]);
+    this.tickEveryMinute = [];
+    this.tickEvery20Secs = [];
+    this.tickEverySecond = [];
+    for (var y = 0; y < timeframes.length; y++) {
+      if ((y * timeunit)%(60*1000) == 0) this.tickEveryMinute.push(timeframes[y]);
+      if ((y * timeunit)%(20*1000) == 0) this.tickEvery20Secs.push(timeframes[y]);
+      if ((y * timeunit)%(1000) == 0) this.tickEverySecond.push(timeframes[y]);
     }
-    this.tickNumber.push(maxYear);
   }
 
   updateXaxis(timeframes) {
-    // console.log("updateXaxis", timeframes.length)
+    console.log("updateXaxis", timeframes.length)
     this.calculateTickValues(timeframes);
 
     this.timeScale = d3.scaleBand()
@@ -94,27 +91,41 @@ class TimeLine {
 
     this.x_1.selectAll("*").remove();
     this.x_2.selectAll("*").remove();
+    this.x_3.selectAll("*").remove();
 
     this.x_1
-      .attr("transform", "translate(0," + this.margin.top_g + ")")
-      .attr('class', 'timeline-x-axis')
+      .attr("transform", "translate(0," + this.height + ")")
+      .attr('class', 'timeline-x-axis timeline-x-axis-min')
       .call(d3.axisTop(this.timeScale)
-        .tickFormat(d3.format("d"))
-        .tickValues(this.tickNumber)
-      );
-    this.x_2
-      .attr("class", "grid")
-      .call(d3.axisBottom(this.timeScale)
         .tickSize(this.height)
-        .tickValues(this.tickEveryYear)
+        .tickValues(this.tickEveryMinute)
         .tickFormat("")
       );
+    this.x_2
+      .attr("class", "timeline-x-axis timeline-x-axis-20sec")
+      .call(d3.axisBottom(this.timeScale)
+        .tickSize(15)
+        .tickFormat(function(d) {
+          var totalsec = d*timeunit/1000;
+          var min = parseInt(totalsec/60), sec = totalsec%60;
+          return zeroPad(min, 2)+":"+zeroPad(sec, 2)+":00";
+        })
+        .tickValues(this.tickEvery20Secs)
+      );
+    this.x_3
+      .attr("class", "grid")
+      .call(d3.axisBottom(this.timeScale)
+        .tickFormat("")
+        .tickValues(this.tickEverySecond)
+      );
+    this.x_2.selectAll('.timeline-x-axis-20sec text')
+        .attr('transform', 'translate(21,-5)');
 
     // move time slices according to the new x-axis
     for (var i = 0; i < this.frames.length; i++) {
       var f = this.frames[i];
-      var y_start = f.getAttribute("data-s-year"),
-          y_end = f.getAttribute("data-e-year");
+      var y_start = f.getAttribute("data-s-time"),
+          y_end = f.getAttribute("data-e-time");
       var s = this.timeScale(y_start),
           e = this.timeScale(y_end);
       var newleft = this.margin.left+s+this.timeScale.bandwidth()/2,
@@ -133,25 +144,27 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
-    // console.log("addFrame", gindex, y_start, y_end, s, e, delay);
+    console.log("addFrame", gindex, y_start, y_end, s, e, delay);
 
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
     tframe.id = [y_start, y_end, gindex].join("-");
-    tframe.setAttribute("data-s-year", y_start);
-    tframe.setAttribute("data-e-year", y_end);
+    tframe.setAttribute("data-s-time", y_start);
+    tframe.setAttribute("data-e-time", y_end);
 
-    var top = this.margin.top_g+this.caption_h+(this.slice_h+this.caption_h)*(gindex),
+    var top = this.margin.top_g+this.caption_h,
         left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.top = top;
     tframe.style.left = left;
     tframe.style.width = e-s;
     tframe.style.height = this.slice_h;
     tframe.style.backgroundColor = gcolor(gindex);
-    tframe.innerHTML = name + " " + pattern;
+    tframe.innerHTML = name;
+    if (pattern != undefined)
+      tframe.innerHTML += " " + pattern;
 
-    tframe.addEventListener("mouseenter", showOptions);
-    tframe.addEventListener("mouseleave", hideOptions);
+    // tframe.addEventListener("mouseenter", showOptions);
+    // tframe.addEventListener("mouseleave", hideOptions);
     this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
   }
@@ -160,18 +173,21 @@ class TimeLine {
     $("div.time-slice-outer").remove();
   }
 
-  addOuterBound(yrange) {
+  addOuterBound(yrange, obound) {
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
-    var s = this.timeScale(parseInt(y_start)),
-        e = this.timeScale(1+parseInt(y_end));
-    // console.log("addOuterBound", y_start, y_end, s, e)
+    var s = this.timeScale(y_start),
+        e = this.timeScale(y_end);
+    console.log("addOuterBound", y_start, y_end, s, e)
     var tframe = document.createElement("div");
     tframe.className = "time-slice-outer"
-    tframe.style.top = 0;
+    tframe.style.top = this.margin.top_g+this.caption_h;
     tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
-    tframe.style.height = this.height;
+    tframe.style.height = this.slice_h+this.year_h;
+    tframe.style.paddingTop = this.slice_h+this.year_h-25;
+    tframe.innerHTML = obound.start_time;
+    if (obound.end_time != undefined) tframe.innerHTML += "-"+obound.end_time;
     this.bgpanel.appendChild(tframe);
   }
 
@@ -192,8 +208,8 @@ class TimeLine {
     tframe.style.height = this.caption_h;
     tframe.value = caption;
 
-    tframe.setAttribute("data-s-year", y_start);
-    tframe.setAttribute("data-e-year", y_end);
+    tframe.setAttribute("data-s-time", y_start);
+    tframe.setAttribute("data-e-time", y_end);
     tframe.setAttribute("data-o-width", e-s);
     tframe.setAttribute("data-o-height", this.caption_h);
     tframe.addEventListener("mouseover", function(e) {

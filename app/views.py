@@ -56,8 +56,7 @@ def main(request):
 
     pd_x = pd.read_csv(file_map[options["x"]["id"]])
     pd_y = pd.read_csv(file_map[options["y"]["id"]])
-    heads = [datetime.strptime(x, "%Y") for x,y in zip(pd_x.columns.tolist()[1:], pd_y.columns.tolist()[1:]) if x==y]
-    timeseries = [datetime.strftime(y, "%Y") for y in heads]
+    timeseries = [x for x,y in zip(pd_x.columns.tolist()[1:], pd_y.columns.tolist()[1:]) if x==y]
 
     numTicks = len(timeseries)
     df_x = pd_x[['country']+timeseries].dropna()
@@ -103,7 +102,7 @@ def main(request):
     focus_range.extend(initseq)
     # print(kgroups)
     return render(request, "group.html", {
-        "time_arr": timeseries,
+        "timeseries": timeseries,
         "data": map.to_json(),
         "gname": c_group_inv,
         "options": options,

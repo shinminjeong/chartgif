@@ -30,7 +30,7 @@ class ScatterPlot {
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    this.years = time_arr;
+    this.years = timeseries;
     this.data = {}
     this.xrange = [10000000, 0];
     this.yrange = [10000000, 0];

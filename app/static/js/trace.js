@@ -29,7 +29,7 @@ class TraceChart {
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    var years = time_arr;
+    var years = timeseries;
     this.data = {}
     for (var i=0; i < years.length; i++) {
       var year = years[i];
