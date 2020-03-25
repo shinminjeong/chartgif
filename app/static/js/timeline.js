@@ -58,7 +58,7 @@ class TimeLine {
     this.updateXaxis(timeframes);
 
     for (var f in forder) {
-      var outerbound = forder[f].outerbound;
+      var outerbound = forder[f[0]].outerbound;
       console.log("outerbound", outerbound);
       this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
       for (var r in outerbound.reason) {

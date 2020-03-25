@@ -63,8 +63,17 @@ class TimeFrames {
     var order = [];
     var idx = 0;
     var runningtime = 0;
-    for (var r in this.framearr) {
-      var outerbound = this.framearr[r]=="init"?this.framemap["init"]:this.outerbound[this.framearr[r]];
+    for (var i=0; i<this.framearr.length; i++) {
+      var r = this.framearr[i];
+      var outerbound = r[0]=="init"?this.framemap["init"]:this.outerbound[r[0]];
+      if (outerbound == undefined) {
+        var s_t = this.timeseries.indexOf(r[0]),
+            e_t = this.timeseries.indexOf(r[1]);
+        console.log(r, s_t, e_t)
+        runningtime += (e_t-s_t);
+        continue;
+      }
+
       outerbound.head = runningtime;
       for (var b in outerbound.reason) {
         this.framemap[b].head = runningtime;
@@ -74,7 +83,7 @@ class TimeFrames {
       outerbound.tail = runningtime;
       order.push({
         "order": idx++,
-        "id": this.framearr[r],
+        "id": r[0],
         "outerbound": outerbound
       });
     }
@@ -87,19 +96,38 @@ class TimeFrames {
 
   getTimeFrames() {
     var timeFrames = [];
-    this.framearr.push("init");
+    var last_idx = 0;
+    this.framearr.push(["init", "init"]);
     for (var i=0; i < this.framemap["init"].runningtime; i++) {
       timeFrames.push(i);
     }
     for (var o in this.outerbound){
-      this.framearr.push(o);
       var outerb = this.outerbound[o];
+
+      // add blank frame
+      var cur_s = this.timeseries.indexOf(outerb.start_time);
+      if (cur_s-last_idx > 1) {
+        this.framearr.push([this.timeseries[last_idx+1], this.timeseries[cur_s-1]]);
+        var s = timeFrames.length;
+        for (var i=s; i < s+(cur_s-last_idx-1); i++) {
+          timeFrames.push(i);
+        }
+      }
+
+      this.framearr.push([outerb.start_time, outerb.end_time]);
       for (var r in outerb.reason) {
         var s = timeFrames.length;
         for (var i=s; i < s+this.framemap[r].runningtime; i++) {
           timeFrames.push(i);
         }
       }
+      last_idx = this.timeseries.indexOf(outerb.end_time);
+    }
+    // add last blank frame
+    this.framearr.push([this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1]]);
+    var s = timeFrames.length;
+    for (var i=s; i < s+(this.timeseries.length-last_idx-1); i++) {
+      timeFrames.push(i);
     }
     timeFrames.push(timeFrames.length);
     return timeFrames;
