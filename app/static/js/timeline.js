@@ -16,7 +16,8 @@ class TimeLine {
     this.frames = [];
   }
 
-  initChart(timeframes, forder, fmap, gname) {
+  initChart(timeframesmap, forder, fmap, gname) {
+    var timeframes = Object.keys(timeframesmap);
     console.log("Timeline -- initchart", timeframes, gname);
     this.framepanel = document.getElementById(this.div_id);
     this.bgpanel = document.getElementById(this.div_id_background);
@@ -63,13 +64,15 @@ class TimeLine {
       this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
       for (var r in outerbound.reason) {
         console.log("fmap", r, fmap[r]);
-        this.addFrame([fmap[r].head, fmap[r].tail], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+        this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
         addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason);
       }
+      getCaption(outerbound);
     }
   }
 
-  drawChart(timeframes, forder, fmap, gname) {
+  drawChart(timeframesmap, forder, fmap, gname) {
+    var timeframes = Object.keys(timeframesmap);
     this.updateXaxis(timeframes);
     for (var f in forder) {
       var outerbound = forder[f[0]].outerbound;
@@ -77,8 +80,9 @@ class TimeLine {
       this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
       for (var r in outerbound.reason) {
         console.log("fmap", r, fmap[r]);
-        this.addFrame([fmap[r].head, fmap[r].tail], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+        this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
       }
+      getCaption(outerbound);
     }
   }
 
@@ -146,18 +150,20 @@ class TimeLine {
     this.frames = [];
   }
 
-  addFrame(yrange, gindex, name, reason, pattern, delay) {
+  addFrame(frange, yrange, gindex, name, reason, pattern, delay) {
+    var f_start = frange[0],
+        f_end = frange[frange.length-1];
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
-    var s = this.timeScale(y_start),
-        e = this.timeScale(y_end);
-    console.log("addFrame", gindex, y_start, y_end, s, e, delay);
+    var s = this.timeScale(f_start),
+        e = this.timeScale(f_end);
+    // console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
 
     var tframe = document.createElement("div");
     tframe.className = "time-slice"
     tframe.id = [y_start, y_end, gindex].join("-");
-    tframe.setAttribute("data-s-time", y_start);
-    tframe.setAttribute("data-e-time", y_end);
+    tframe.setAttribute("data-s-time", f_start);
+    tframe.setAttribute("data-e-time", f_end);
 
     var top = this.margin.top_g+this.caption_h,
         left = this.margin.left+s+this.timeScale.bandwidth()/2;
@@ -203,23 +209,22 @@ class TimeLine {
 
   addCaption(gid, caption) {
     // console.log("addCaption", gid, caption)
-    var names = gid.split("-");
-    var y_start = names[0],
-        y_end = names[1],
-        gindex = names[2];
-    var s = this.timeScale(y_start),
-        e = this.timeScale(y_end);
+    var corrFrame = $("div#"+gid+".time-slice")[0];
+    var f_start = corrFrame.getAttribute("data-s-time"),
+        f_end = corrFrame.getAttribute("data-e-time");
+    var s = this.timeScale(f_start),
+        e = this.timeScale(f_end);
     var tframe = document.createElement("textarea");
     tframe.className = "time-caption"
     tframe.id = gid;
-    tframe.style.top = this.margin.top_g+(this.slice_h+this.caption_h)*(+gindex);
+    tframe.style.top = this.margin.top_g;
     tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.caption_h;
     tframe.value = caption;
 
-    tframe.setAttribute("data-s-time", y_start);
-    tframe.setAttribute("data-e-time", y_end);
+    tframe.setAttribute("data-s-time", f_start);
+    tframe.setAttribute("data-e-time", f_end);
     tframe.setAttribute("data-o-width", e-s);
     tframe.setAttribute("data-o-height", this.caption_h);
     tframe.addEventListener("mouseover", function(e) {

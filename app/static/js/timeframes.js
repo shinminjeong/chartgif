@@ -95,11 +95,11 @@ class TimeFrames {
   }
 
   getTimeFrames() {
-    var timeFrames = [];
+    this.timeFrames = {};
     var last_idx = 0;
     this.framearr = [["init", "init"]];
     for (var i=0; i < this.framemap["init"].runningtime; i++) {
-      timeFrames.push(i);
+      this.timeFrames[i] = "init";
     }
     for (var o in this.outerbound){
       var outerb = this.outerbound[o];
@@ -108,29 +108,34 @@ class TimeFrames {
       var cur_s = this.timeseries.indexOf(outerb.start_time);
       if (cur_s-last_idx > 1) {
         this.framearr.push([this.timeseries[last_idx+1], this.timeseries[cur_s-1]]);
-        var s = timeFrames.length;
-        for (var i=s; i < s+(cur_s-last_idx-1); i++) {
-          timeFrames.push(i);
+        var i = Object.keys(this.timeFrames).length;
+        for (var j=last_idx+1; j<=cur_s-1; j++) {
+          this.timeFrames[i++] = this.timeseries[j];
         }
       }
 
       this.framearr.push([outerb.start_time, outerb.end_time]);
       for (var r in outerb.reason) {
-        var s = timeFrames.length;
-        for (var i=s; i < s+this.framemap[r].runningtime; i++) {
-          timeFrames.push(i);
+        var s_idx = this.timeseries.indexOf(this.framemap[r].start_time),
+            e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
+            runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));
+        var i = Object.keys(this.timeFrames).length;
+        for (var j=s_idx; j<=e_idx; j++) {
+          for (var u=0; u<runtime_unit; u++) {
+            this.timeFrames[i++] = this.timeseries[j];
+          }
         }
       }
       last_idx = this.timeseries.indexOf(outerb.end_time);
     }
     // add last blank frame
     this.framearr.push([this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1]]);
-    var s = timeFrames.length;
-    for (var i=s; i < s+(this.timeseries.length-last_idx-1); i++) {
-      timeFrames.push(i);
+    var i = Object.keys(this.timeFrames).length;
+    for (var j=last_idx+1; j<=this.timeseries.length-1; j++) {
+      this.timeFrames[i++] = this.timeseries[j];
     }
-    timeFrames.push(timeFrames.length);
-    return timeFrames;
+    this.timeFrames[i] = "finish";
+    return this.timeFrames;
   }
 
   generateCaptions() {
@@ -164,6 +169,8 @@ class TimeFrames {
     var frame = {
       "head": 0,
       "tail": 0,
+      "start_time": "init",
+      "end_time": axis[0],
       "caption": caption,
       "name": axis[0],
       "group": group,

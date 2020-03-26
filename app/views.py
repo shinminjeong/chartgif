@@ -120,19 +120,20 @@ def main(request):
 def get_caption(request):
     global values, kgroups, options, timeseries, numTicks, countries
     outerbound = request.POST
-    head_y = int(outerbound.get("head"))
-    tail_y = int(outerbound.get("tail"))+1
+    print()
+    head_y = outerbound.get("start_time")
+    tail_y = outerbound.get("end_time")
     groups = {int(c):c_group_inv[int(c)] for c in outerbound.getlist("groups[]")}
     reasons = get_dict_from_request(dict(outerbound))
-    print("get_caption", head_y, tail_y, groups, reasons)
+    print("**** get_caption", head_y, tail_y, groups, reasons)
 
-    continents = list(groups.values())
-    if len(groups) > 2:
-        regions = ", ".join(continents[:-1]) + " and " + continents[-1]
-    elif len(groups) == 2:
-        regions = " and ".join(continents)
-    else:
-        regions = continents[0]
+    if (head_y == "Init"):
+        return JsonResponse({
+            "head": head_y,
+            "tail": tail_y,
+            "innergrp": {},
+            "caption": {k:v["caption"] for k,v in reasons.items()}
+        })
 
     printgrp = {}
     groupdesc = {}

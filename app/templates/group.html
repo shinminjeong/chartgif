@@ -151,9 +151,7 @@ $(".dropdown-menu a").click(function () {
 
 var innergrp = {};
 var curFrame = 0, preFrame = 0;
-var timeFrames = [];
 var play_timer = undefined;
-var flagConvexHulls = false;
 var el, newPoint, timebar;
 var linecharts_v = {};
 var trace_chart = {};
@@ -508,7 +506,7 @@ function getCaption(bound) {
     dataType: "json",
     data: bound,
     success: function(res){
-      // console.log("getCaption success");
+      console.log("getCaption success", res);
       for (var y = res["head"]; y <= res["tail"]; y++) {
         innergrp[y] = res["innergrp"];
       }
@@ -524,13 +522,13 @@ function getCaption(bound) {
   });
 }
 
-// function updateCaption(id, value) {
-//   var ids = id.split("-");
-//   // console.log("updateCaption", ids, parseInt(id[2]))
-//   for (var y = ids[0]; y <= ids[1]; y++) {
-//     caption[y][ids[2]] = value;
-//   }
-// }
+function updateCaption(id, value) {
+  var ids = id.split("-");
+  // console.log("updateCaption", ids, parseInt(id[2]))
+  for (var y = ids[0]; y <= ids[1]; y++) {
+    caption[y][ids[2]] = value;
+  }
+}
 
 function changeSelectedConts(continents) {
   // console.log("-- changeSelectedConts", legendCount, continents, continents.indexOf(0));
