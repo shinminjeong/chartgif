@@ -55,8 +55,22 @@ class TimeLine {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
+    this.drawChart(timeframes, forder, fmap, gname);
     this.updateXaxis(timeframes);
+    for (var f in forder) {
+      var outerbound = forder[f[0]].outerbound;
+      console.log("outerbound", outerbound);
+      this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
+      for (var r in outerbound.reason) {
+        console.log("fmap", r, fmap[r]);
+        this.addFrame([fmap[r].head, fmap[r].tail], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+        addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason);
+      }
+    }
+  }
 
+  drawChart(timeframes, forder, fmap, gname) {
+    this.updateXaxis(timeframes);
     for (var f in forder) {
       var outerbound = forder[f[0]].outerbound;
       console.log("outerbound", outerbound);
@@ -121,22 +135,15 @@ class TimeLine {
     this.x_2.selectAll('.timeline-x-axis-20sec text')
         .attr('transform', 'translate(21,-5)');
 
-    // move time slices according to the new x-axis
+    this.clearAllFrames();
+  }
+
+  clearAllFrames() {
     for (var i = 0; i < this.frames.length; i++) {
-      var f = this.frames[i];
-      var y_start = f.getAttribute("data-s-time"),
-          y_end = f.getAttribute("data-e-time");
-      var s = this.timeScale(y_start),
-          e = this.timeScale(y_end);
-      var newleft = this.margin.left+s+this.timeScale.bandwidth()/2,
-          newwidth = e-s;
-      f.style.left = newleft;
-      f.style.width = newwidth;
-      if (f.className == "time-caption") {
-        f.setAttribute("data-o-width", e-s);
-        f.setAttribute("data-o-height", this.caption_h);
-      }
+        var f = this.frames[i];
+        f.remove();
     }
+    this.frames = [];
   }
 
   addFrame(yrange, gindex, name, reason, pattern, delay) {
@@ -178,6 +185,7 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = this.timeScale(y_start),
         e = this.timeScale(y_end);
+
     console.log("addOuterBound", y_start, y_end, s, e)
     var tframe = document.createElement("div");
     tframe.className = "time-slice-outer"
@@ -188,7 +196,9 @@ class TimeLine {
     tframe.style.paddingTop = this.slice_h+this.year_h-25;
     tframe.innerHTML = obound.start_time;
     if (obound.end_time != undefined) tframe.innerHTML += "-"+obound.end_time;
+
     this.bgpanel.appendChild(tframe);
+    this.frames.push(tframe);
   }
 
   addCaption(gid, caption) {

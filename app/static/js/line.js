@@ -14,7 +14,7 @@ class LineChart {
   drawChart(data, data_options) {
     // console.log(data);
     var minYear = timeseries[0];
-    
+
     var svg = d3.select("#"+this.div_id)
       .append('svg')
       .attr('width', this.width+this.margin.left+this.margin.right)
@@ -163,12 +163,15 @@ var mouse = {
   startX: 0,
   startY: 0
 };
+function remove_all_rect() {
+
+}
 function draw_rect_input(yrange, div_id, axes, reason) {
   var y_start = yrange[0],
       y_end = yrange[yrange.length-1];
   var ys = line_xscale(y_start)-0.5,
       ye = line_xscale(y_end)+0.5;
-  // console.log("draw_rect_input", yrange, ys, ye, div_id, axes);
+  console.log("draw_rect_input", yrange, ys, ye, div_id, axes);
   for (var i in axes) {
     var names = div_id.split("_");
     var canvas = document.getElementById(div_id+"_"+axes[i]);
@@ -176,7 +179,7 @@ function draw_rect_input(yrange, div_id, axes, reason) {
     var aidx = selectedAxis.indexOf(axes[i]);
     var e = document.createElement('div');
     // console.log("select_rectangle_", reason)
-    e.className = 'select_rectangle_'+reason;
+    e.className = 'select_rectangle select_rectangle_'+reason;
     e.id = [y_start, y_end, names[1], selectedAxis[i]].join("-");
     e.style.left = ys + 'px';
     e.style.top = 0;
@@ -216,7 +219,7 @@ function draw_rect_click(e, canvas) {
     // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear+1), (x,i) => i + startYear)
     drawFrame(years, names[1], [names[2]], reason, reason);
-    generateCaptions();
+    // generateCaptions();
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
     element = null;
@@ -224,7 +227,7 @@ function draw_rect_click(e, canvas) {
     mouse.startX = mouse.x;
     mouse.startY = mouse.y;
     element = document.createElement('div');
-    element.className = 'select_rectangle_'+reason;
+    element.className = 'select_rectangle select_rectangle_'+reason;
     element.style.left = mouse.x - rect.x + 'px';
     element.style.top = 0;
     element.style.height = "100%";

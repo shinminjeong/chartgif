@@ -97,7 +97,7 @@ class TimeFrames {
   getTimeFrames() {
     var timeFrames = [];
     var last_idx = 0;
-    this.framearr.push(["init", "init"]);
+    this.framearr = [["init", "init"]];
     for (var i=0; i < this.framemap["init"].runningtime; i++) {
       timeFrames.push(i);
     }
@@ -186,14 +186,13 @@ class TimeFrames {
       return this.addInitSeq(group, axis, reason, pattern);
     }
 
-    var s_time = range[0], e_time = range[range.length-1];
+    var s_time = ""+range[0], e_time = ""+range[range.length-1];
     var id = [s_time, e_time, group].join("-");
     var names = [];
     for (var i in axis) {
       names.push(data_options[axis[i].toLowerCase()]["id"])
     }
-    console.log("addFrame", id, names);
-
+    // console.log("addFrame", s_time, e_time, id, names, group, reason);
     for (var i = this.timeseries.indexOf(s_time); i < this.timeseries.indexOf(e_time); i++) {
       var t = this.timeseries[i];
       this.yearmap[t]["group"].push(+group)
@@ -212,6 +211,7 @@ class TimeFrames {
       "group": group,
       "head": 0,
       "tail": 0,
+      "axis": axis,
       "name": names,
       "reason": reason,
       "pattern": pattern,
