@@ -172,7 +172,7 @@ function addEventinLinechart(yrange, group, axes, reason) {
 
 function drawFrame(yrange, group, axes, reason, pattern) {
   testtimeframes.addFrame(yrange, group, axes, reason, pattern);
-  timeline.drawChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
+  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
 }
 
 function kFormatter(num) {
@@ -322,23 +322,11 @@ function drawTraceCharts(numGroup, height) {
 //   slider.value = 0;
 // }
 //
-// function removeFrame(id) {
-//   // console.log("removeFrame", id)
-//   var ids = id.split("-");
-//   for (var y = ids[0]; y < ids[1]; y++) {
-//     // remove group number from yearmap
-//     var idx = yearmap[y]["group"].indexOf(parseInt(ids[2]));
-//     yearmap[y]["group"].splice(idx, 1);
-//     delete yearmap[y]["reason"][id];
-//     if (yearmap[y]["group"].length == 0) {
-//       yearmap[y]["delay"] = 1;
-//       yearmap[y]["reason"] = {};
-//     }
-//   }
-//   updateSlider();
-//   timeline.updateXaxis(timeFrames);
-//   calculateOuterbound();
-// }
+function removeFrame(id) {
+  console.log("removeFrame", id)
+  testtimeframes.removeFrame(id);
+  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
+}
 //
 // function drawFrame(yrange, group, axes, reason, pattern) {
 //   // console.log("drawFrame", yrange, group, axes)

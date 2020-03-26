@@ -56,7 +56,6 @@ class TimeLine {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
-    this.drawChart(timeframes, forder, fmap, gname);
     this.updateXaxis(timeframes);
     for (var f in forder) {
       var outerbound = forder[f[0]].outerbound;
@@ -71,7 +70,7 @@ class TimeLine {
     }
   }
 
-  drawChart(timeframesmap, forder, fmap, gname) {
+  updateChart(timeframesmap, forder, fmap, gname) {
     var timeframes = Object.keys(timeframesmap);
     this.updateXaxis(timeframes);
     for (var f in forder) {
@@ -176,8 +175,10 @@ class TimeLine {
     if (pattern != undefined)
       tframe.innerHTML += " " + pattern;
 
-    // tframe.addEventListener("mouseenter", showOptions);
-    // tframe.addEventListener("mouseleave", hideOptions);
+    if (y_start != "init") {
+      tframe.addEventListener("mouseenter", showOptions);
+      tframe.addEventListener("mouseleave", hideOptions);
+    }
     this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
   }

@@ -138,12 +138,6 @@ class TimeFrames {
     return this.timeFrames;
   }
 
-  generateCaptions() {
-    for (var v in this.outerbound) {
-      getCaption(this.outerbound[v]);
-    }
-  }
-
   updateCaption(id, value) {
     var ids = id.split("-");
     // console.log("updateCaption", ids, parseInt(id[2]))
@@ -226,6 +220,25 @@ class TimeFrames {
       "runningtime": range.length*this.default_slowdown[reason],
     }
 
+    this.calculateOuterbound();
+  }
+
+  removeFrame(id) {
+    var ids = id.split("-");
+    var s_time = this.timeseries.indexOf(ids[0]),
+        e_time = this.timeseries.indexOf(ids[1]);
+    for (var i = s_time; i < e_time; i++) {
+      var y = this.timeseries[i];
+      // remove group number from yearmap
+      var idx = this.yearmap[y]["group"].indexOf(parseInt(ids[2]));
+      this.yearmap[y]["group"].splice(idx, 1);
+      delete this.yearmap[y]["reason"][id];
+      if (this.yearmap[y]["group"].length == 0) {
+        this.yearmap[y]["delay"] = 1;
+        this.yearmap[y]["reason"] = {};
+      }
+    }
+    delete this.framemap[id];
     this.calculateOuterbound();
   }
 
