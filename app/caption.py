@@ -119,7 +119,7 @@ def generateInitSeq(options, groups, values):
     output = []
 
     # X and Y axes
-    for a in ["X", "Y"]:
+    for a in ["Y", "X"]:
         output.append({ "reason": "init", "pattern": cap_axis(a, options), "g": 0, "a": [a], "years": ["init"] })
     # Overall trend
     x_move = (values["X"][-1]["value"]-values["X"][0]["value"])>0 # positive when going up otherwise negative

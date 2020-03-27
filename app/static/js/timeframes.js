@@ -94,12 +94,29 @@ class TimeFrames {
     return this.framemap;
   }
 
+  getTimeFrameLength() {
+    return Object.keys(this.timeFrames).length;
+  }
+
   getTimeFrames() {
+    return this.timeFrames;
+  }
+
+  getFrameContent(i) {
+    return this.timeFrameInfo[i];
+  }
+
+  calculateTimeFrames() {
     this.timeFrames = {};
-    var last_idx = 0;
+    this.timeFrameInfo = {};
+    var last_idx = 0, i = 0;
     this.framearr = [["init", "init"]];
-    for (var i=0; i < this.framemap["init"].runningtime; i++) {
-      this.timeFrames[i] = "init";
+    for (var r in this.framemap["init"].reason) {
+      for (var j=0; j<this.framemap["init"].reason[r].runningtime; j++) {
+        this.timeFrames[i] = "init";
+        this.timeFrameInfo[i] = r;
+        i++;
+      }
     }
     for (var o in this.outerbound){
       var outerb = this.outerbound[o];
@@ -108,7 +125,7 @@ class TimeFrames {
       var cur_s = this.timeseries.indexOf(outerb.start_time);
       if (cur_s-last_idx > 1) {
         this.framearr.push([this.timeseries[last_idx+1], this.timeseries[cur_s-1]]);
-        var i = Object.keys(this.timeFrames).length;
+        i = this.getTimeFrameLength();
         for (var j=last_idx+1; j<=cur_s-1; j++) {
           this.timeFrames[i++] = this.timeseries[j];
         }
@@ -119,10 +136,12 @@ class TimeFrames {
         var s_idx = this.timeseries.indexOf(this.framemap[r].start_time),
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
             runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));
-        var i = Object.keys(this.timeFrames).length;
+        i = this.getTimeFrameLength();
         for (var j=s_idx; j<=e_idx; j++) {
           for (var u=0; u<runtime_unit; u++) {
-            this.timeFrames[i++] = this.timeseries[j];
+            this.timeFrames[i] = this.timeseries[j];
+            this.timeFrameInfo[i] = r;
+            i++;
           }
         }
       }
@@ -130,12 +149,11 @@ class TimeFrames {
     }
     // add last blank frame
     this.framearr.push([this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1]]);
-    var i = Object.keys(this.timeFrames).length;
+    i = this.getTimeFrameLength();
     for (var j=last_idx+1; j<=this.timeseries.length-1; j++) {
       this.timeFrames[i++] = this.timeseries[j];
     }
-    this.timeFrames[i] = "finish";
-    return this.timeFrames;
+    // this.timeFrames[i] = "finish";
   }
 
   updateCaption(id, value) {
@@ -207,8 +225,8 @@ class TimeFrames {
       }
     }
     this.framemap[id] = {
-      "start_time": range[0],
-      "end_time": range[range.length-1],
+      "start_time": s_time,
+      "end_time": e_time,
       "group": group,
       "head": 0,
       "tail": 0,
