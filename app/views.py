@@ -132,7 +132,7 @@ def get_caption(request):
             "head": head_y,
             "tail": tail_y,
             "innergrp": {},
-            "caption": {k:v["caption"] for k,v in reasons.items()}
+            "caption": {k:v["caption"][0] for k,v in reasons.items()}
         })
 
     printgrp = {}

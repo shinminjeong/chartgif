@@ -246,19 +246,9 @@ function updateBackgoundYear(year) {
   var info_year = document.getElementById("infoCurYear");
   info_year.innerHTML = year;
 }
-function updateCaptionPanel(frame, gid, groups) {
-  var year = timeFrames[frame].split("_")[0];
-  // console.log("updateCaptionPanel", year, gid, caption[year][gid])
+function updateCaptionPanel(text) {
   var caption_year = document.getElementById("caption");
-  if (gid == -1) {
-    caption_year.innerHTML = "";
-  }
-  var g = groups[gid];
-  if (caption[year] && caption[year][g]) {
-    caption_year.innerHTML = caption[year][g];
-  } else {
-    caption_year.innerHTML = "";
-  }
+  caption_year.innerHTML = text==undefined?"":text;
 }
 
 function drawTraceCharts(numGroup, height) {
@@ -337,45 +327,6 @@ playon[0].addEventListener("change", function(e) {
   }
 });
 
-// function calculateOuterbound() {
-//   outerbound = {};
-//   timeline.clearOuterBound();
-//   var head_y = -1, tail_y = -1;
-//   var groups = [], reasons = {};
-//   for (var y in yearmap) {
-//     if (yearmap[y]["group"].length > 0) {
-//       // console.log("-", y, head_y, tail_y)
-//       groups = groups.concat(yearmap[y]["group"]);
-//       for (var r in yearmap[y]["reason"]) {
-//         var rr = yearmap[y]["reason"][r];
-//         var id = [rr["yrange"][0],rr["yrange"][rr["yrange"].length-1],rr["group"]].join("-");
-//         reasons[id] = rr;
-//       }
-//       if (head_y > 0) {
-//         tail_y = y;
-//       } else {
-//         head_y = tail_y = y;
-//       }
-//     } else {
-//       if (head_y > 0) {
-//         // console.log("add", head_y, tail_y)
-//         var bound = {
-//           "head": +head_y,
-//           "tail": parseInt(tail_y)+1,
-//           "groups": Array.from(new Set(groups)).sort(),
-//           "reason": reasons
-//         }
-//         outerbound[+head_y] = bound;
-//         timeline.addOuterBound([head_y, tail_y]);
-//       }
-//       head_y = tail_y = -1;
-//       groups = [];
-//       reasons = {};
-//     }
-//   }
-//   summarizeOuterbound();
-// }
-//
 // function summarizeOuterbound() {
 //   for (var b in outerbound) {
 //     var bound = outerbound[b];
@@ -421,11 +372,7 @@ function getCaption(bound) {
         innergrp[y] = res["innergrp"];
       }
       for (var g in res["caption"]) {
-        var id = g.split("-");
-        for (var y = id[0]; y <= id[1]; y++) {
-          if (caption[y] == undefined) caption[y] = {};
-          caption[y][id[2]] = res["caption"][g];
-        }
+        testtimeframes.saveCaption(g, res["caption"][g])
         timeline.addCaption(g, res["caption"][g]);
       }
     }
@@ -433,11 +380,7 @@ function getCaption(bound) {
 }
 
 function updateCaption(id, value) {
-  var ids = id.split("-");
-  // console.log("updateCaption", ids, parseInt(id[2]))
-  for (var y = ids[0]; y <= ids[1]; y++) {
-    caption[y][ids[2]] = value;
-  }
+  testtimeframes.saveCaption(id, value);
 }
 
 function changeSelectedConts(continents) {
@@ -482,51 +425,16 @@ function traceInitSeq(gid) {
 
 function traceTimeline(timeFrames) {
   var curYear = timeFrames[curFrame];
-  console.log("traceTimeline", curFrame, curYear, testtimeframes.getFrameContent(curFrame));
+  var gid = testtimeframes.getFrameContent(curFrame);
+  console.log("traceTimeline", curFrame, curYear, gid);
   // if init sequence
   if (curYear == "init") {
     changeSelectedConts([0,1,2,3,4]);
     traceInitSeq(testtimeframes.getFrameContent(curFrame));
   }
 
-  // // if in focus mode
-  // if (flag_focus && curFrame == focus_until) {
-  //   if (focus_index >= focus_groups.length-1) {
-  //     console.log("-- finish focusing", focus_index, focus_groups)
-  //     focus_index = -1;
-  //     flag_focus = false;
-  //     // chart.clearFocus();
-  //     changeSelectedConts([0,1,2,3,4]);
-  //     // resetPlaytimer(100); // go to the normal pace
-  //   } else {
-  //     focus_index += 1;
-  //     changeSelectedConts([focus_groups[focus_index]]);
-  //     console.log("-- move to the next group focusing", focus_index, focus_groups)
-  //     curFrame = focus_start;
-  //   }
-  //   chart.clearFocus();
-  // } else {
-  //   // console.log(curYear, flag_focus);
   changeSlider($("input[type='range']"), curFrame, true);
-  //   // update caption
-  // }
-
-  // if next year is focus_year
-  // if (outerbound[nextYear]) {
-  //   flag_focus = true;
-  //   focus_start = timeFrames.indexOf(""+outerbound[nextYear]["head"]);
-  //   focus_until = timeFrames.indexOf(""+outerbound[nextYear]["tail"])+1;
-  //   focus_groups = outerbound[nextYear]["groups"];
-  //   console.log("-- prepare focusing in ", nextYear)
-  //   console.log("==", focus_start, "~", focus_until, focus_groups)
-  //   if (focus_index == -1) {
-  //     focus_index = 0;
-  //     changeSelectedConts([focus_groups[focus_index]]);
-  //     // resetPlaytimer(1000);
-  //   }
-  // }
-
-  // updateCaptionPanel(curFrame);
+  updateCaptionPanel(testtimeframes.getCaption(gid));
 }
 
 

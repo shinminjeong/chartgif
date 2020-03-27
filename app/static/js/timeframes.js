@@ -20,6 +20,7 @@ class TimeFrames {
       "spr": 20,
       "user": 10,
     };
+    this.captions = {};
   }
 
   calculateOuterbound() {
@@ -88,6 +89,14 @@ class TimeFrames {
       });
     }
     return order;
+  }
+
+  saveCaption(gid, text){
+    this.captions[gid] = text;
+  }
+
+  getCaption(gid) {
+    return this.captions[gid];
   }
 
   getFrameMap() {
