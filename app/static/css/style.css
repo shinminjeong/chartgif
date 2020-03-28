@@ -2,6 +2,7 @@ body {
 	padding: 20px;
 }
 
+.timeline-x-axis-grid,
 .grid line {
 	opacity: 0.2;
 }

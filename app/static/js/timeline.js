@@ -1,4 +1,5 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0');
+var timeScale, xAxis_1, xAxis_2, xAxis_3;
 
 class TimeLine {
 
@@ -27,7 +28,8 @@ class TimeLine {
       .attr('height', this.height + this.margin.top + this.margin.bottom);
 
     this.chart_g = this.svg.append('g')
-      .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
+      .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+      .call(zoom);
 
     this.background = this.chart_g.append("rect")
       .attr("x", 0)
@@ -100,7 +102,7 @@ class TimeLine {
     console.log("updateXaxis", timeframes.length)
     this.calculateTickValues(timeframes);
 
-    this.timeScale = d3.scaleBand()
+    timeScale = d3.scaleBand()
       .domain(timeframes)
       .range([ 0, this.width ])
       .paddingInner(0)
@@ -110,31 +112,32 @@ class TimeLine {
     this.x_2.selectAll("*").remove();
     this.x_3.selectAll("*").remove();
 
+    xAxis_1 = d3.axisTop(timeScale)
+      .tickSize(this.height)
+      .tickValues(this.tickEveryMinute)
+      .tickFormat("");
+    xAxis_2 = d3.axisBottom(timeScale)
+      .tickSize(15)
+      .tickFormat(function(d) {
+        var totalsec = d*timeunit/1000;
+        var min = parseInt(totalsec/60), sec = totalsec%60;
+        return zeroPad(min, 2)+":"+zeroPad(sec, 2)+":00";
+      })
+      .tickValues(this.tickEvery20Secs);
+    xAxis_3 = d3.axisBottom(timeScale)
+      .tickFormat("")
+      .tickValues(this.tickEverySecond);
+
     this.x_1
       .attr("transform", "translate(0," + this.height + ")")
       .attr('class', 'timeline-x-axis timeline-x-axis-min')
-      .call(d3.axisTop(this.timeScale)
-        .tickSize(this.height)
-        .tickValues(this.tickEveryMinute)
-        .tickFormat("")
-      );
+      .call(xAxis_1);
     this.x_2
       .attr("class", "timeline-x-axis timeline-x-axis-20sec")
-      .call(d3.axisBottom(this.timeScale)
-        .tickSize(15)
-        .tickFormat(function(d) {
-          var totalsec = d*timeunit/1000;
-          var min = parseInt(totalsec/60), sec = totalsec%60;
-          return zeroPad(min, 2)+":"+zeroPad(sec, 2)+":00";
-        })
-        .tickValues(this.tickEvery20Secs)
-      );
+      .call(xAxis_2);
     this.x_3
-      .attr("class", "grid")
-      .call(d3.axisBottom(this.timeScale)
-        .tickFormat("")
-        .tickValues(this.tickEverySecond)
-      );
+      .attr("class", "timeline-x-axis timeline-x-axis-grid")
+      .call(xAxis_3);
     this.x_2.selectAll('.timeline-x-axis-20sec text')
         .attr('transform', 'translate(21,-5)');
 
@@ -154,8 +157,8 @@ class TimeLine {
         f_end = frange[frange.length-1];
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
-    var s = this.timeScale(f_start),
-        e = this.timeScale(f_end);
+    var s = timeScale(f_start),
+        e = timeScale(f_end);
     // console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
 
     var tframe = document.createElement("div");
@@ -165,7 +168,7 @@ class TimeLine {
     tframe.setAttribute("data-e-time", f_end);
 
     var top = this.margin.top_g+this.caption_h,
-        left = this.margin.left+s+this.timeScale.bandwidth()/2;
+        left = this.margin.left+s+timeScale.bandwidth()/2;
     tframe.style.top = top;
     tframe.style.left = left;
     tframe.style.width = e-s;
@@ -190,14 +193,14 @@ class TimeLine {
   addOuterBound(yrange, obound) {
     var y_start = yrange[0],
         y_end = yrange[yrange.length-1];
-    var s = this.timeScale(y_start),
-        e = this.timeScale(y_end);
+    var s = timeScale(y_start),
+        e = timeScale(y_end);
 
     console.log("addOuterBound", y_start, y_end, s, e)
     var tframe = document.createElement("div");
     tframe.className = "time-slice-outer"
     tframe.style.top = this.margin.top_g+this.caption_h;
-    tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
+    tframe.style.left = this.margin.left+s+timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.slice_h+this.year_h;
     tframe.style.paddingTop = this.slice_h+this.year_h-25;
@@ -213,13 +216,13 @@ class TimeLine {
     var corrFrame = $("div#"+gid+".time-slice")[0];
     var f_start = corrFrame.getAttribute("data-s-time"),
         f_end = corrFrame.getAttribute("data-e-time");
-    var s = this.timeScale(f_start),
-        e = this.timeScale(f_end);
+    var s = timeScale(f_start),
+        e = timeScale(f_end);
     var tframe = document.createElement("textarea");
     tframe.className = "time-caption"
     tframe.id = gid;
     tframe.style.top = this.margin.top_g;
-    tframe.style.left = this.margin.left+s+this.timeScale.bandwidth()/2;
+    tframe.style.left = this.margin.left+s+timeScale.bandwidth()/2;
     tframe.style.width = e-s;
     tframe.style.height = this.caption_h;
     tframe.value = caption;
@@ -251,6 +254,25 @@ class TimeLine {
 
     this.frames.push(tframe);
     this.framepanel.appendChild(tframe);
+  }
+}
+
+function zoom(svg) {
+  const margin = ({top: 20, right: 0, bottom: 30, left: 40})
+  const extent = [[0,0], [1000, 200]];
+
+  svg.call(d3.zoom()
+      .scaleExtent([1, 8])
+      .translateExtent(extent)
+      .extent(extent)
+      .on("zoom", zoomed));
+
+  function zoomed() {
+    timeScale.range([margin.left, width - margin.right].map(d => d3.event.transform.applyX(d)));
+    // svg.selectAll(".bars rect").attr("x", d => x(d.name)).attr("width", timeScale.bandwidth());
+    svg.selectAll(".timeline-x-axis-min").call(xAxis_1);
+    svg.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
+    svg.selectAll(".timeline-x-axis-grid").call(xAxis_3);
   }
 }
 
