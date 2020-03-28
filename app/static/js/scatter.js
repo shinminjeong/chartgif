@@ -359,7 +359,7 @@ class ScatterPlot {
         data[d].ingroup = -1;
       }
     }
-    
+
     var dataCvxHulls = convexHulls(data, getInnerGroup, hullOffset, true);
 
     this.bubble_trace_g.append("g").selectAll('.bubble_trace')

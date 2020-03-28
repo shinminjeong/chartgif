@@ -187,7 +187,7 @@ function kFormatter(num) {
 }
 
 function updateLineTimebar(curYear) {
-  console.log("updateLineTimebar", curYear);
+  // console.log("updateLineTimebar", curYear);
   if (isNaN(curYear)) curYear = timeseries[0];
   timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+10) + "px";
   timebar.style.top = 10 + "px";
@@ -402,7 +402,7 @@ function traceInitSeq(gid) {
   // console.log("traceInitSeq", gid, type, group, preYear, curYear)
 
   if (preYear != curYear) {
-    console.log("@ changeSlider -- Init", type);
+    // console.log("@ changeSlider -- Init", type);
     if (type == "Y") {
       chart.highlightYaxis(5*timeunit);
     } else if (type == "X") {
@@ -426,7 +426,7 @@ function traceInitSeq(gid) {
 function traceTimeline(timeFrames) {
   var curYear = timeFrames[curFrame];
   var gid = testtimeframes.getFrameContent(curFrame);
-  console.log("traceTimeline", curFrame, curYear, gid);
+  // console.log("traceTimeline", curFrame, curYear, gid);
   // if init sequence
   if (curYear == "init") {
     changeSelectedConts([0,1,2,3,4]);
@@ -473,7 +473,7 @@ function changeSlider(el, curFrame, play) {
     })
     .text(curYear);
   if (play) {
-    el.val(curYear);
+    el.val(curFrame);
   }
 
   if (curYear == "init") return;
@@ -483,7 +483,7 @@ function changeSlider(el, curFrame, play) {
   if (frameContent != undefined) {
     focus = true;
     var names = frameContent.split("-");
-    console.log("~~ switch to the group:", names[2])
+    // console.log("~~ switch to the group:", names[2])
     if (names[2] == 0) changeSelectedConts([0,1,2,3,4]);
     else changeSelectedConts([parseInt(names[2])]);
   } else {
@@ -493,14 +493,14 @@ function changeSlider(el, curFrame, play) {
 
   // console.log("changeSlider", preYear, curYear, frameContent);
   if (focus && preYear != curYear) {
-    console.log("@ changeSlider -- FOCUS", curYear, testtimeframes.framemap[frameContent]);
-    chart.clear();
+    // console.log("@ changeSlider -- FOCUS", curYear, testtimeframes.framemap[frameContent]);
+    chart.clearFocus();
     chart.hideDesc(0);
     var reason = testtimeframes.framemap[frameContent].reason;
     var delaytime = testtimeframes.default_slowdown[reason]*timeunit;
     chart.updateFocus(curYear, swtvalues, innergrp, delaytime);
   } else if (preYear != curYear) {
-    console.log("@ changeSlider -- Update", curYear);
+    // console.log("@ changeSlider -- Update", curYear);
     chart.clear();
     chart.hideDesc(0);
     chart.updateChart(curYear, swtvalues);
