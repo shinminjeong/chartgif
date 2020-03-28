@@ -1,12 +1,13 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0');
-var timeScale, xAxis_1, xAxis_2, xAxis_3;
+var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3;
+var timeSlices, timeLabels, timeCaptions;
 
 class TimeLine {
 
   constructor(div_id, w) {
-    this.margin = {top: 0, right: 35, bottom: 0, left:100, top_g: 25};
-    this.width = w - this.margin.left - this.margin.right;
-    this.div_id_background = div_id + "-background";
+    this.margin = {top: 0, right: 35, bottom: 0, left:leftTimelineMargin, top_g: 25};
+    this.width = timeScale_width = w - this.margin.left - this.margin.right;
+    this.div_id_frames = div_id + "-background";
     this.div_id = div_id;
 
     this.slice_h = 50;
@@ -14,15 +15,17 @@ class TimeLine {
     this.year_h = 20;
     this.height = this.slice_h+this.caption_h+this.year_h+this.margin.top_g-this.margin.top-this.margin.bottom;
 
-    this.frames = [];
+    timeSlices = [];
+    timeLabels = [];
+    timeCaptions = [];
   }
 
   initChart(timeframesmap, forder, fmap, gname) {
     var timeframes = Object.keys(timeframesmap);
     console.log("Timeline -- initchart", timeframes, gname);
-    this.framepanel = document.getElementById(this.div_id);
-    this.bgpanel = document.getElementById(this.div_id_background);
-    this.svg = d3.select("#"+this.div_id_background)
+    this.legendpanel = document.getElementById(this.div_id + "-legend");
+    this.captionpanel = document.getElementById(this.div_id);
+    this.svg = d3.select("#"+this.div_id_frames)
       .append('svg')
       .attr('width', this.width + this.margin.left + this.margin.right)
       .attr('height', this.height + this.margin.top + this.margin.bottom);
@@ -42,6 +45,9 @@ class TimeLine {
     this.x_1 = this.grid.append("g");
     this.x_2 = this.grid.append("g");
     this.x_3 = this.grid.append("g");
+
+    this.legendpanel.style.width = leftTimelineMargin;
+    this.legendpanel.style.height = this.height;
 
     var framelines = [];
     framelines.push(this.caption_h, this.caption_h+this.slice_h);
@@ -145,11 +151,21 @@ class TimeLine {
   }
 
   clearAllFrames() {
-    for (var i = 0; i < this.frames.length; i++) {
-        var f = this.frames[i];
+    for (var i = 0; i < timeSlices.length; i++) {
+        var f = timeSlices[i];
         f.remove();
     }
-    this.frames = [];
+    for (var i = 0; i < timeCaptions.length; i++) {
+        var f = timeCaptions[i];
+        f.remove();
+    }
+    for (var i = 0; i < timeLabels.length; i++) {
+        var f = timeLabels[i];
+        f.remove();
+    }
+    timeLabels = [];
+    timeSlices = [];
+    timeCaptions = [];
   }
 
   addFrame(frange, yrange, gindex, name, reason, pattern, delay) {
@@ -161,29 +177,47 @@ class TimeLine {
         e = timeScale(f_end);
     // console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
 
-    var tframe = document.createElement("div");
-    tframe.className = "time-slice"
-    tframe.id = [y_start, y_end, gindex].join("-");
-    tframe.setAttribute("data-s-time", f_start);
-    tframe.setAttribute("data-e-time", f_end);
-
     var top = this.margin.top_g+this.caption_h,
-        left = this.margin.left+s+timeScale.bandwidth()/2;
-    tframe.style.top = top;
-    tframe.style.left = left;
-    tframe.style.width = e-s;
-    tframe.style.height = this.slice_h;
-    tframe.style.backgroundColor = gcolor(gindex);
-    tframe.innerHTML = name;
-    if (pattern != undefined)
-      tframe.innerHTML += " " + pattern;
+        left = s+timeScale.bandwidth()/2;
+
+    var tframe = this.chart_g.append("rect")
+      .attr("class", "time-slice")
+      .attr("id", [y_start, y_end, gindex].join("-"))
+      .attr("x", left)
+      .attr("y", top)
+      .attr("width", e-s)
+      .attr("height", this.slice_h)
+      .attr("data-s-time", f_start)
+      .attr("data-e-time", f_end)
+      .style("fill", gcolor(gindex));
 
     if (y_start != "init") {
-      tframe.addEventListener("mouseenter", showOptions);
-      tframe.addEventListener("mouseleave", hideOptions);
+      tframe.on("mouseenter", showOptions);
+      tframe.on("mouseleave", hideOptions);
     }
-    this.frames.push(tframe);
-    this.framepanel.appendChild(tframe);
+    timeSlices.push(tframe);
+
+    var tframe_text = this.chart_g.append("text")
+      .attr("class", "time-slice")
+      .attr("id", [y_start, y_end, gindex].join("-"))
+      .attr("x", left+2)
+      .attr("y", top+15)
+      .attr("data-s-time", f_start)
+      .attr("data-e-time", f_end)
+      .text(name);
+    timeLabels.push(tframe_text);
+
+    if (pattern != undefined) {
+      var tframe_text_2 = this.chart_g.append("text")
+        .attr("class", "time-slice")
+        .attr("id", [y_start, y_end, gindex].join("-"))
+        .attr("x", left+2)
+        .attr("y", top+15+12)
+        .attr("data-s-time", f_start)
+        .attr("data-e-time", f_end)
+        .text(pattern);
+      timeLabels.push(tframe_text_2);
+    }
   }
 
   clearOuterBound() {
@@ -197,23 +231,32 @@ class TimeLine {
         e = timeScale(y_end);
 
     console.log("addOuterBound", y_start, y_end, s, e)
-    var tframe = document.createElement("div");
-    tframe.className = "time-slice-outer"
-    tframe.style.top = this.margin.top_g+this.caption_h;
-    tframe.style.left = this.margin.left+s+timeScale.bandwidth()/2;
-    tframe.style.width = e-s;
-    tframe.style.height = this.slice_h+this.year_h;
-    tframe.style.paddingTop = this.slice_h+this.year_h-25;
-    tframe.innerHTML = obound.start_time;
-    if (obound.end_time != undefined) tframe.innerHTML += "-"+obound.end_time;
+    var tframe = this.chart_g.append("rect")
+      .attr("class", "time-slice-outer")
+      .attr("data-s-time", y_start)
+      .attr("data-e-time", y_end)
+      .attr("x", s+timeScale.bandwidth()/2)
+      .attr("y", this.margin.top_g+this.caption_h)
+      .attr("width", e-s)
+      .attr("height", this.slice_h+this.year_h);
 
-    this.bgpanel.appendChild(tframe);
-    this.frames.push(tframe);
+    var name = obound.start_time;
+    if (obound.end_time != undefined) name += "-"+obound.end_time;
+    var tframe_text = this.chart_g.append("text")
+      .attr("class", "time-slice-outer")
+      .attr("data-s-time", y_start)
+      .attr("data-e-time", y_end)
+      .attr("x", s+timeScale.bandwidth()/2)
+      .attr("y", this.height-3)
+      .text(name);
+
+    timeSlices.push(tframe);
+    timeLabels.push(tframe_text);
   }
 
   addCaption(gid, caption) {
     // console.log("addCaption", gid, caption)
-    var corrFrame = $("div#"+gid+".time-slice")[0];
+    var corrFrame = $("rect#"+gid+".time-slice")[0];
     var f_start = corrFrame.getAttribute("data-s-time"),
         f_end = corrFrame.getAttribute("data-e-time");
     var s = timeScale(f_start),
@@ -221,8 +264,8 @@ class TimeLine {
     var tframe = document.createElement("textarea");
     tframe.className = "time-caption"
     tframe.id = gid;
-    tframe.style.top = this.margin.top_g;
-    tframe.style.left = this.margin.left+s+timeScale.bandwidth()/2;
+    tframe.style.top = 0;
+    tframe.style.left = this.margin.left+s;
     tframe.style.width = e-s;
     tframe.style.height = this.caption_h;
     tframe.value = caption;
@@ -252,15 +295,13 @@ class TimeLine {
       updateCaption(e.target.id, e.target.value);
     })
 
-    this.frames.push(tframe);
-    this.framepanel.appendChild(tframe);
+    timeCaptions.push(tframe);
+    this.captionpanel.appendChild(tframe);
   }
 }
 
 function zoom(svg) {
-  const margin = ({top: 20, right: 0, bottom: 30, left: 40})
-  const extent = [[0,0], [1000, 200]];
-
+  const extent = [[0,0], [timeScale_width, 0]];
   svg.call(d3.zoom()
       .scaleExtent([1, 8])
       .translateExtent(extent)
@@ -268,8 +309,18 @@ function zoom(svg) {
       .on("zoom", zoomed));
 
   function zoomed() {
-    timeScale.range([margin.left, width - margin.right].map(d => d3.event.transform.applyX(d)));
-    // svg.selectAll(".bars rect").attr("x", d => x(d.name)).attr("width", timeScale.bandwidth());
+    timeScale.range([0, timeScale_width].map(d => d3.event.transform.applyX(d)));
+    timeSlices.forEach(function(d) {
+      d.attr("x", timeScale(d.attr("data-s-time")))
+      d.attr("width", timeScale(d.attr("data-e-time"))-timeScale(d.attr("data-s-time")))
+    })
+    timeLabels.forEach(function(d) {
+      d.attr("x", 2+timeScale(d.attr("data-s-time")))
+    })
+    timeCaptions.forEach(function(d) {
+      d.style.left = leftTimelineMargin+timeScale(d.getAttribute("data-s-time"));
+      d.style.width = timeScale(d.getAttribute("data-e-time"))-timeScale(d.getAttribute("data-s-time"));
+    })
     svg.selectAll(".timeline-x-axis-min").call(xAxis_1);
     svg.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
     svg.selectAll(".timeline-x-axis-grid").call(xAxis_3);

@@ -75,6 +75,7 @@
     <div class="col-md-12">
       <div class="timeline timeline-background" id="timeline-background"></div>
       <div class="timeline timeline-frame" id="timeline"></div>
+      <div class="timeline timeline-legend" id="timeline-legend"></div>
       <div class="timeline timeline-slider">
         <input type="range" class="slider" name="mySlider" id=mySlider min="0" max="0" value="0"></input>
         <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
@@ -127,6 +128,7 @@ var params = {
 var timeunit = 200;
 var w = document.getElementById("myChart").offsetWidth,
     h = w;
+var leftTimelineMargin = 100;
 var timeline_w = document.getElementById("timeline-panel").offsetWidth;
 var label_w = Math.min(200, Math.max(120, w*0.2));
 var left_offset = 66, caption_h = 65;
@@ -461,7 +463,7 @@ function changeSlider(el, curFrame, play) {
 
   width = el.width()-32;
   newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
-  $("#slider-extend")[0].style.left = width * newPoint + 100+13;
+  $("#slider-extend")[0].style.left = width * newPoint + leftTimelineMargin+13;
   var preYear = timeFrames[preFrame],
       curYear = timeFrames[curFrame];
   el.next("output")
