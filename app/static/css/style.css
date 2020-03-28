@@ -90,7 +90,7 @@ body {
 	background-color: #bbb;
 	border: 1px solid #000;
 	height: 60px;
-	margin: 5px 5px 0 5px;
+	margin: 5px 5px 0 35px;
 	padding: 5px 10px;
 	font-size: 16px;
 }
@@ -99,14 +99,14 @@ body {
 	position: absolute;
 	z-index: 30;
 	margin-top: 5px;
-	left: 30px;
-	width: 65px;
-	height: 40px;
+	left: 15px;
+	width: 60px;
+	height: 60px;
 	background: #007bff;
 	color: #ffffff;
 	border-radius: 5px;
-	font-size: 26px;
-	padding: 7px 21px;
+	font-size: 30px;
+	padding: 15px 17px;
 }
 
 .fa-play {
