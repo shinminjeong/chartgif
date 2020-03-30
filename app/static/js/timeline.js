@@ -1,31 +1,35 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3, xAxis_year, xAxis_year_h;
-var timeSlices, timeLabels, timeCaptions;
+var timeSlices, timeLabels, timeCaptions, chartExpand;
 
 class TimeLine {
 
   constructor(div_id, w) {
-    this.margin = {top: 25, right: 35, bottom: 25, left:leftTimelineMargin};
+    this.margin = {top: 25, right: 45, bottom: 25, left:leftTimelineMargin};
     this.width = timeScale_width = w - this.margin.left - this.margin.right;
     this.div_id_frames = div_id + "-background";
     this.div_id = div_id;
 
-    this.slice_h = 50;
+    this.slice_h = 40;
     this.caption_h = 20;
     this.year_h = 20;
-    this.height = this.slice_h+this.caption_h+this.year_h+this.margin.top+this.margin.bottom;
 
     timeSlices = [];
     timeLabels = [];
     timeCaptions = [];
-
+    chartExpand = false;
     this.h_years = [];
+
+    this.s_height = this.slice_h+this.caption_h+this.year_h+this.margin.top+this.margin.bottom;
+    this.l_height = this.caption_h+this.slice_h*legendCount+this.year_h+this.margin.top+this.margin.bottom;
+    this.height = this.s_height;
   }
 
   initChart(timeframesmap, forder, fmap, gname) {
     var timeframes = Object.keys(timeframesmap);
     console.log("Timeline -- initchart", timeframes, gname);
     this.legendpanel = document.getElementById(this.div_id + "-legend");
+    this.controlpanel = document.getElementById(this.div_id + "-control");
     this.captionpanel = document.getElementById(this.div_id);
     this.svg = d3.select("#"+this.div_id_frames)
       .append('svg')
@@ -50,17 +54,10 @@ class TimeLine {
     this.x_3 = this.grid.append("g");
     this.x_year = this.grid.append("g");
     this.x_year_h = this.grid.append("g");
-
-    this.legendpanel.style.width = leftTimelineMargin;
-    this.legendpanel.style.height = this.height;
-
-    var framelines = [];
-    framelines.push(this.caption_h, this.caption_h+this.slice_h);
-
-    this.grid.append("g")
-      .attr("class", "grid")
+    this.framegrid = this.grid.append("g").attr("class", "grid");
+    this.framegrid
       .selectAll("line")
-      .data(framelines)
+      .data([this.caption_h, this.caption_h+this.slice_h])
     .enter().append("line")
       .attr("x1", 0)
       .attr("y1", d => d+this.margin.top)
@@ -69,6 +66,7 @@ class TimeLine {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
+    this.setControlPanel();
     this.updateXaxis(timeframes);
     for (var f in forder) {
       var outerbound = forder[f[0]].outerbound;
@@ -81,28 +79,85 @@ class TimeLine {
       }
       getCaption(outerbound);
     }
+    this.drawYearTicks();
   }
 
+  setControlPanel() {
+    this.legendpanel.style.width = this.margin.left;
+    this.legendpanel.style.height = this.height;
+    this.controlpanel.style.marginLeft = this.width+this.margin.left;
+    this.controlpanel.style.width = this.margin.right;
+    this.controlpanel.style.height = this.height;
+
+    var resetBtn = document.createElement("button");
+    resetBtn.className = "control-bottom control-bottom-reset";
+    resetBtn.innerText = "reset";
+    resetBtn.addEventListener("click", function() {
+      console.log("reset button clicked!");
+      refresh();
+    });
+
+    var expandBtn = document.createElement("button");
+    expandBtn.className = "control-bottom control-bottom-expand";
+    expandBtn.innerHTML = "<i class='fa fa-chevron-down'></i>";
+    expandBtn.addEventListener("click", function() {
+      chartExpand = !chartExpand;
+      console.log("expand button clicked!", chartExpand);
+      expandChart(chartExpand);
+    });
+
+    this.controlpanel.appendChild(resetBtn);
+    this.controlpanel.appendChild(expandBtn);
+  }
+
+
   updateChart(timeframesmap, forder, fmap, gname) {
+    var framelines = [];
+    if (chartExpand) {
+      this.height = this.l_height;
+      for (var i = 0; i <= legendCount; i++) framelines.push(this.caption_h+i*this.slice_h);
+      this.svg.attr('height', this.height);
+      this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+    } else {
+      this.height = this.s_height;
+      framelines = [this.caption_h, this.caption_h+this.slice_h];
+      this.svg.attr('height', this.height);
+      this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+    }
+    this.legendpanel.style.height = this.height;
+    this.controlpanel.style.height = this.height;
+
+    this.framegrid.selectAll("*").remove();
+    this.framegrid
+      .selectAll("line")
+      .data(framelines)
+    .enter().append("line")
+      .attr("x1", 0)
+      .attr("y1", d => d+this.margin.top)
+      .attr("x2", this.width)
+      .attr("y2", d => d+this.margin.top)
+      .attr("stroke", "black")
+      .attr("stroke-width", 1);
+
     var timeframes = Object.keys(timeframesmap);
     this.updateXaxis(timeframes);
     for (var f in forder) {
       var outerbound = forder[f[0]].outerbound;
-      console.log("outerbound", outerbound);
+      // console.log("outerbound", outerbound);
       this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
       for (var r in outerbound.reason) {
-        console.log("fmap", r, fmap[r]);
+        // console.log("fmap", r, fmap[r]);
         this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
       }
       getCaption(outerbound);
     }
+    this.drawYearTicks();
   }
 
   calculateTickValues(timeframes) {
     this.tickEveryMinute = [];
     this.tickEvery20Secs = [];
     this.tickEverySecond = [];
-    this.tickHighlightYears = [];
     for (var y = 0; y < timeframes.length; y++) {
       if ((y * timeunit)%(60*1000) == 0) this.tickEveryMinute.push(timeframes[y]);
       if ((y * timeunit)%(20*1000) == 0) this.tickEvery20Secs.push(timeframes[y]);
@@ -111,7 +166,7 @@ class TimeLine {
   }
 
   updateXaxis(timeframes) {
-    console.log("updateXaxis", timeframes.length)
+    // console.log("updateXaxis", timeframes.length)
     this.calculateTickValues(timeframes);
 
     timeScale = d3.scaleBand()
@@ -123,7 +178,6 @@ class TimeLine {
     this.x_1.selectAll("*").remove();
     this.x_2.selectAll("*").remove();
     this.x_3.selectAll("*").remove();
-    this.x_year.selectAll("*").remove();
 
     xAxis_1 = d3.axisBottom(timeScale)
       .tickSize(this.margin.top)
@@ -141,31 +195,34 @@ class TimeLine {
       .tickFormat("")
       .tickValues(this.tickEverySecond);
 
-    xAxis_year = d3.axisTop(timeScale)
-      .tickFormat("")
-      .tickValues(this.tickEverySecond);
-
     this.x_1.attr('class', 'timeline-x-axis timeline-x-axis-min').call(xAxis_1);
     this.x_2.attr("class", "timeline-x-axis timeline-x-axis-20sec").call(xAxis_2);
     this.x_3.attr("class", "timeline-x-axis timeline-x-axis-grid").call(xAxis_3);
     this.x_2.selectAll('.timeline-x-axis-20sec text')
         .attr('transform', 'translate(21,-5)');
 
-    this.x_year
-      .attr("transform", "translate(0," + this.height + ")")
-      .attr("class", "timeline-x-axis timeline-x-axis-year").call(xAxis_year);
-
     this.clearAllFrames();
   }
 
   drawYearTicks() {
     var timeframes = Object.values(testtimeframes.getTimeFrames());
+    this.tickEveryYear = [];
     this.tickHighlightYears = [];
+    for (var b = 1; b < timeframes.length; b++) {
+      if (timeframes[b-1] != timeframes[b]) this.tickEveryYear.push(b);
+    }
     for (var b = 0; b < this.h_years.length; b++) {
-      if (this.h_years == undefined) continue;
+      if (timeframes.indexOf(this.h_years[b]) == -1) continue;
       this.tickHighlightYears.push(timeframes.indexOf(this.h_years[b]));
     }
-    console.log(this.tickHighlightYears);
+
+    this.x_year.selectAll("*").remove();
+    xAxis_year = d3.axisTop(timeScale)
+      .tickFormat("")
+      .tickValues(this.tickEveryYear);
+    this.x_year
+      .attr("transform", "translate(0," + this.height + ")")
+      .attr("class", "timeline-x-axis timeline-x-axis-year").call(xAxis_year);
 
     this.x_year_h.selectAll("*").remove();
     xAxis_year_h = d3.axisTop(timeScale)
@@ -181,6 +238,8 @@ class TimeLine {
       .attr("class", "timeline-x-axis timeline-x-axis-year-h").call(xAxis_year_h);
     this.x_year_h.selectAll('.timeline-x-axis-year-h text')
       .attr('transform', 'translate(12,+15)');
+
+    this.h_years = [];
   }
 
   clearAllFrames() {
@@ -218,7 +277,7 @@ class TimeLine {
       .attr("class", "time-slice")
       .attr("id", frame_id)
       .attr("x", left)
-      .attr("y", top)
+      .attr("y", chartExpand?top+this.slice_h*gindex:top)
       .attr("edit", "off")
       .attr("width", e-s)
       .attr("height", this.slice_h)
@@ -239,7 +298,7 @@ class TimeLine {
       .attr("class", "time-slice")
       .attr("id", [y_start, y_end, gindex].join("-"))
       .attr("x", left+2)
-      .attr("y", top+15)
+      .attr("y", chartExpand?15+top+this.slice_h*gindex:15+top)
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
       .text(name);
@@ -257,7 +316,7 @@ class TimeLine {
         .attr("class", "time-slice")
         .attr("id", [y_start, y_end, gindex].join("-"))
         .attr("x", left+2)
-        .attr("y", top+15+12)
+        .attr("y", chartExpand?12+15+top+this.slice_h*gindex:12+15+top)
         .attr("data-s-time", f_start)
         .attr("data-e-time", f_end)
         .style("cursor", "pointer")
@@ -289,7 +348,7 @@ class TimeLine {
       .attr("x", s+timeScale.bandwidth()/2)
       .attr("y", this.margin.top+this.caption_h)
       .attr("width", e-s)
-      .attr("height", this.slice_h+this.year_h);
+      .attr("height", chartExpand?this.slice_h*legendCount+this.year_h:this.slice_h+this.year_h);
 
     var name = obound.start_time;
     if (obound.end_time != undefined) name += "-"+obound.end_time;
@@ -382,6 +441,8 @@ function zoom(svg) {
     svg.selectAll(".timeline-x-axis-min").call(xAxis_1);
     svg.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
     svg.selectAll(".timeline-x-axis-grid").call(xAxis_3);
+    svg.selectAll(".timeline-x-axis-year").call(xAxis_year);
+    svg.selectAll(".timeline-x-axis-year-h").call(xAxis_year_h);
   }
 }
 

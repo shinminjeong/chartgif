@@ -70,7 +70,7 @@ class TimeFrames {
       if (outerbound == undefined) {
         var s_t = this.timeseries.indexOf(r[0]),
             e_t = this.timeseries.indexOf(r[1]);
-        console.log(r, s_t, e_t)
+        // console.log(r, s_t, e_t)
         runningtime += (e_t-s_t+1);
         continue;
       }
@@ -127,20 +127,18 @@ class TimeFrames {
         i++;
       }
     }
-    console.log("@@@", Object.keys(this.timeFrames).length)
     for (var o in this.outerbound){
       var outerb = this.outerbound[o];
 
       // add blank frame
       var cur_s = this.timeseries.indexOf(outerb.start_time);
       if (cur_s-last_idx > 1) {
-        console.log("b~~~",i, this.timeseries[last_idx], this.timeseries[cur_s-1], last_idx, cur_s-1)
+        // console.log("b~~~",i, this.timeseries[last_idx], this.timeseries[cur_s-1], last_idx, cur_s-1)
         this.framearr.push([this.timeseries[last_idx], this.timeseries[cur_s-1]]);
         i = this.getTimeFrameLength();
         for (var j=last_idx; j<=cur_s-1; j++) {
           this.timeFrames[i++] = this.timeseries[j];
         }
-        console.log("@@@", Object.keys(this.timeFrames).length)
       }
 
       this.framearr.push([outerb.start_time, outerb.end_time]);
@@ -149,7 +147,7 @@ class TimeFrames {
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
             runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));
         i = this.getTimeFrameLength();
-        console.log("o~~~", i, r, this.framemap[r].start_time, this.framemap[r].end_time, s_idx, e_idx, runtime_unit)
+        // console.log("o~~~", i, r, this.framemap[r].start_time, this.framemap[r].end_time, s_idx, e_idx, runtime_unit)
         for (var j=s_idx; j<=e_idx; j++) {
           for (var u=0; u<runtime_unit; u++) {
             this.timeFrames[i] = this.timeseries[j];
@@ -157,19 +155,17 @@ class TimeFrames {
             i++;
           }
         }
-        console.log("@@@", Object.keys(this.timeFrames).length)
       }
       last_idx = this.timeseries.indexOf(outerb.end_time);
     }
     // add last blank frame
     this.framearr.push([this.timeseries[last_idx], this.timeseries[this.timeseries.length-1]]);
     i = this.getTimeFrameLength();
-    console.log("b~~~",i, this.timeseries[last_idx], this.timeseries[this.timeseries.length-1], last_idx, this.timeseries.length-1)
+    // console.log("b~~~",i, this.timeseries[last_idx], this.timeseries[this.timeseries.length-1], last_idx, this.timeseries.length-1)
     for (var j=last_idx; j<=this.timeseries.length-1; j++) {
       this.timeFrames[i++] = this.timeseries[j];
     }
     // this.timeFrames[i] = "finish";
-    console.log("@@@", Object.keys(this.timeFrames).length)
   }
 
   updateCaption(id, value) {

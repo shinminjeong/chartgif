@@ -32,7 +32,7 @@
         <a class="dropdown-item" name="y" id="fertility" href="#">Babies per woman</a>
       </div>
     </div>
-    <div class="col-md-6" style="padding-left: 50px;">
+    <div class="col-md-6" style="padding: 0 0 0 50px;">
       <div id="myChart"></div>
       <div align="center">
         <div id="dropdown_X" class="dropdown">
@@ -67,7 +67,7 @@
         <span id='caption'></span>
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6" style="padding:0 0 0 30px">
       <div id="clusterinfo" class="row"></div>
     </div>
   </div>
@@ -76,6 +76,7 @@
       <div class="timeline timeline-background" id="timeline-background"></div>
       <div class="timeline timeline-frame" id="timeline"></div>
       <div class="timeline timeline-legend" id="timeline-legend"></div>
+      <div class="timeline timeline-control" id="timeline-control"></div>
       <div class="timeline timeline-slider">
         <input type="range" class="slider" name="mySlider" id=mySlider min="0" max="0" value="0"></input>
         <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
@@ -138,9 +139,9 @@ for (var k in data_options) {
 }
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
-document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-50;
-document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-50;
-document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-50;
+document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-30;
+document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-30;
+document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-30;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
 
 $(".dropdown-menu a").click(function () {
@@ -176,6 +177,20 @@ function addEventinLinechart(yrange, group, axes, reason) {
 function drawFrame(yrange, group, axes, reason, pattern) {
   testtimeframes.addFrame(yrange, group, axes, reason, pattern);
   testtimeframes.calculateTimeFrames();
+  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
+  updateSlider();
+}
+
+function expandChart(flag_expand) {
+  console.log("expandChart", timeline.s_height, timeline.l_height);
+  if (flag_expand) newheight = timeline.l_height;
+  else newheight = timeline.s_height;
+  document.getElementsByClassName("timeline-background")[0].style.height = newheight;
+  document.getElementsByClassName("timeline-slider-extend")[0].style.height = newheight;
+  refresh();
+}
+
+function refresh() {
   timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
   updateSlider();
 }
