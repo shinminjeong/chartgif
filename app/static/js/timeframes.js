@@ -71,7 +71,7 @@ class TimeFrames {
         var s_t = this.timeseries.indexOf(r[0]),
             e_t = this.timeseries.indexOf(r[1]);
         console.log(r, s_t, e_t)
-        runningtime += (e_t-s_t);
+        runningtime += (e_t-s_t+1);
         continue;
       }
 
@@ -127,17 +127,20 @@ class TimeFrames {
         i++;
       }
     }
+    console.log("@@@", Object.keys(this.timeFrames).length)
     for (var o in this.outerbound){
       var outerb = this.outerbound[o];
 
       // add blank frame
       var cur_s = this.timeseries.indexOf(outerb.start_time);
       if (cur_s-last_idx > 1) {
-        this.framearr.push([this.timeseries[last_idx+1], this.timeseries[cur_s-1]]);
+        console.log("b~~~",i, this.timeseries[last_idx], this.timeseries[cur_s-1], last_idx, cur_s-1)
+        this.framearr.push([this.timeseries[last_idx], this.timeseries[cur_s-1]]);
         i = this.getTimeFrameLength();
-        for (var j=last_idx+1; j<=cur_s-1; j++) {
+        for (var j=last_idx; j<=cur_s-1; j++) {
           this.timeFrames[i++] = this.timeseries[j];
         }
+        console.log("@@@", Object.keys(this.timeFrames).length)
       }
 
       this.framearr.push([outerb.start_time, outerb.end_time]);
@@ -146,6 +149,7 @@ class TimeFrames {
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
             runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));
         i = this.getTimeFrameLength();
+        console.log("o~~~", i, r, this.framemap[r].start_time, this.framemap[r].end_time, s_idx, e_idx, runtime_unit)
         for (var j=s_idx; j<=e_idx; j++) {
           for (var u=0; u<runtime_unit; u++) {
             this.timeFrames[i] = this.timeseries[j];
@@ -153,16 +157,19 @@ class TimeFrames {
             i++;
           }
         }
+        console.log("@@@", Object.keys(this.timeFrames).length)
       }
       last_idx = this.timeseries.indexOf(outerb.end_time);
     }
     // add last blank frame
-    this.framearr.push([this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1]]);
+    this.framearr.push([this.timeseries[last_idx], this.timeseries[this.timeseries.length-1]]);
     i = this.getTimeFrameLength();
-    for (var j=last_idx+1; j<=this.timeseries.length-1; j++) {
+    console.log("b~~~",i, this.timeseries[last_idx], this.timeseries[this.timeseries.length-1], last_idx, this.timeseries.length-1)
+    for (var j=last_idx; j<=this.timeseries.length-1; j++) {
       this.timeFrames[i++] = this.timeseries[j];
     }
     // this.timeFrames[i] = "finish";
+    console.log("@@@", Object.keys(this.timeFrames).length)
   }
 
   updateCaption(id, value) {
@@ -220,8 +227,11 @@ class TimeFrames {
     for (var i in axis) {
       names.push(data_options[axis[i].toLowerCase()]["id"])
     }
-    // console.log("addFrame", s_time, e_time, id, names, group, reason);
-    for (var i = this.timeseries.indexOf(s_time); i < this.timeseries.indexOf(e_time); i++) {
+    // console.log("addFrame", range, s_time, e_time, id, names, group, reason);
+    var s_year = this.timeseries.indexOf(s_time),
+        e_year = this.timeseries.indexOf(e_time);
+
+    for (var i = s_year; i <= e_year; i++) {
       var t = this.timeseries[i];
       this.yearmap[t]["group"].push(+group)
       if (reason != "sum") this.yearmap[t]["delay"] = this.default_slowdown[reason];
@@ -244,7 +254,7 @@ class TimeFrames {
       "reason": reason,
       "pattern": pattern,
       "inner": [],
-      "runningtime": range.length*this.default_slowdown[reason],
+      "runningtime": (e_year-s_year+1)*this.default_slowdown[reason],
     }
 
     this.calculateOuterbound();
@@ -254,7 +264,7 @@ class TimeFrames {
     var ids = id.split("-");
     var s_time = this.timeseries.indexOf(ids[0]),
         e_time = this.timeseries.indexOf(ids[1]);
-    for (var i = s_time; i < e_time; i++) {
+    for (var i = s_time; i <= e_time; i++) {
       var y = this.timeseries[i];
       // remove group number from yearmap
       var idx = this.yearmap[y]["group"].indexOf(parseInt(ids[2]));
@@ -265,6 +275,7 @@ class TimeFrames {
         this.yearmap[y]["reason"] = {};
       }
     }
+    // console.log("RemoveFrame", id)
     delete this.framemap[id];
     this.calculateOuterbound();
   }

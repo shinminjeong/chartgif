@@ -1,11 +1,11 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0');
-var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3;
+var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3, xAxis_year, xAxis_year_h;
 var timeSlices, timeLabels, timeCaptions;
 
 class TimeLine {
 
   constructor(div_id, w) {
-    this.margin = {top: 0, right: 35, bottom: 0, left:leftTimelineMargin, top_g: 25};
+    this.margin = {top: 25, right: 35, bottom: 25, left:leftTimelineMargin};
     this.width = timeScale_width = w - this.margin.left - this.margin.right;
     this.div_id_frames = div_id + "-background";
     this.div_id = div_id;
@@ -13,11 +13,13 @@ class TimeLine {
     this.slice_h = 50;
     this.caption_h = 20;
     this.year_h = 20;
-    this.height = this.slice_h+this.caption_h+this.year_h+this.margin.top_g-this.margin.top-this.margin.bottom;
+    this.height = this.slice_h+this.caption_h+this.year_h+this.margin.top+this.margin.bottom;
 
     timeSlices = [];
     timeLabels = [];
     timeCaptions = [];
+
+    this.h_years = [];
   }
 
   initChart(timeframesmap, forder, fmap, gname) {
@@ -28,23 +30,26 @@ class TimeLine {
     this.svg = d3.select("#"+this.div_id_frames)
       .append('svg')
       .attr('width', this.width + this.margin.left + this.margin.right)
-      .attr('height', this.height + this.margin.top + this.margin.bottom);
+      .attr('height', this.height);
 
     this.chart_g = this.svg.append('g')
-      .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
+      .attr("id", "chart_g")
+      .attr('transform', 'translate(' + this.margin.left + ',0)')
       .call(zoom);
 
     this.background = this.chart_g.append("rect")
       .attr("x", 0)
-      .attr("y", this.margin.top_g)
+      .attr("y", this.margin.top)
       .attr("width", this.width)
-      .attr("height", this.height-this.margin.top_g)
+      .attr("height", this.height-this.margin.top-this.margin.bottom)
       .style("fill", "#d3d3d3");
 
     this.grid = this.chart_g.append("g");
     this.x_1 = this.grid.append("g");
     this.x_2 = this.grid.append("g");
     this.x_3 = this.grid.append("g");
+    this.x_year = this.grid.append("g");
+    this.x_year_h = this.grid.append("g");
 
     this.legendpanel.style.width = leftTimelineMargin;
     this.legendpanel.style.height = this.height;
@@ -58,16 +63,16 @@ class TimeLine {
       .data(framelines)
     .enter().append("line")
       .attr("x1", 0)
-      .attr("y1", d => d+this.margin.top_g)
+      .attr("y1", d => d+this.margin.top)
       .attr("x2", this.width)
-      .attr("y2", d => d+this.margin.top_g)
+      .attr("y2", d => d+this.margin.top)
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
     this.updateXaxis(timeframes);
     for (var f in forder) {
       var outerbound = forder[f[0]].outerbound;
-      console.log("outerbound", outerbound);
+      console.log("outerbound", outerbound, outerbound.head, outerbound.tail);
       this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
       for (var r in outerbound.reason) {
         console.log("fmap", r, fmap[r]);
@@ -97,6 +102,7 @@ class TimeLine {
     this.tickEveryMinute = [];
     this.tickEvery20Secs = [];
     this.tickEverySecond = [];
+    this.tickHighlightYears = [];
     for (var y = 0; y < timeframes.length; y++) {
       if ((y * timeunit)%(60*1000) == 0) this.tickEveryMinute.push(timeframes[y]);
       if ((y * timeunit)%(20*1000) == 0) this.tickEvery20Secs.push(timeframes[y]);
@@ -117,9 +123,10 @@ class TimeLine {
     this.x_1.selectAll("*").remove();
     this.x_2.selectAll("*").remove();
     this.x_3.selectAll("*").remove();
+    this.x_year.selectAll("*").remove();
 
-    xAxis_1 = d3.axisTop(timeScale)
-      .tickSize(this.height)
+    xAxis_1 = d3.axisBottom(timeScale)
+      .tickSize(this.margin.top)
       .tickValues(this.tickEveryMinute)
       .tickFormat("");
     xAxis_2 = d3.axisBottom(timeScale)
@@ -134,20 +141,46 @@ class TimeLine {
       .tickFormat("")
       .tickValues(this.tickEverySecond);
 
-    this.x_1
-      .attr("transform", "translate(0," + this.height + ")")
-      .attr('class', 'timeline-x-axis timeline-x-axis-min')
-      .call(xAxis_1);
-    this.x_2
-      .attr("class", "timeline-x-axis timeline-x-axis-20sec")
-      .call(xAxis_2);
-    this.x_3
-      .attr("class", "timeline-x-axis timeline-x-axis-grid")
-      .call(xAxis_3);
+    xAxis_year = d3.axisTop(timeScale)
+      .tickFormat("")
+      .tickValues(this.tickEverySecond);
+
+    this.x_1.attr('class', 'timeline-x-axis timeline-x-axis-min').call(xAxis_1);
+    this.x_2.attr("class", "timeline-x-axis timeline-x-axis-20sec").call(xAxis_2);
+    this.x_3.attr("class", "timeline-x-axis timeline-x-axis-grid").call(xAxis_3);
     this.x_2.selectAll('.timeline-x-axis-20sec text')
         .attr('transform', 'translate(21,-5)');
 
+    this.x_year
+      .attr("transform", "translate(0," + this.height + ")")
+      .attr("class", "timeline-x-axis timeline-x-axis-year").call(xAxis_year);
+
     this.clearAllFrames();
+  }
+
+  drawYearTicks() {
+    var timeframes = Object.values(testtimeframes.getTimeFrames());
+    this.tickHighlightYears = [];
+    for (var b = 0; b < this.h_years.length; b++) {
+      if (this.h_years == undefined) continue;
+      this.tickHighlightYears.push(timeframes.indexOf(this.h_years[b]));
+    }
+    console.log(this.tickHighlightYears);
+
+    this.x_year_h.selectAll("*").remove();
+    xAxis_year_h = d3.axisTop(timeScale)
+      .tickSize(this.margin.bottom)
+      .tickFormat(function(d) {
+        var y = testtimeframes.getTimeFrames()[d];
+        return y=="init"?"":y;
+      })
+      .tickValues(this.tickHighlightYears);
+
+    this.x_year_h
+      .attr("transform", "translate(0," + this.height + ")")
+      .attr("class", "timeline-x-axis timeline-x-axis-year-h").call(xAxis_year_h);
+    this.x_year_h.selectAll('.timeline-x-axis-year-h text')
+      .attr('transform', 'translate(12,+15)');
   }
 
   clearAllFrames() {
@@ -175,16 +208,18 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = timeScale(f_start),
         e = timeScale(f_end);
-    // console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
+    console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
 
-    var top = this.margin.top_g+this.caption_h,
+    var top = this.margin.top+this.caption_h,
         left = s+timeScale.bandwidth()/2;
 
+    var frame_id = [y_start, y_end, gindex].join("-");
     var tframe = this.chart_g.append("rect")
       .attr("class", "time-slice")
-      .attr("id", [y_start, y_end, gindex].join("-"))
+      .attr("id", frame_id)
       .attr("x", left)
       .attr("y", top)
+      .attr("edit", "off")
       .attr("width", e-s)
       .attr("height", this.slice_h)
       .attr("data-s-time", f_start)
@@ -192,8 +227,11 @@ class TimeLine {
       .style("fill", gcolor(gindex));
 
     if (y_start != "init") {
-      tframe.on("mouseenter", showOptions);
-      tframe.on("mouseleave", hideOptions);
+      tframe.on("click", function() {
+        var d = $("rect#"+frame_id+".time-slice");
+        if (d.attr("edit") == "on") hideOptions(frame_id);
+        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+      });
     }
     timeSlices.push(tframe);
 
@@ -206,6 +244,13 @@ class TimeLine {
       .attr("data-e-time", f_end)
       .text(name);
     timeLabels.push(tframe_text);
+    if (y_start != "init") {
+      tframe_text.on("click", function() {
+        var d = $("rect#"+frame_id+".time-slice");
+        if (d.attr("edit") == "on") hideOptions(frame_id);
+        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+      });
+    }
 
     if (pattern != undefined) {
       var tframe_text_2 = this.chart_g.append("text")
@@ -215,8 +260,14 @@ class TimeLine {
         .attr("y", top+15+12)
         .attr("data-s-time", f_start)
         .attr("data-e-time", f_end)
+        .style("cursor", "pointer")
         .text(pattern);
       timeLabels.push(tframe_text_2);
+      tframe_text_2.on("click", function() {
+        var d = $("rect#"+frame_id+".time-slice");
+        if (d.attr("edit") == "on") hideOptions(frame_id);
+        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+      });
     }
   }
 
@@ -236,7 +287,7 @@ class TimeLine {
       .attr("data-s-time", y_start)
       .attr("data-e-time", y_end)
       .attr("x", s+timeScale.bandwidth()/2)
-      .attr("y", this.margin.top_g+this.caption_h)
+      .attr("y", this.margin.top+this.caption_h)
       .attr("width", e-s)
       .attr("height", this.slice_h+this.year_h);
 
@@ -247,8 +298,11 @@ class TimeLine {
       .attr("data-s-time", y_start)
       .attr("data-e-time", y_end)
       .attr("x", s+timeScale.bandwidth()/2)
-      .attr("y", this.height-3)
+      .attr("y", this.height-this.margin.bottom-3)
       .text(name);
+
+    this.h_years.push(obound.start_time);
+    // this.h_years.push(obound.end_time);
 
     timeSlices.push(tframe);
     timeLabels.push(tframe_text);
@@ -313,13 +367,17 @@ function zoom(svg) {
     timeSlices.forEach(function(d) {
       d.attr("x", timeScale(d.attr("data-s-time")))
       d.attr("width", timeScale(d.attr("data-e-time"))-timeScale(d.attr("data-s-time")))
+      hideOptions(d.attr("id"));
     })
     timeLabels.forEach(function(d) {
       d.attr("x", 2+timeScale(d.attr("data-s-time")))
     })
     timeCaptions.forEach(function(d) {
-      d.style.left = leftTimelineMargin+timeScale(d.getAttribute("data-s-time"));
-      d.style.width = timeScale(d.getAttribute("data-e-time"))-timeScale(d.getAttribute("data-s-time"));
+      var e = timeScale(d.getAttribute("data-e-time")),
+          s = timeScale(d.getAttribute("data-s-time"));
+      d.style.left = leftTimelineMargin+s;
+      d.style.width = e-s;
+      d.setAttribute("data-o-width", e-s);
     })
     svg.selectAll(".timeline-x-axis-min").call(xAxis_1);
     svg.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
@@ -327,33 +385,43 @@ function zoom(svg) {
   }
 }
 
-function removeTimeSlice(e) {
-  var id = e.target.parentElement.id;
-  // console.log("removebutton clicked", id)
-  $("div#"+id+".time-slice").remove();
+function removeTimeSlice(id) {
+  console.log("removebutton clicked", id)
+  $("rect#"+id+".time-slice").remove();
+  $("text#"+id+".time-slice").remove();
   $("textarea#"+id+".time-caption").remove();
   removeFrame(id);
 }
 
-function showOptions(e) {
-  var target;
-  if (e.target.className == "time-slice") target = e.target;
-  else if (e.target.className == "time-slice-order") target = e.target.parentNode;
-  else return;
-  // console.log("showOption", target, target.style.width);
+function showOptions(chart_id, id) {
+  var target = $("rect#"+id+".time-slice");
+  target.attr("edit", "on");
+  target[0].style.fillOpacity = 1;
+  // console.log("showOption", id, target, target.attr("x"), target.attr("width"));
 
-  target.style.opacity = 1;
-  var removebtn = document.createElement("div");
-  removebtn.className = "time-slice-remove"
-  removebtn.id = target.id;
-  removebtn.style.left = parseFloat(target.style.width.replace('px',''))-2;
-  removebtn.innerHTML = "<i class='fa fa-times'></i>"
-  removebtn.addEventListener("click", removeTimeSlice);
-  target.appendChild(removebtn);
+  var x = +target.attr("x"),
+      y = +target.attr("y"),
+      width = +target.attr("width");
+  var removebtn = d3.select("g#"+chart_id).append("rect")
+    .attr("class", "time-slice-remove")
+    .attr("id", id)
+    .attr("x", x+width)
+    .attr("y", y)
+    .on("click", function() { hideOptions(id);removeTimeSlice(id) });
+  var removebtn_x = d3.select("g#"+chart_id).append("image")
+    .attr("class", "time-slice-remove")
+    .attr("id", id)
+    .attr("href", "/static/images/icon_delete.png")
+    .attr("x", x+width)
+    .attr("y", y)
+    .on("click", function() { hideOptions(id);removeTimeSlice(id) });
 }
 
-function hideOptions(e) {
-  e.target.style.opacity = 0.6;
-  // console.log("div#"+e.target.id+".time-slice-remove");
-  $("div#"+e.target.id+".time-slice-remove").remove();
+function hideOptions(id) {
+  // console.log("hideOptions", "#"+id+".time-slice-remove");
+  var target = $("rect#"+id+".time-slice");
+  target.attr("edit", "off");
+  if (target[0] == undefined) return;
+  target[0].style.fillOpacity = 0.7;
+  $("#"+id+".time-slice-remove").remove();
 }

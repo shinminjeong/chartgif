@@ -72,7 +72,7 @@ def get_evt_rapid_change(timeseries, groups, axes, V):
 def get_evt_no_change(timeseries, groups, axes, V):
     output = []
     range_min = {g:{} for g in groups}
-    cont_threshold = 20
+    cont_threshold = 19
     for g in groups:
         for a in axes:
             # print(a, [(v["year"], v["value"]) for v in V[g][a]])

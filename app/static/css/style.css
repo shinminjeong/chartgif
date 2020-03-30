@@ -3,6 +3,7 @@ body {
 }
 
 .timeline-x-axis-grid,
+.timeline-x-axis-year,
 .grid line {
 	opacity: 0.2;
 }
@@ -148,14 +149,15 @@ body {
 	width: 2px;
 	top: 20px;
 	left: 114px;
-	height: 120px;
+	height: 140px;
 	background-color: #007bff;
 	z-index: 100;
 }
 .timeline-background {
 	top: 20px;
-	height: 120px;
-	background: #666;
+	height: 140px;
+	/* background: #666; */
+	border-bottom: 1px solid #000;
 }
 .timeline-frame {
 	top: 45px;
@@ -167,7 +169,7 @@ body {
 	position: absolute;
 	z-index: 50;
 	top: 20px;
-	background: #666;
+	background: #bbb;
 }
 rect.time-slice {
 	position: absolute;
@@ -175,25 +177,26 @@ rect.time-slice {
 	stroke-width: 1px;
 	rx: 5px;
 	fill-opacity: 0.7;
+	cursor: pointer;
 }
 text.time-slice {
 	font-size: 10px;
 	text-anchor: start;
+	cursor: pointer;
 }
 
 .time-slice-remove {
 	position: absolute;
-	top: -1;
 	width: 15px;
 	height: 15px;
 	font-size: 11px;
-	padding: 1px 2.5px;
-	text-align: center;
-	background-color: #eee;
-	border: 1px solid #000;
-	border-radius: 3px;
+	stroke: #000;
+	stroke-width: 1px;
+	rx: 3px;
+	fill: #eee;
 	z-index: 500;
 }
+
 rect.time-slice-outer {
 	position: absolute;
 	stroke: #000;
