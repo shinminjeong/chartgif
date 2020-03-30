@@ -100,9 +100,11 @@ class TimeLine {
     var expandBtn = document.createElement("button");
     expandBtn.className = "control-bottom control-bottom-expand";
     expandBtn.innerHTML = "<i class='fa fa-chevron-down'></i>";
-    expandBtn.addEventListener("click", function() {
+    expandBtn.addEventListener("click", function(e) {
       chartExpand = !chartExpand;
-      console.log("expand button clicked!", chartExpand);
+      console.log("expand button clicked!", chartExpand, e.target);
+      if (chartExpand) e.target.innerHTML = "<i class='fa fa-chevron-up'></i>";
+      else e.target.innerHTML = "<i class='fa fa-chevron-down'></i>";
       expandChart(chartExpand);
     });
 
