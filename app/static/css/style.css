@@ -161,17 +161,19 @@ body {
 }
 .timeline-frame {
 	top: 45px;
-	height: 20px;
 	position: relative;
-	overflow-y: scroll;
 }
 .timeline-legend {
 	z-index: 50;
+	top: 20px;
 	background: #bbb;
+	border-bottom: 1px solid #000;
 }
 .timeline-control {
 	z-index: 50;
+	top: 20px;
 	background: #bbb;
+	border-bottom: 1px solid #000;
 }
 rect.time-slice {
 	position: absolute;

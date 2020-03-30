@@ -102,9 +102,11 @@ class TimeLine {
     expandBtn.innerHTML = "<i class='fa fa-chevron-down'></i>";
     expandBtn.addEventListener("click", function(e) {
       chartExpand = !chartExpand;
-      console.log("expand button clicked!", chartExpand, e.target);
-      if (chartExpand) e.target.innerHTML = "<i class='fa fa-chevron-up'></i>";
-      else e.target.innerHTML = "<i class='fa fa-chevron-down'></i>";
+      var target = e.target;
+      if (e.target.tagName == "I") target = e.target.parentNode;
+      console.log("expand button clicked!", chartExpand, target);
+      if (chartExpand) target.innerHTML = "<i class='fa fa-chevron-up'></i>";
+      else target.innerHTML = "<i class='fa fa-chevron-down'></i>";
       expandChart(chartExpand);
     });
 
