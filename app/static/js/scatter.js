@@ -7,7 +7,7 @@ var hull_labels, hull_label_force, pre_group;
 class ScatterPlot {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 10, bottom: 25, left:25};
+    this.margin = {top: 5, right: 5, bottom: 20, left:25};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
@@ -499,7 +499,7 @@ class ScatterPlot {
 
   ticked() {
     hull_labels
-      .attr("x", function (d) { return Math.min(w-30, Math.max(100, d.x)); })
+      .attr("x", function (d) { return Math.min(w-30, Math.max(200, d.x)); })
       .attr("y", function (d) { return Math.max(30, Math.min(h-120, d.y)); })
   }
 }

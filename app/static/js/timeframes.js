@@ -44,7 +44,7 @@ class TimeFrames {
       } else {
         if (head_y != -1) {
           // console.log("add", head_y, tail_y)
-          var end_t = this.timeseries[this.timeseries.indexOf(tail_y)+1];
+          var end_t = this.timeseries[this.timeseries.indexOf(tail_y)];
           var bound = {
             "start_time": head_y,
             "end_time": end_t,

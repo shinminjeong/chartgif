@@ -32,7 +32,7 @@
         <a class="dropdown-item" name="y" id="fertility" href="#">Babies per woman</a>
       </div>
     </div>
-    <div class="col-md-6" style="padding: 0 0 0 50px;">
+    <div class="col-md-6" style="padding: 0 0 0 60px;">
       <div id="myChart"></div>
       <div align="center">
         <div id="dropdown_X" class="dropdown">
@@ -67,21 +67,23 @@
         <span id='caption'></span>
       </div>
     </div>
-    <div class="col-md-6" style="padding:0 0 0 30px">
+    <div class="col-md-6" style="padding:0 35px 0 30px">
       <div id="clusterinfo" class="row"></div>
     </div>
   </div>
-  <div class="row" id="timeline-panel" style="padding-top: 20px;">
+  <div class="row" id="timeline-panel" style="padding: 20px 10px;">
     <div class="col-md-12">
-      <div class="timeline timeline-background" id="timeline-background"></div>
-      <div class="timeline timeline-frame" id="timeline"></div>
-      <div class="timeline timeline-legend" id="timeline-legend"></div>
-      <div class="timeline timeline-control" id="timeline-control"></div>
-      <div class="timeline timeline-slider">
-        <input type="range" class="slider" name="mySlider" id=mySlider min="0" max="0" value="0"></input>
-        <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
+      <div style="height:290;overflow-x:hidden;overflow-y:scroll">
+        <div class="timeline timeline-background" id="timeline-background"></div>
+        <div class="timeline timeline-frame" id="timeline"></div>
+        <div class="timeline timeline-legend" id="timeline-legend"></div>
+        <div class="timeline timeline-control" id="timeline-control"></div>
+        <div class="timeline timeline-slider">
+          <input type="range" class="slider" name="mySlider" id=mySlider min="0" max="0" value="0"></input>
+          <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
+        </div>
+        <div class="timeline timeline-slider-extend" id="slider-extend"></div>
       </div>
-      <div class="timeline timeline-slider-extend" id="slider-extend"></div>
     </div>
   </div>
 </body>
@@ -128,7 +130,7 @@ var params = {
 }
 var timeunit = 200;
 var w = document.getElementById("myChart").offsetWidth,
-    h = w;
+    h = window.innerHeight-400;
 var leftTimelineMargin = 100;
 var timeline_w = document.getElementById("timeline-panel").offsetWidth;
 var label_w = Math.min(200, Math.max(120, w*0.2));
@@ -139,9 +141,9 @@ for (var k in data_options) {
 }
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
-document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-30;
-document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-30;
-document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-30;
+document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-45;
+document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-45;
+document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-45;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
 
 $(".dropdown-menu a").click(function () {
@@ -159,7 +161,7 @@ var el, newPoint, timebar;
 var linecharts_v = {};
 var trace_chart = {};
 var infodiv = document.getElementById("clusterinfo");
-infodiv.style.height = h+20;
+infodiv.style.height = h+40;
 initClusterinfo();
 
 var timeline_w = document.getElementById("timeline-background").offsetWidth;
@@ -206,9 +208,9 @@ function kFormatter(num) {
 function updateLineTimebar(curYear) {
   // console.log("updateLineTimebar", curYear);
   if (isNaN(curYear)) curYear = timeseries[0];
-  timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+10) + "px";
+  timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+22) + "px";
   timebar.style.top = 10 + "px";
-  timebar.style.height = (h-5) + "px";
+  timebar.style.height = (h+2) + "px";
 }
 
 function initClusterinfo() {
@@ -229,7 +231,7 @@ function initClusterinfo() {
     // div_group_label.innerHTML += "<div class='group_label'><span id='infoMinMax_"+g+"'></span></div>"
     div_group_label.innerHTML += "<div class='group_trace' id='trace_chart_" + g + "'></div>"
 
-    var line_w = w-label_w+10;
+    var line_w = w-label_w;
     var div_group_timeline = document.createElement("div");
     div_group_timeline.style="display:inline-block; position: relative; padding:0; width:"+line_w+"px; height: "+group_h+"px;";
 

@@ -1,5 +1,6 @@
 body {
 	padding: 20px;
+	/* background-color: #333; */
 }
 
 .timeline-x-axis-grid,
@@ -21,15 +22,17 @@ body {
 #clusterinfo {
 	padding: 0;
 	overflow-y: scroll;
+	background-color: #fff;
 }
 
 #dropdown_Y {
 	position: absolute;
-	margin-left: -75px;
+	margin-left: -65px;
 	z-index: 4;
 }
 #dropdown_Y_scale {
 	position: absolute;
+	margin-left: 10px;
 	z-index: 5;
 }
 .rotate {
@@ -41,6 +44,7 @@ body {
 #dropdown_X,
 #dropdown_X_scale {
 	display:inline-block;
+	margin: 10px 0;
 }
 #dropdown_X_scale > button,
 #dropdown_Y_scale > button {
@@ -92,7 +96,7 @@ body {
 	background-color: #bbb;
 	border: 1px solid #000;
 	height: 60px;
-	margin: 5px 5px 0 35px;
+	margin: 0 0 0 40px;
 	padding: 5px 10px;
 	font-size: 16px;
 }
@@ -100,8 +104,7 @@ body {
 .custom-switch-play {
 	position: absolute;
 	z-index: 30;
-	margin-top: 5px;
-	left: 15px;
+	left: 25px;
 	width: 60px;
 	height: 60px;
 	background: #007bff;
@@ -139,7 +142,7 @@ body {
 	top: 0px;
 	left: 15px;
 	padding-left: 83px;
-	padding-right: 17px;
+	padding-right: 27px;
 	height: 20px;
 	background: #bbb;
 	border-top: 1px solid black;
@@ -164,13 +167,13 @@ body {
 	position: relative;
 }
 .timeline-legend {
-	z-index: 50;
+	z-index: 9;
 	top: 20px;
 	background: #bbb;
 	border-bottom: 1px solid #000;
 }
 .timeline-control {
-	z-index: 50;
+	z-index: 9;
 	top: 20px;
 	background: #bbb;
 	border-bottom: 1px solid #000;

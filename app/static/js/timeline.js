@@ -302,7 +302,7 @@ class TimeLine {
       .attr("class", "time-slice")
       .attr("id", [y_start, y_end, gindex].join("-"))
       .attr("x", left+2)
-      .attr("y", chartExpand?15+top+this.slice_h*gindex:15+top)
+      .attr("y", chartExpand?12+top+this.slice_h*gindex:12+top)
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
       .text(name);
@@ -320,7 +320,7 @@ class TimeLine {
         .attr("class", "time-slice")
         .attr("id", [y_start, y_end, gindex].join("-"))
         .attr("x", left+2)
-        .attr("y", chartExpand?12+15+top+this.slice_h*gindex:12+15+top)
+        .attr("y", chartExpand?24+top+this.slice_h*gindex:24+top)
         .attr("data-s-time", f_start)
         .attr("data-e-time", f_end)
         .style("cursor", "pointer")
@@ -331,6 +331,21 @@ class TimeLine {
         if (d.attr("edit") == "on") hideOptions(frame_id);
         else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
       });
+      // var tframe_text_3 = this.chart_g.append("text")
+      //   .attr("class", "time-slice")
+      //   .attr("id", [y_start, y_end, gindex].join("-"))
+      //   .attr("x", left+2)
+      //   .attr("y", chartExpand?36+top+this.slice_h*gindex:36+top)
+      //   .attr("data-s-time", f_start)
+      //   .attr("data-e-time", f_end)
+      //   .style("cursor", "pointer")
+      //   .text([y_start, y_end].join("-"));
+      // timeLabels.push(tframe_text_3);
+      // tframe_text_3.on("click", function() {
+      //   var d = $("rect#"+frame_id+".time-slice");
+      //   if (d.attr("edit") == "on") hideOptions(frame_id);
+      //   else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+      // });
     }
   }
 
