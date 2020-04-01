@@ -33,7 +33,7 @@ options = {
 }
 
 c_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":-1}
-c_group_inv = {0: "the world", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
+c_group_inv = {0: "The world", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
 K = len(c_group_inv)
 
 values = None

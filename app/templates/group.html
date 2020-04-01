@@ -33,6 +33,7 @@
       </div>
     </div>
     <div class="col-md-6" style="padding: 0 0 0 60px;">
+      <div class="chart-background"></div>
       <div id="myChart"></div>
       <div align="center">
         <div id="dropdown_X" class="dropdown">
@@ -139,6 +140,8 @@ var chart = new ScatterPlot("myChart", w, h-caption_h);
 for (var k in data_options) {
   params[k] = data_options[k].id;
 }
+document.getElementsByClassName("chart-background")[0].style.width = w;
+document.getElementsByClassName("chart-background")[0].style.height = h-caption_h;
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
 document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-45;

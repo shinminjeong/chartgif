@@ -66,7 +66,7 @@ class LineChart {
         // .range([ this.height, 0 ]);
 
       var axis_name = data_options[axis.toLowerCase()]["id"];
-      var name_len = axis_name.length*4.5;
+      var name_len = (2+axis_name.length)*4;
       // console.log("name_len", name_len)
       var y_min = data[axis][0].value;
       // var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-22*(1-i));
@@ -95,15 +95,16 @@ class LineChart {
         .attr("stroke", axisColors[i])
         .attr("stroke-width", 1.5)
       path_svg.append("text")
-        .attr("x", line_xscale(minYear)-20)
+        .attr("x", line_xscale(minYear)-12)
         .attr("y", y_pos+2)
         .text(data_options[axis.toLowerCase()]["id"])
         .attr("class", this.div_id)
         .attr("axis", axis)
         .attr("fill", "#fff")
-        .attr("font-family", "Menlo")
+        .attr("font-family", "Helvetica Neue")
         .attr("font-size", 10)
-        .attr("transform", "scale(0.7, 1)")
+        .attr("textLength", name_len)
+        .attr("lengthAdjust", "spacing")
         .attr("text-anchor", "end")
         .on("mouseover", mouseOverPaths)
         .on("mouseout", mouseOutPaths)

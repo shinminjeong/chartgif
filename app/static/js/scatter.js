@@ -496,7 +496,7 @@ class ScatterPlot {
           .attr("class", "text")
           .text(d => d)
           .attr("dx", function(d) {
-            if (d != undefined) return -5.5*d.length;
+            if (d != undefined) return -5.8*d.length;
           })
           .attr("dy", 12);
 
@@ -512,7 +512,7 @@ class ScatterPlot {
 
   ticked() {
     hull_labels
-      .attr("x", function (d) { return Math.min(w-50, Math.max(100, d.x)); })
+      .attr("x", function (d) { return Math.min(w-50, Math.max(130, d.x)); })
       .attr("y", function (d) { return Math.max(30, Math.min(h-150, d.y)); })
   }
 }
@@ -584,8 +584,10 @@ function convexHulls(nodes, index, offset, pre) {
         items: hulls[i].length,
         x: hulls[i][0][0],
         y: hulls[i][0][1],
-        avg_x: arrAvg(xs[i]),
-        avg_y: arrAvg(ys[i]),
+        // avg_x: arrAvg(xs[i]),
+        // avg_y: arrAvg(ys[i]),
+        avg_x: (Math.max(...xs[i])+Math.min(...xs[i]))/2,
+        avg_y: (Math.max(...ys[i])+Math.min(...ys[i]))/2,
         path: d3.polygonHull(hulls[i]),
         pre_x: phulls[i][0][0],
         pre_y: phulls[i][0][1],

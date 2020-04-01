@@ -1,5 +1,6 @@
 body {
 	padding: 20px;
+	font-family: "Helvetica Neue";
 	/* background-color: #333; */
 }
 
@@ -17,6 +18,12 @@ body {
 .line-x-axis > path,
 .line-x-axis > g > line {
 	stroke: none;
+}
+
+.chart-background {
+	position:absolute;
+	z-index: -10;
+	background-color: white;
 }
 
 #clusterinfo {
@@ -74,7 +81,7 @@ body {
 }
 
 .year-background {
-	font-family: monospace;
+	font-family: "Helvetica Neue";
 	font-size: 200px;
 	position: absolute;
   z-index: -30;
