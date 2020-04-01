@@ -45,17 +45,15 @@ def summarizeGroup(info, countries):
     if len(countries) == 1:
         return countries[0]
 
-    desc = ""
+    desc = []
     sub_regions = [info[c]["sub"] for c in countries]
     region_counter = Counter(sub_regions)
-    if len(region_counter) == 1:
-        desc = region_counter.most_common(1)[0][0]
-    else:
-        for c in region_counter.most_common(3):
-            if (c[1]/len(sub_regions) > 0.1):
-                desc += "{}({}%); ".format(c[0], int(100*c[1]/len(sub_regions)))
+    for c in region_counter.most_common(3):
+        if (c[1]/len(sub_regions) > 0.1):
+            desc.append(format(c[0]))
+            # desc += "{}({}%); ".format(c[0], int(100*c[1]/len(sub_regions)))
     # print(desc)
-    return desc
+    return ";".join(desc)
 
 def cap_mostSpread(y_s, y_e, groups, g, axes, pattern, allgroup):
     return "In {}, differences between the countries of the world was wider than ever.".format(y_s)
