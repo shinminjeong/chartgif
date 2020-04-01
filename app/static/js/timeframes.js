@@ -49,6 +49,8 @@ class TimeFrames {
             "start_time": head_y,
             "end_time": end_t,
             "groups": Array.from(new Set(groups)).sort(),
+            // "prologue":
+            // "epilogue":
             "reason": reasons
           }
           this.outerbound[head_y] = bound;

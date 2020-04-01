@@ -1,7 +1,7 @@
 var xScale, yScale, radius;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
-var hullOffset = 10;
+var hullOffset = 10, label_spread_x = true;
 var hull_labels, hull_label_force, pre_group;
 
 class ScatterPlot {
@@ -193,6 +193,7 @@ class ScatterPlot {
     this.bubble_trace_g = this.svg.append('g');
     this.bubble_shadow_g = this.svg.append('g');
     this.bubble_g = this.svg.append('g');
+    this.bubble_g_h = this.svg.append('g');
     this.hull_label_g = this.svg.append('g');
   }
 
@@ -328,6 +329,8 @@ class ScatterPlot {
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles);
+
+    pre_group = undefined;
   }
 
   clearFocus() {
@@ -337,6 +340,7 @@ class ScatterPlot {
 
   clear() {
     this.bubble_g.selectAll("*").remove();
+    this.bubble_g_h.selectAll("*").remove();
     this.bubble_shadow_g.selectAll("*").remove();
     this.bubble_trace_g.selectAll("*").remove();
     this.hull_g.selectAll("path.hull").remove();
@@ -346,7 +350,8 @@ class ScatterPlot {
   updateFocus(time, swtvalues, innergrp, delay) {
     console.log("updateFocus", swtvalues, time, pre_group == JSON.stringify(swtvalues))
     this.bubble_g.selectAll("*").remove();
-    this.trace_path_g.selectAll("circle.tbubble").remove();
+    this.bubble_g_h.selectAll("*").remove();
+    // this.trace_path_g.selectAll("circle.tbubble").remove();
 
     var data = this.data[time];
     var flag_world = swtvalues["groups"][0];
@@ -390,7 +395,7 @@ class ScatterPlot {
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', 'black')
         .style('stroke-width', 0.5)
-        .style('opacity', 0.2)
+        // .style('opacity', 0.2)
         .style('fill', d => gcolor(d.group))
         .style('visibility', function(d) {
           if (swtvalues["groups"][d.group]) return 'visible';
@@ -405,19 +410,33 @@ class ScatterPlot {
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', 'black')
+        .style('stroke-width', 0)
+        .style('fill', "#ddd")
+        .style('opacity', 0.5)
+        .style('display', function(d) {
+          if (swtvalues["groups"][d.group]) return 'none';
+          else return 'inline';
+        })
+      .transition()
+        .duration(delay)
+        .attr("cx", function(d){return xScale(d.x);})
+        .attr("cy", function(d){ return yScale(d.y); })
+        .attr('r', function(d){ return radius(d.population)*1.3+1; })
+
+    var moving_bubble_h = this.bubble_g_h.selectAll('.bubble')
+        .data(data)
+      .enter().append('circle')
+        .attr('class', function(d){ return 'bubble g'+d.group; })
+        .attr('cx', function(d){return xScale(d.pre_x);})
+        .attr('cy', function(d){ return yScale(d.pre_y); })
+        .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
+        .style('stroke', 'black')
         .style('stroke-width', 0.5)
-        .style('fill', function(d){
-          if (swtvalues["groups"][d.group]) return gcolor(d.group);
-          else return "#ddd";
-        })
-        .style('opacity', function(d){
-          if (swtvalues["groups"][d.group]) return 1;
-          else return 0.3;
-        })
-        .style('visibility', function(d) {
-          return 'visible';
-          // if (swtvalues["groups"][d.group]) return 'visible';
-          // else return 'hidden';
+        .style('fill', d => gcolor(d.group))
+        .style('opacity', 1)
+        .style('display', function(d) {
+          if (swtvalues["groups"][d.group]) return 'inline';
+          else return 'none';
         })
       .transition()
         .duration(delay)
@@ -445,8 +464,8 @@ class ScatterPlot {
         .attr("class", "hull")
         .attr("id", function(d) { return d.group; })
         .attr("d", drawPreCluster)
-        .style("opacity", 0.5)
-        .style("stroke", "#000")
+        .style("opacity", 0.4)
+        // .style("stroke", "#000")
         .style("fill", function(d) { return "#bbb"; })
         .style('visibility', function(d) {
           if (d.group >= 0 && d.items < 1000) return 'visible';
@@ -458,19 +477,16 @@ class ScatterPlot {
 
     // update hull labels for a new group
     if (pre_group != JSON.stringify(swtvalues)) {
-
       this.hull_label_g.selectAll("text.hull-label").remove();
       hull_labels = this.hull_label_g.selectAll('.hull-label')
           .data(dataCvxHulls)
         .enter().append('text')
           .attr('id', d => d.group)
           .attr('class', function(d){ return 'hull-label wrap g'+d.group; })
-          // .attr('x', d => d.pre_x)
-          // .attr('y', d => d.pre_y)
-          .attr('font-size', 10)
+          .attr('font-size', 12)
           .attr('text-anchor', 'start')
           .style('visibility', function(d) {
-            if (d.group >= 0 && d.items < 1000) return 'visible';
+            if (d.group >= 0) return 'visible';
             else return 'hidden';
           })
 
@@ -479,18 +495,15 @@ class ScatterPlot {
         .enter().append("tspan")
           .attr("class", "text")
           .text(d => d)
-          .attr("dx", d => -5*d.length)
+          .attr("dx", function(d) {
+            if (d != undefined) return -5.5*d.length;
+          })
           .attr("dy", 12);
-
-      // this.hull_labels.transition()
-      //   .duration(delay)
-      //   .attr('x', d => d.x)
-      //   .attr('y', d => d.y)
 
       hull_label_force = d3.forceSimulation(dataCvxHulls).alpha(0.1)
         .force("center", d3.forceCenter(dataCvxHulls[0].avg_x, dataCvxHulls[0].avg_y))
         .force('collide', d3.forceCollide().radius(50))
-        .force('charge', d3.forceManyBody().strength(-30).distanceMin(30).distanceMax(300))
+        .force('charge', d3.forceManyBody().strength(-300).distanceMin(50).distanceMax(300))
         .on("tick", this.ticked)
     }
 
@@ -499,8 +512,8 @@ class ScatterPlot {
 
   ticked() {
     hull_labels
-      .attr("x", function (d) { return Math.min(w-30, Math.max(200, d.x)); })
-      .attr("y", function (d) { return Math.max(30, Math.min(h-120, d.y)); })
+      .attr("x", function (d) { return Math.min(w-50, Math.max(100, d.x)); })
+      .attr("y", function (d) { return Math.max(30, Math.min(h-150, d.y)); })
   }
 }
 
