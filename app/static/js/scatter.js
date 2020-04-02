@@ -7,7 +7,7 @@ var hull_labels, hull_label_force, pre_group;
 class ScatterPlot {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 5, bottom: 20, left:25};
+    this.margin = {top: 10, right: 10, bottom: 25, left:30};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
@@ -393,9 +393,9 @@ class ScatterPlot {
         .attr('cx', function(d){return xScale(d.pre_x);})
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
-        .style('stroke', 'black')
-        .style('stroke-width', 0.5)
-        // .style('opacity', 0.2)
+        // .style('stroke', 'black')
+        // .style('stroke-width', 0.5)
+        .style('opacity', 0.2)
         .style('fill', d => gcolor(d.group))
         .style('visibility', function(d) {
           if (swtvalues["groups"][d.group]) return 'visible';

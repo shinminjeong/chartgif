@@ -33,7 +33,7 @@ class LineChart {
         .tickFormat(d3.format("d"))
       );
     svg.append('g')
-      .attr("class", "grid")
+      .attr("class", "line-grid")
       .call(d3.axisBottom(line_xscale)
         .tickSize(this.height)
         .tickFormat("")
@@ -53,7 +53,7 @@ class LineChart {
     var area_svg = svg.append('g');
     var path_svg = svg.append('g');
 
-    var axisColors = ["#000", "#444", "#888"];
+    var axisColors = ["#888", "#888", "#888"];
     var y_scale = {};
     var names = this.div_id.split("_");
 
@@ -131,7 +131,8 @@ class LineChart {
         .attr("type", "path")
         .attr("axis", axis)
         .attr("fill", "transparent")
-        .attr("stroke", axisColors[i])
+        // .attr("stroke", axisColors[i])
+        .attr("stroke", "#f8f9fa")
         .attr("stroke-width", 1.5)
         .attr("d", d3.line()
           .x(function(d) { return line_xscale(d.time) })
