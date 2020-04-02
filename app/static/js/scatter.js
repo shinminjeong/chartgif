@@ -484,6 +484,11 @@ class ScatterPlot {
           .attr('id', d => d.group)
           .attr('class', function(d){ return 'hull-label wrap g'+d.group; })
           .attr('font-size', 12)
+          .attr('paint-order', 'stroke')
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 1)
+          .attr('stroke-linecap', "butt")
+          .attr('stroke-linejoin', "miter")
           .attr('text-anchor', 'start')
           .style('visibility', function(d) {
             if (d.group >= 0) return 'visible';
@@ -501,7 +506,8 @@ class ScatterPlot {
           .attr("dy", 12);
 
       hull_label_force = d3.forceSimulation(dataCvxHulls).alpha(0.1)
-        .force("center", d3.forceCenter(dataCvxHulls[0].avg_x, dataCvxHulls[0].avg_y))
+        // .force("center", d3.forceCenter(dataCvxHulls[0].avg_x, dataCvxHulls[0].avg_y))
+        .force("center", d3.forceCenter(this.width/2, this.height/2))
         .force('collide', d3.forceCollide().radius(50))
         .force('charge', d3.forceManyBody().strength(-300).distanceMin(50).distanceMax(300))
         .on("tick", this.ticked)

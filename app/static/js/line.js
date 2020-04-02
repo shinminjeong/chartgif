@@ -1,5 +1,6 @@
 var line_xscale;
 var overlap_offset = 0;
+var line_indicators = [];
 class LineChart {
 
   constructor(div_id, w, h, axis_h) {
@@ -53,7 +54,7 @@ class LineChart {
     var area_svg = svg.append('g');
     var path_svg = svg.append('g');
 
-    var axisColors = ["#000", "#444", "#888"];
+    var axisColors = ["#444", "#444", "#444"];
     var y_scale = {};
     var names = this.div_id.split("_");
 
@@ -106,6 +107,7 @@ class LineChart {
         .attr("textLength", name_len)
         .attr("lengthAdjust", "spacing")
         .attr("text-anchor", "end")
+        .attr("cursor", "pointer")
         .on("mouseover", mouseOverPaths)
         .on("mouseout", mouseOutPaths)
 
@@ -139,17 +141,34 @@ class LineChart {
         )
         .on("mouseover", mouseOverPaths)
         .on("mouseout", mouseOutPaths)
+
     }
 
     var canvas = {};
     for (var a = 0; a < 3; a++) {
-      canvas[selectedAxis[a]] = document.getElementById(this.div_id+"_"+selectedAxis[a]);
-      canvas[selectedAxis[a]].onmousemove = function(e) { draw_rect_move(e, this); };
+      var line_id = this.div_id+"_"+selectedAxis[a];
+      canvas[selectedAxis[a]] = document.getElementById(line_id);
+      line_indicators[line_id] = document.createElement("div");
+      line_indicators[line_id].className = "line-indicator";
+      canvas[selectedAxis[a]].appendChild(line_indicators[line_id]);
+
+      canvas[selectedAxis[a]].onmousemove = function(e) {
+        if (line_indicators[e.target.id] != undefined) {
+          setMousePosition(e);
+          var m_pos = mouse.x-e.target.getBoundingClientRect().x;
+          var c_year = Math.floor(line_xscale.invert(m_pos));
+          line_indicators[e.target.id].style.left = m_pos;
+          line_indicators[e.target.id].style.display = "inline-block";
+          line_indicators[e.target.id].innerText = c_year;
+        }
+        draw_rect_move(e, this);
+      };
       canvas[selectedAxis[a]].onmouseover = function(e) {
         this.style.backgroundColor = "rgba(128, 128, 128, 0.2)";
       }
       canvas[selectedAxis[a]].onmouseleave = function(e) {
         this.style.backgroundColor = "transparent";
+        line_indicators[e.target.id].style.display = "none";
       }
       canvas[selectedAxis[a]].onclick = function(e) { draw_rect_click (e, this); };
     }
@@ -213,8 +232,6 @@ function draw_rect_click(e, canvas) {
     left = +element.style.left.split("px")[0];
     width = +element.style.width.split("px")[0];
     element.innerHTML = reason;
-    // console.log("canvas - left", left_offset, left, line_xscale.invert(left));
-    // console.log("canvas - right", left+width, line_xscale.invert(left+width));
     startYear = Math.floor(line_xscale.invert(left));
     endYear = Math.floor(line_xscale.invert(left+width));
     // console.log("selectedYears", startYear, endYear);
@@ -228,13 +245,14 @@ function draw_rect_click(e, canvas) {
     mouse.startY = mouse.y;
     element = document.createElement('div');
     element.className = 'select_rectangle select_rectangle_'+reason;
-    element.style.left = mouse.x - rect.x + 'px';
+    element.style.left = mouse.x-rect.x + 'px';
     element.style.top = 0;
     element.style.height = "100%";
     // element.style.top = mouse.y - rect.y + 'px';
-    console.log("begun.", element);
+    startYear = Math.floor(line_xscale.invert(mouse.x-rect.x));
+    // console.log("begun.", element, startYear);
     canvas.appendChild(element)
-    canvas.style.cursor = "crosshair";
+    // canvas.style.cursor = "crosshair";
   }
 }
 function setMousePosition(e) {
