@@ -4,7 +4,7 @@ var line_indicators = [];
 class LineChart {
 
   constructor(div_id, w, h, axis_h) {
-    this.margin = {top: 5, right: 0, bottom: 25, left:left_offset};
+    this.margin = {top: 5, right: 0, bottom: 20, left:left_offset};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
@@ -19,7 +19,7 @@ class LineChart {
     var svg = d3.select("#"+this.div_id)
       .append('svg')
       .attr('width', this.width+this.margin.left+this.margin.right)
-      .attr('height', this.height+30)
+      .attr('height', this.height+this.margin.top+this.margin.bottom)
     .append('g')
       .attr('transform', 'translate('+this.margin.left+',0)');
 
@@ -63,7 +63,7 @@ class LineChart {
       // console.log([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })]);
       y_scale[axis] = d3.scaleLinear()
         .domain([d3.min(data[axis], function(d) { return d.min; }), d3.max(data[axis], function(d) { return d.max; })])
-        .range([ (i+1)*this.height/3.0+overlap_offset, i*this.height/3.0-overlap_offset ]);
+        .range([ (i+1)*(this.height)/3.0+overlap_offset, i*(this.height)/3.0-overlap_offset ]);
         // .range([ this.height, 0 ]);
 
       var axis_name = data_options[axis.toLowerCase()]["id"];
