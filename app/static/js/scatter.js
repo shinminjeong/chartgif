@@ -393,9 +393,9 @@ class ScatterPlot {
         .attr('cx', function(d){return xScale(d.pre_x);})
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
-        .style('stroke', 'black')
-        .style('stroke-width', 0.5)
-        // .style('opacity', 0.2)
+        // .style('stroke', 'black')
+        // .style('stroke-width', 0.5)
+        .style('opacity', 0.2)
         .style('fill', d => gcolor(d.group))
         .style('visibility', function(d) {
           if (swtvalues["groups"][d.group]) return 'visible';
