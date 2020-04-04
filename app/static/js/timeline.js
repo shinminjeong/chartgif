@@ -330,36 +330,40 @@ class TimeLine {
     }
 
     if (pattern != undefined) {
-      var tframe_text_2 = this.chart_g.append("text")
-        .attr("class", "time-slice")
-        .attr("id", frame_id)
-        .attr("x", left+2)
-        .attr("y", chartExpand?24+top+this.slice_h*gid:24+top)
-        .attr("data-s-time", f_start)
-        .attr("data-e-time", f_end)
-        .style("cursor", "pointer")
-        .text(pattern);
-      timeLabels.push(tframe_text_2);
-      tframe_text_2.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
-      });
-      // var tframe_text_3 = this.chart_g.append("text")
+      // var tframe_text_2 = this.chart_g.append("text")
       //   .attr("class", "time-slice")
       //   .attr("id", frame_id)
       //   .attr("x", left+2)
-      //   .attr("y", chartExpand?36+top+this.slice_h*gid:36+top)
+      //   .attr("y", chartExpand?24+top+this.slice_h*gid:24+top)
       //   .attr("data-s-time", f_start)
       //   .attr("data-e-time", f_end)
       //   .style("cursor", "pointer")
-      //   .text([y_start, y_end].join("-"));
-      // timeLabels.push(tframe_text_3);
-      // tframe_text_3.on("click", function() {
+      //   .text(pattern);
+      // timeLabels.push(tframe_text_2);
+      // tframe_text_2.on("click", function() {
       //   var d = $("rect#"+frame_id+".time-slice");
       //   if (d.attr("edit") == "on") hideOptions(frame_id);
       //   else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
       // });
+      // console.log(pattern);
+      var tframe_text_3 = this.chart_g.append("image")
+        .attr("class", "time-slice")
+        .attr("id", frame_id)
+        .attr("href", "static/images/icon_"+pattern+".png")
+        .attr("x", left+2)
+        .attr("y", chartExpand?20+top+this.slice_h*gid:20+top)
+        .attr("width", 12)
+        .attr("height", 12)
+        .attr("data-s-time", f_start)
+        .attr("data-e-time", f_end)
+        .style("cursor", "pointer")
+        .text([y_start, y_end].join("-"));
+      timeLabels.push(tframe_text_3);
+      tframe_text_3.on("click", function() {
+        var d = $("rect#"+frame_id+".time-slice");
+        if (d.attr("edit") == "on") hideOptions(frame_id);
+        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+      });
     }
   }
 

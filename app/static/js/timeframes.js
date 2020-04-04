@@ -77,7 +77,6 @@ class TimeFrames {
       "axis": ["X", "Y", "S"],
       "name": "P",
       "reason": "pro",
-      "pattern": "",
     }
     return id;
   }
@@ -96,7 +95,6 @@ class TimeFrames {
       "axis": ["X", "Y", "S"],
       "name": "E",
       "reason": "pro",
-      "pattern": "pro",
     }
     return id;
   }
