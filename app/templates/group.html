@@ -187,7 +187,7 @@ function drawFrame(yrange, group, axes, reason, pattern) {
 }
 
 function expandChart(flag_expand) {
-  console.log("expandChart", timeline.s_height, timeline.l_height);
+  console.log("expandChart", curFrame, timeline.s_height, timeline.l_height);
   if (flag_expand) newheight = timeline.l_height;
   else newheight = timeline.s_height;
   document.getElementsByClassName("timeline-background")[0].style.height = newheight;
