@@ -3,6 +3,7 @@ var continent = ["Asia", "Europe", "North America", "South America", "Africa", "
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
 var hullOffset = 10, label_spread_x = true;
 var hull_labels, hull_label_force, pre_group;
+var savedCaptions;
 
 class ScatterPlot {
 
@@ -12,6 +13,7 @@ class ScatterPlot {
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
     this.bubble = {};
+    savedCaptions = {};
   }
 
   initChart(data2d, data_options, population, continent, group) {
@@ -194,6 +196,7 @@ class ScatterPlot {
     this.bubble_shadow_g = this.svg.append('g');
     this.bubble_g = this.svg.append('g');
     this.bubble_g_h = this.svg.append('g');
+    this.bubble_label_g = this.svg.append('g');
     this.hull_label_g = this.svg.append('g');
   }
 
@@ -317,7 +320,7 @@ class ScatterPlot {
         .attr("cy", function(d){ return yScale(d.y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1;; })
 
-    this.bubble_g.selectAll('.bubble-label')
+    this.bubble_label_g.selectAll('.bubble-label')
         .data(data)
       .enter().append('text')
         .attr('id', function(d){return d.id;})
@@ -341,6 +344,7 @@ class ScatterPlot {
   clear() {
     this.bubble_g.selectAll("*").remove();
     this.bubble_g_h.selectAll("*").remove();
+    this.bubble_label_g.selectAll("*").remove();
     this.bubble_shadow_g.selectAll("*").remove();
     this.bubble_trace_g.selectAll("*").remove();
     this.hull_g.selectAll("path.hull").remove();
@@ -438,13 +442,16 @@ class ScatterPlot {
           if (swtvalues["groups"][d.group]) return 'inline';
           else return 'none';
         })
+        .on("mouseover", mouseOverBubbles)
+        .on("click", clickBubbles)
+        .on("mouseout", mouseOutBubbles)
       .transition()
         .duration(delay)
         .attr("cx", function(d){return xScale(d.x);})
         .attr("cy", function(d){ return yScale(d.y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1; })
 
-    this.bubble_g.selectAll('.bubble-label')
+    this.bubble_label_g.selectAll('.bubble-label')
         .data(data)
       .enter().append('text')
         .attr('id', function(d){return d.id;})
@@ -481,8 +488,17 @@ class ScatterPlot {
       hull_labels = this.hull_label_g.selectAll('.hull-label')
           .data(dataCvxHulls)
         .enter().append('text')
-          .attr('id', d => d.group)
+          .attr('id', d => d.id)
           .attr('class', function(d){ return 'hull-label wrap g'+d.group; })
+          .attr("x", function (d) {
+            console.log("savedCaptions", d.id, savedCaptions[d.id])
+            if (savedCaptions[d.id] == undefined) return Math.min(w-50, Math.max(130, d.x));
+            else return savedCaptions[d.id].x;
+          })
+          .attr("y", function (d) {
+            if (savedCaptions[d.id] == undefined) return Math.max(30, Math.min(h-150, d.y));
+            else return savedCaptions[d.id].y;
+          })
           .attr('font-size', 12)
           .attr('paint-order', 'stroke')
           .attr('stroke', '#fff')
@@ -492,8 +508,11 @@ class ScatterPlot {
           .attr('text-anchor', 'start')
           .style('visibility', function(d) {
             if (d.group >= 0) return 'visible';
-            else return 'hidden';
-          })
+            else return 'hidden'; })
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
 
       hull_labels.selectAll("text.hull-label")
         .data(d => d.desc.split(";"))
@@ -505,22 +524,48 @@ class ScatterPlot {
           })
           .attr("dy", 12);
 
-      hull_label_force = d3.forceSimulation(dataCvxHulls).alpha(0.1)
-        // .force("center", d3.forceCenter(dataCvxHulls[0].avg_x, dataCvxHulls[0].avg_y))
-        .force("center", d3.forceCenter(this.width/2, this.height/2))
-        .force('collide', d3.forceCollide().radius(50))
-        .force('charge', d3.forceManyBody().strength(-300).distanceMin(50).distanceMax(300))
-        .on("tick", this.ticked)
+      // hull_label_force = d3.forceSimulation(dataCvxHulls).alpha(0.1)
+      //   // .force("center", d3.forceCenter(dataCvxHulls[0].avg_x, dataCvxHulls[0].avg_y))
+      //   .force("center", d3.forceCenter(this.width/2, this.height/2))
+      //   .force('collide', d3.forceCollide().radius(50))
+      //   .force('charge', d3.forceManyBody().strength(-300).distanceMin(50).distanceMax(300))
+      //   .on("tick", this.ticked)
     }
 
     pre_group = JSON.stringify(swtvalues);
   }
 
-  ticked() {
-    hull_labels
-      .attr("x", function (d) { return Math.min(w-50, Math.max(130, d.x)); })
-      .attr("y", function (d) { return Math.max(30, Math.min(h-150, d.y)); })
+  // ticked() {
+  //   hull_labels
+  //     .attr("x", function (d) { return Math.min(w-50, Math.max(130, d.x)); })
+  //     .attr("y", function (d) { return Math.max(30, Math.min(h-150, d.y)); })
+  // }
+}
+
+function dragstarted(d) {
+  var point = d3.mouse(this);
+  var label = $("text#"+d.id+".hull-label");
+  // console.log("dragstarted", label, point)
+  label.attr("x", point[0])
+  label.attr("y", point[1])
+}
+
+function dragged(d) {
+  var point = d3.mouse(this);
+  var label = $("text#"+d.id+".hull-label");
+  // console.log("dragged", label, point)
+  label.attr("x", point[0])
+  label.attr("y", point[1])
+}
+
+function dragended(d) {
+  var point = d3.mouse(this);
+  console.log("dragended", d.id, point)
+  savedCaptions[d.id] = {
+    "x": point[0],
+    "y": point[1]
   }
+  console.log(savedCaptions)
 }
 
 function getTickValues(r, logflag) {
@@ -558,9 +603,9 @@ function convexHulls(nodes, index, offset, pre) {
   // create point sets
   for (var k=0; k<nodes.length; ++k) {
     var n = nodes[k];
-    if (n.size) continue;
-    var i = index(n),
-        l = hulls[i] || (hulls[i] = []),
+    var i = index(n);
+    if (n.size || i == -1) continue;
+    var l = hulls[i] || (hulls[i] = []),
         p = phulls[i] || (phulls[i] = []),
         x_arr = xs[i] || (xs[i] = []),
         y_arr = ys[i] || (ys[i] = []);
@@ -583,8 +628,11 @@ function convexHulls(nodes, index, offset, pre) {
   // create convex hulls
   var hullset = [];
   for (i in hulls) {
+    var hid = (desc[i].split(" ").join("-")).split(";").join("-")+"-"+hulls[i].length;
+    console.log("hid", hid, i)
     if (pre) {
       hullset.push({
+        id: hid,
         group: i,
         desc: desc[i],
         items: hulls[i].length,
@@ -601,6 +649,7 @@ function convexHulls(nodes, index, offset, pre) {
       });
     } else {
       hullset.push({
+        id: hid,
         group: i,
         desc: desc[i],
         items: hulls[i].length,

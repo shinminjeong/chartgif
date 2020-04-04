@@ -202,7 +202,7 @@ class TimeFrames {
       var arr = [outerb.prologue, ...Object.keys(outerb.reason), outerb.epilogue];
       for (var a in arr) {
         var r = arr[a];
-        console.log(r, this.framemap[r])
+        // console.log(r, this.framemap[r])
         var s_idx = this.timeseries.indexOf(this.framemap[r].start_time),
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
             runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));

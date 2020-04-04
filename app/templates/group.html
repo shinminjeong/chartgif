@@ -287,6 +287,7 @@ function updateSlider() {
   slider.min = 0;
   slider.max = testtimeframes.getTimeFrameLength();
   slider.value = 0;
+  changeSlider($("input[type='range']"), curFrame);
 }
 
 function removeFrame(id) {
@@ -416,7 +417,7 @@ $("input[type='range']").change(function() {
 // Fake a change to position bubble at page load
 .trigger('change');
 
-function changeSlider(el, curFrame, play) {
+function changeSlider(el, curFrame) {
   var length_timeFrames = testtimeframes.getTimeFrameLength();
   var timeFrames = testtimeframes.getTimeFrames();
   if (curFrame >= length_timeFrames) return;
@@ -435,9 +436,7 @@ function changeSlider(el, curFrame, play) {
       "color": "#000"
     })
     .text(curYear);
-  if (play) {
-    el.val(curFrame);
-  }
+  el.val(curFrame);
 
   if (curYear == "init") return;
 
