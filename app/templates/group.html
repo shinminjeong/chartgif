@@ -444,12 +444,18 @@ function changeSlider(el, curFrame, play) {
   var frameContent = testtimeframes.getFrameContent(curFrame);
   var focus;
   if (frameContent != undefined) {
-    focus = true;
     var names = frameContent.split("-");
-    console.log("~~ switch to the group:", names[2])
-    if (names[2] == "p" || names[2] == "e" || names[2] == 0)
+    // console.log("~~ switch to the group:", names[2])
+    if (names[2] == "p" || names[2] == "e") {
+      focus = false;
       changeSelectedConts([0,1,2,3,4]);
-    else changeSelectedConts([parseInt(names[2])]);
+    } else if (names[2] == 0) {
+      focus = true;
+      changeSelectedConts([0,1,2,3,4]);
+    } else {
+      focus = true;
+      changeSelectedConts([parseInt(names[2])]);
+    }
   } else {
     focus = false;
     changeSelectedConts([0,1,2,3,4]);
