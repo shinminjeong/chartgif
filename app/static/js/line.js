@@ -54,7 +54,7 @@ class LineChart {
     var area_svg = svg.append('g');
     var path_svg = svg.append('g');
 
-    var axisColors = ["#444", "#444", "#444"];
+    var axisColors = ["#888", "#888", "#888"];
     var y_scale = {};
     var names = this.div_id.split("_");
 
@@ -67,11 +67,21 @@ class LineChart {
         // .range([ this.height, 0 ]);
 
       var axis_name = data_options[axis.toLowerCase()]["id"];
-      var name_len = (2+axis_name.length)*4;
+      var name_len = 15+axis_name.length*3;
+      // var name_len = 45;
       // console.log("name_len", name_len)
       var y_min = data[axis][0].value;
       // var y_pos = Math.min(y(0.02), y_scale[axis](y_min)-22*(1-i));
       var y_pos = (i+0.5)*this.height/3.0
+      path_svg.append("line")
+        .attr("x1", line_xscale(minYear)-12)
+        .attr("y1", y_pos)
+        .attr("x2", line_xscale(minYear))
+        .attr("y2", y_scale[axis](y_min))
+        .attr("class", this.div_id)
+        .attr("axis", axis)
+        .attr("stroke", axisColors[i])
+        .attr("stroke-width", 1.5)
       path_svg.append("rect")
         .attr("x", function() {
           return line_xscale(minYear)-10-name_len-5;
@@ -83,27 +93,20 @@ class LineChart {
         .attr("ry", 5)
         .attr("class", this.div_id)
         .attr("axis", axis)
-        .style("fill", axisColors[i])
-        .on("mouseover", mouseOverPaths)
-        .on("mouseout", mouseOutPaths)
-      path_svg.append("line")
-        .attr("x1", line_xscale(minYear)-12)
-        .attr("y1", y_pos)
-        .attr("x2", line_xscale(minYear))
-        .attr("y2", y_scale[axis](y_min))
-        .attr("class", this.div_id)
-        .attr("axis", axis)
+        .style("fill", "#fff")
         .attr("stroke", axisColors[i])
         .attr("stroke-width", 1.5)
+        .on("mouseover", mouseOverPaths)
+        .on("mouseout", mouseOutPaths)
       path_svg.append("text")
         .attr("x", line_xscale(minYear)-12)
         .attr("y", y_pos+2)
-        .text(data_options[axis.toLowerCase()]["id"])
+        .text(axis + ":" + data_options[axis.toLowerCase()]["id"])
         .attr("class", this.div_id)
         .attr("axis", axis)
-        .attr("fill", "#fff")
+        .attr("fill", "#000")
         .attr("font-family", "Helvetica Neue")
-        .attr("font-size", 10)
+        .attr("font-size", 9)
         .attr("textLength", name_len)
         .attr("lengthAdjust", "spacing")
         .attr("text-anchor", "end")
