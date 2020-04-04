@@ -234,7 +234,7 @@ function initClusterinfo() {
     // div_group_label.innerHTML += "<div class='group_label'><span id='infoMinMax_"+g+"'></span></div>"
     div_group_label.innerHTML += "<div class='group_trace' id='trace_chart_" + g + "'></div>"
 
-    var line_w = w-label_w;
+    var line_w = w-label_w-10;
     var div_group_timeline = document.createElement("div");
     div_group_timeline.style="display:inline-block; position: relative; padding:0; width:"+line_w+"px; height: "+group_h+"px;";
 
@@ -297,32 +297,6 @@ function removeFrame(id) {
   updateSlider();
 }
 
-//
-// function drawSummaryFrame(yrange, group, axes, reason, included_frames) {
-//   r = [yrange[0], yrange[yrange.length-1]];
-//   for (var i = r[0]; i < r[1]; i++) {
-//     yearmap[i]["group"].push(+group)
-//     if (reason != "sum") yearmap[i]["delay"] = slowdown[reason];
-//     id = [r[0],r[1],group].join("-");
-//     yearmap[i]["reason"][id] = {
-//       "yrange": yrange,
-//       "group": group,
-//       "axis": axes,
-//       "reason": reason,
-//       "pattern": pattern,
-//     }
-//   }
-//   names = [];
-//   for (var i in axes) {
-//     names.push(data_options[axes[i].toLowerCase()]["id"])
-//   }
-//   timeline.addFrame(r, +group, names, reason, pattern, yearmap[r[0]]["delay"]);
-// }
-//
-// initClusterinfo();
-// generateFrames()
-//
-
 var playon = document.querySelectorAll("input#switchPlay");
 playon[0].addEventListener("change", function(e) {
   console.log("playon", e.target.checked, curFrame);
@@ -348,39 +322,6 @@ playon[0].addEventListener("change", function(e) {
     play_timer = undefined;
   }
 });
-
-// function summarizeOuterbound() {
-//   for (var b in outerbound) {
-//     var bound = outerbound[b];
-//     var gid = [bound["head"], bound["tail"], 0].join("-")
-//     // console.log("summarizeOuterbound", gid, $("div#"+gid+".time-slice").length)
-//     if ($("div#"+gid+".time-slice").length == 0) {
-//       var included_frames = [];
-//       if (bound["groups"].includes(0)) {// has group 0
-//         for (var r in bound["reason"]) {
-//           var ids = r.split("-");
-//           if (ids[2] == "0") {
-//             included_frames.push(bound["reason"][r])
-//             $("div#"+r+".time-slice").remove();
-//             $("textarea#"+r+".time-caption").remove();
-//             // remove previous frame
-//             for (var y = ids[0]; y < ids[1]; y++) {
-//               var idx = yearmap[y]["group"].indexOf(parseInt(ids[2]));
-//               yearmap[y]["group"].splice(idx, 1);
-//               delete yearmap[y]["reason"][r];
-//             }
-//           }
-//         }
-//       }
-//       var axes = [];
-//       for (var r in bound["reason"]) {
-//         axes = axes.concat(bound["reason"][r]["axis"])
-//       }
-//       years = Array.from(new Array(bound["tail"]-bound["head"]+1), (x,i) => i + bound["head"])
-//       drawSummaryFrame(years, 0, Array.from(new Set(axes)), "sum", included_frames);
-//     }
-//   }
-// }
 
 function getCaption(bound) {
   $.ajax({
@@ -505,8 +446,9 @@ function changeSlider(el, curFrame, play) {
   if (frameContent != undefined) {
     focus = true;
     var names = frameContent.split("-");
-    // console.log("~~ switch to the group:", names[2])
-    if (names[2] == 0) changeSelectedConts([0,1,2,3,4]);
+    console.log("~~ switch to the group:", names[2])
+    if (names[2] == "p" || names[2] == "e" || names[2] == 0)
+      changeSelectedConts([0,1,2,3,4]);
     else changeSelectedConts([parseInt(names[2])]);
   } else {
     focus = false;

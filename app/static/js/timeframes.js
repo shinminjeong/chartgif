@@ -19,6 +19,7 @@ class TimeFrames {
       "var": 15,
       "spr": 20,
       "user": 10,
+      "sum": 2,
     };
     this.captions = {};
   }
@@ -49,10 +50,10 @@ class TimeFrames {
             "start_time": head_y,
             "end_time": end_t,
             "groups": Array.from(new Set(groups)).sort(),
-            // "prologue":
-            // "epilogue":
             "reason": reasons
           }
+          bound["prologue"] = this.createPrologue(bound);
+          bound["epilogue"] = this.createEpilogue(bound);
           this.outerbound[head_y] = bound;
         }
         head_y = tail_y = -1;
@@ -60,6 +61,44 @@ class TimeFrames {
         reasons = {};
       }
     }
+  }
+
+  createPrologue(bound) {
+    var id = [bound.start_time, bound.end_time, "p"].join("-");
+    var s_t = this.timeseries.indexOf(bound.start_time),
+        e_t = this.timeseries.indexOf(bound.end_time);
+    this.framemap[id] = {
+      "start_time": bound.start_time,
+      "end_time": bound.end_time,
+      "head": 0,
+      "tail": 0,
+      "runningtime": (e_t-s_t+1)*this.default_slowdown["sum"],
+      "group": "p",
+      "axis": ["X", "Y", "S"],
+      "name": "P",
+      "reason": "pro",
+      "pattern": "",
+    }
+    return id;
+  }
+
+  createEpilogue(bound) {
+    var id = [bound.start_time, bound.end_time, "e"].join("-");
+    var s_t = this.timeseries.indexOf(bound.start_time),
+        e_t = this.timeseries.indexOf(bound.end_time);
+    this.framemap[id] = {
+      "start_time": bound.start_time,
+      "end_time": bound.end_time,
+      "head": 0,
+      "tail": 0,
+      "runningtime": (e_t-s_t+1)*this.default_slowdown["sum"],
+      "group": "e",
+      "axis": ["X", "Y", "S"],
+      "name": "E",
+      "reason": "pro",
+      "pattern": "pro",
+    }
+    return id;
   }
 
   getFrameOrder() {
@@ -77,13 +116,31 @@ class TimeFrames {
         continue;
       }
 
-      outerbound.head = runningtime;
+      if (r[0]=="init") {
+        outerbound.head = runningtime;
+      } else {
+        var prol = this.framemap[outerbound.prologue];
+        outerbound.head = prol.head = runningtime;
+        prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
+        runningtime += prol.runningtime;
+        prol.tail = runningtime;
+      }
+
       for (var b in outerbound.reason) {
         this.framemap[b].head = runningtime;
         this.framemap[b].tail = runningtime + this.framemap[b].runningtime;
         runningtime += this.framemap[b].runningtime;
       }
-      outerbound.tail = runningtime;
+      if (r[0]=="init") {
+        outerbound.tail = runningtime;
+      } else {
+        var epil = this.framemap[outerbound.epilogue];
+        epil.head = runningtime;
+        epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
+        runningtime += epil.runningtime;
+        outerbound.tail = epil.tail = runningtime;
+      }
+
       order.push({
         "order": idx++,
         "id": r[0],
@@ -144,7 +201,10 @@ class TimeFrames {
       }
 
       this.framearr.push([outerb.start_time, outerb.end_time]);
-      for (var r in outerb.reason) {
+      var arr = [outerb.prologue, ...Object.keys(outerb.reason), outerb.epilogue];
+      for (var a in arr) {
+        var r = arr[a];
+        console.log(r, this.framemap[r])
         var s_idx = this.timeseries.indexOf(this.framemap[r].start_time),
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
             runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));

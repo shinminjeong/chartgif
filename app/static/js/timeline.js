@@ -72,9 +72,14 @@ class TimeLine {
       var outerbound = forder[f[0]].outerbound;
       console.log("outerbound", outerbound, outerbound.head, outerbound.tail);
       this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
-      for (var r in outerbound.reason) {
+      var oframes = Object.keys(outerbound.reason);
+      if (outerbound.start_time != "Init")
+        oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
+      for (var i in oframes) {
+        var r = oframes[i];
         console.log("fmap", r, fmap[r]);
         this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+        if (fmap[r].group == "p" || fmap[r].group == "e") continue;
         addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason);
       }
       getCaption(outerbound);
@@ -149,7 +154,12 @@ class TimeLine {
       var outerbound = forder[f[0]].outerbound;
       // console.log("outerbound", outerbound);
       this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
-      for (var r in outerbound.reason) {
+
+      var oframes = Object.keys(outerbound.reason);
+      if (outerbound.start_time != "Init")
+        oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
+      for (var i in oframes) {
+        var r = oframes[i];
         // console.log("fmap", r, fmap[r]);
         this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
       }
@@ -277,17 +287,21 @@ class TimeLine {
         left = s+timeScale.bandwidth()/2;
 
     var frame_id = [y_start, y_end, gindex].join("-");
+    var gid = gindex;
+    if (gindex == "p" || gindex == "e")
+      gid = 0;
+
     var tframe = this.chart_g.append("rect")
       .attr("class", "time-slice")
       .attr("id", frame_id)
       .attr("x", left)
-      .attr("y", chartExpand?top+this.slice_h*gindex:top)
+      .attr("y", chartExpand?top+this.slice_h*gid:top)
       .attr("edit", "off")
       .attr("width", e-s)
       .attr("height", this.slice_h)
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
-      .style("fill", gcolor(gindex));
+      .style("fill", gcolor(gid));
 
     if (y_start != "init") {
       tframe.on("click", function() {
@@ -300,9 +314,9 @@ class TimeLine {
 
     var tframe_text = this.chart_g.append("text")
       .attr("class", "time-slice")
-      .attr("id", [y_start, y_end, gindex].join("-"))
+      .attr("id", frame_id)
       .attr("x", left+2)
-      .attr("y", chartExpand?12+top+this.slice_h*gindex:12+top)
+      .attr("y", chartExpand?12+top+this.slice_h*gid:12+top)
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
       .text(name);
@@ -318,9 +332,9 @@ class TimeLine {
     if (pattern != undefined) {
       var tframe_text_2 = this.chart_g.append("text")
         .attr("class", "time-slice")
-        .attr("id", [y_start, y_end, gindex].join("-"))
+        .attr("id", frame_id)
         .attr("x", left+2)
-        .attr("y", chartExpand?24+top+this.slice_h*gindex:24+top)
+        .attr("y", chartExpand?24+top+this.slice_h*gid:24+top)
         .attr("data-s-time", f_start)
         .attr("data-e-time", f_end)
         .style("cursor", "pointer")
@@ -333,9 +347,9 @@ class TimeLine {
       });
       // var tframe_text_3 = this.chart_g.append("text")
       //   .attr("class", "time-slice")
-      //   .attr("id", [y_start, y_end, gindex].join("-"))
+      //   .attr("id", frame_id)
       //   .attr("x", left+2)
-      //   .attr("y", chartExpand?36+top+this.slice_h*gindex:36+top)
+      //   .attr("y", chartExpand?36+top+this.slice_h*gid:36+top)
       //   .attr("data-s-time", f_start)
       //   .attr("data-e-time", f_end)
       //   .style("cursor", "pointer")

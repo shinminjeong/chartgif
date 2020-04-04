@@ -139,9 +139,13 @@ def get_caption(request):
     groupdesc = {}
     caption = {}
 
+    o_prologue = outerbound.get("prologue")
+    o_epilogue = outerbound.get("epilogue")
+
     for id, v in reasons.items():
         # row: selected countries
         g = int(v["group"][0])
+        print(id, g)
         cset = [v["index"] for k, v in kgroups.items() if g == 0 or v["group"] == g] # countries in selected continent
 
         # column: selected years of selected axis
@@ -173,6 +177,9 @@ def get_caption(request):
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")
     # print(groupdesc)
+
+    caption[o_prologue] = "Caption for prologue."
+    caption[o_epilogue] = "Caption for epilogue."
 
     return JsonResponse({
         "head": head_y,
