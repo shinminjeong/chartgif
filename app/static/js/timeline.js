@@ -315,8 +315,8 @@ class TimeLine {
     var tframe_text = this.chart_g.append("text")
       .attr("class", "time-slice")
       .attr("id", frame_id)
-      .attr("x", left+2)
-      .attr("y", chartExpand?12+top+this.slice_h*gid:12+top)
+      .attr("x", left+4)
+      .attr("y", chartExpand?32+top+this.slice_h*gid:32+top)
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
       .text(name);
@@ -328,7 +328,7 @@ class TimeLine {
         else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
       });
     }
-
+    console.log("name", name.length)
     if (pattern != undefined) {
       // var tframe_text_2 = this.chart_g.append("text")
       //   .attr("class", "time-slice")
@@ -350,10 +350,11 @@ class TimeLine {
         .attr("class", "time-slice")
         .attr("id", frame_id)
         .attr("href", "static/images/icon_"+pattern+".png")
-        .attr("x", left+2)
-        .attr("y", chartExpand?20+top+this.slice_h*gid:20+top)
-        .attr("width", 12)
-        .attr("height", 12)
+        .attr("x", left+name.length*12)
+        .attr("y", chartExpand?24+top+this.slice_h*gid:24+top)
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("data-n-length", name.length)
         .attr("data-s-time", f_start)
         .attr("data-e-time", f_end)
         .style("cursor", "pointer")
@@ -466,7 +467,11 @@ function zoom(svg) {
       hideOptions(d.attr("id"));
     })
     timeLabels.forEach(function(d) {
-      d.attr("x", 2+timeScale(d.attr("data-s-time")))
+      if (d.attr("data-n-length") != undefined) {
+        d.attr("x", 12*d.attr("data-n-length")+timeScale(d.attr("data-s-time")))
+      } else {
+        d.attr("x", 4+timeScale(d.attr("data-s-time")))
+      }
     })
     timeCaptions.forEach(function(d) {
       var e = timeScale(d.getAttribute("data-e-time")),
