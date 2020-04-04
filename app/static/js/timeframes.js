@@ -190,10 +190,10 @@ class TimeFrames {
       // add blank frame
       var cur_s = this.timeseries.indexOf(outerb.start_time);
       if (cur_s-last_idx > 1) {
-        // console.log("b~~~",i, this.timeseries[last_idx], this.timeseries[cur_s-1], last_idx, cur_s-1)
-        this.framearr.push([this.timeseries[last_idx], this.timeseries[cur_s-1]]);
+        // console.log("b~~~",i, this.timeseries[last_idx+1], this.timeseries[cur_s-1], last_idx+1, cur_s-1)
+        this.framearr.push([this.timeseries[last_idx+1], this.timeseries[cur_s-1]]);
         i = this.getTimeFrameLength();
-        for (var j=last_idx; j<=cur_s-1; j++) {
+        for (var j=last_idx+1; j<=cur_s-1; j++) {
           this.timeFrames[i++] = this.timeseries[j];
         }
       }
@@ -219,10 +219,10 @@ class TimeFrames {
       last_idx = this.timeseries.indexOf(outerb.end_time);
     }
     // add last blank frame
-    this.framearr.push([this.timeseries[last_idx], this.timeseries[this.timeseries.length-1]]);
+    this.framearr.push([this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1]]);
     i = this.getTimeFrameLength();
-    // console.log("b~~~",i, this.timeseries[last_idx], this.timeseries[this.timeseries.length-1], last_idx, this.timeseries.length-1)
-    for (var j=last_idx; j<=this.timeseries.length-1; j++) {
+    // console.log("b~~~",i, this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1], last_idx, this.timeseries.length-1)
+    for (var j=last_idx+1; j<=this.timeseries.length-1; j++) {
       this.timeFrames[i++] = this.timeseries[j];
     }
     // this.timeFrames[i] = "finish";

@@ -223,6 +223,7 @@ class TimeLine {
     this.tickEveryYear = [];
     this.tickHighlightYears = [];
     for (var b = 1; b < timeframes.length; b++) {
+      console.log("tickEveryYear", timeframes[b])
       if (timeframes[b-1] != timeframes[b]) this.tickEveryYear.push(b);
     }
     for (var b = 0; b < this.h_years.length; b++) {
