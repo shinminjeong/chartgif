@@ -2,7 +2,7 @@ var xScale, yScale, radius;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
 var hullOffset = 10, label_spread_x = true;
-var hull_labels, hull_label_force, pre_group;
+var hull_labels, hull_label_links, pre_group;
 var savedCaptions;
 
 class ScatterPlot {
@@ -328,6 +328,7 @@ class ScatterPlot {
         .attr('x', function(d){return xScale(d.x)-20;})
         .attr('y', function(d){ return yScale(d.y); })
         .text(function(d){ return d.name; })
+        .attr('paint-order', 'stroke')
         .style('visibility', 'hidden')
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
@@ -349,6 +350,7 @@ class ScatterPlot {
     this.bubble_trace_g.selectAll("*").remove();
     this.hull_g.selectAll("path.hull").remove();
     this.hull_label_g.selectAll("text.hull-label").remove();
+    this.hull_label_g.selectAll('line.hull-label-link').remove();
   }
 
   updateFocus(time, swtvalues, innergrp, delay) {
@@ -456,23 +458,30 @@ class ScatterPlot {
       .enter().append('text')
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble-label g'+d.group; })
-        .attr('x', function(d){return xScale(d.x)-20;})
-        .attr('y', function(d){ return yScale(d.y); })
+        .attr('x', function(d){return xScale(d.pre_x)-20;})
+        .attr('y', function(d){ return yScale(d.pre_y); })
         .text(function(d){ return d.name; })
+        .attr('paint-order', 'stroke')
         .style('visibility', 'hidden')
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
-        .on("mouseout", mouseOutBubbles);
+        .on("mouseout", mouseOutBubbles)
+      .transition()
+        .duration(delay)
+        .attr("x", function(d){return xScale(d.x)-20;})
+        .attr("y", function(d){ return yScale(d.y); })
 
     this.hull_g.selectAll("path.hull").remove();
     this.hull_g.selectAll("path.hull")
         .data(dataCvxHulls)
       .enter().append("path")
         .attr("class", "hull")
-        .attr("id", function(d) { return d.group; })
+        .attr("id", d => d.id)
         .attr("d", drawPreCluster)
+        .attr('data-p-path', d => d.phulls)
+        .attr('data-path', d => d.hulls)
         .style("opacity", 0.4)
-        // .style("stroke", "#000")
+        .style("stroke", "#333")
         .style("fill", function(d) { return "#bbb"; })
         .style('visibility', function(d) {
           if (d.group >= 0 && d.items < 1000) return 'visible';
@@ -491,21 +500,14 @@ class ScatterPlot {
           .attr('id', d => d.id)
           .attr('class', function(d){ return 'hull-label wrap g'+d.group; })
           .attr("x", function (d) {
-            console.log("savedCaptions", d.id, savedCaptions[d.id])
-            if (savedCaptions[d.id] == undefined) return Math.min(w-50, Math.max(130, d.x));
+            if (savedCaptions[d.id] == undefined) return Math.min(w-50, Math.max(80, d.avg_x));
             else return savedCaptions[d.id].x;
           })
           .attr("y", function (d) {
-            if (savedCaptions[d.id] == undefined) return Math.max(30, Math.min(h-150, d.y));
+            if (savedCaptions[d.id] == undefined) return Math.max(30, Math.min(h-150, d.avg_y));
             else return savedCaptions[d.id].y;
           })
-          .attr('font-size', 12)
           .attr('paint-order', 'stroke')
-          .attr('stroke', '#fff')
-          .attr('stroke-width', 1)
-          .attr('stroke-linecap', "butt")
-          .attr('stroke-linejoin', "miter")
-          .attr('text-anchor', 'start')
           .style('visibility', function(d) {
             if (d.group >= 0) return 'visible';
             else return 'hidden'; })
@@ -524,22 +526,62 @@ class ScatterPlot {
           })
           .attr("dy", 12);
 
-      // hull_label_force = d3.forceSimulation(dataCvxHulls).alpha(0.1)
-      //   // .force("center", d3.forceCenter(dataCvxHulls[0].avg_x, dataCvxHulls[0].avg_y))
-      //   .force("center", d3.forceCenter(this.width/2, this.height/2))
-      //   .force('collide', d3.forceCollide().radius(50))
-      //   .force('charge', d3.forceManyBody().strength(-300).distanceMin(50).distanceMax(300))
-      //   .on("tick", this.ticked)
     }
+
+    this.hull_label_g.selectAll('line.hull-label-link').remove();
+    hull_labels.each(function() {
+      var text_bbox = this.getBBox();
+      var text_p = [text_bbox.x+text_bbox.width/2, text_bbox.y, text_bbox.x+text_bbox.width/2, text_bbox.y+text_bbox.height]
+      var matching_hull = d3.select("path#"+this.id+".hull").node();
+      var p_points = shortestPath(text_p, matching_hull.getAttribute("data-p-path").split(","))
+      var points = shortestPath(text_p, matching_hull.getAttribute("data-path").split(","))
+      d3.select(this.parentNode).append('line')
+        .attr("id", this.id)
+        .attr("class", function(d){ return 'hull-label-link g'+this.group; })
+        .attr("x1", p_points[0])
+        .attr("y1", p_points[1])
+        .attr("x2", p_points[2])
+        .attr("y2", p_points[3])
+      .transition()
+        .duration(delay)
+        .attr("x1", points[0])
+        .attr("y1", points[1])
+        .attr("x2", points[2])
+        .attr("y2", points[3])
+    })
 
     pre_group = JSON.stringify(swtvalues);
   }
+}
 
-  // ticked() {
-  //   hull_labels
-  //     .attr("x", function (d) { return Math.min(w-50, Math.max(130, d.x)); })
-  //     .attr("y", function (d) { return Math.max(30, Math.min(h-150, d.y)); })
-  // }
+function updateLabelLinks() {
+  hull_labels.each(function() {
+    var text_bbox = this.getBBox();
+    var text_p = [text_bbox.x+text_bbox.width/2, text_bbox.y, text_bbox.x+text_bbox.width/2, text_bbox.y+text_bbox.height]
+    var link = d3.select("line#"+this.id);
+    var points = shortestPath(text_p, [link.attr("x2"), link.attr("y2")])
+    link
+      .attr("x1", points[0])
+      .attr("y1", points[1])
+      .attr("x2", points[2])
+      .attr("y2", points[3])
+  })
+}
+
+function shortestPath(alist, blist) {
+  var points = [];
+  var min = 10000;
+  for (var a=0; a < alist.length; a += 2) {
+    for (var b=0; b < blist.length; b += 2) {
+      // console.log("shortestPath", alist[a], alist[a+1], blist[b], blist[b+1])
+      diff = Math.abs(alist[a]-blist[b])+Math.abs(alist[a+1]-blist[b+1])
+      if (diff < min) {
+        min = diff;
+        points = [alist[a], alist[a+1], blist[b], blist[b+1]];
+      }
+    }
+  }
+  return points
 }
 
 function dragstarted(d) {
@@ -556,6 +598,7 @@ function dragged(d) {
   // console.log("dragged", label, point)
   label.attr("x", point[0])
   label.attr("y", point[1])
+  updateLabelLinks();
 }
 
 function dragended(d) {
@@ -565,7 +608,7 @@ function dragended(d) {
     "x": point[0],
     "y": point[1]
   }
-  console.log(savedCaptions)
+  // console.log(savedCaptions)
 }
 
 function getTickValues(r, logflag) {
@@ -629,7 +672,7 @@ function convexHulls(nodes, index, offset, pre) {
   var hullset = [];
   for (i in hulls) {
     var hid = (desc[i].split(" ").join("-")).split(";").join("-")+"-"+hulls[i].length;
-    console.log("hid", hid, i)
+    console.log("hid", hid, hulls[i][0][0], hulls[i][0][1])
     if (pre) {
       hullset.push({
         id: hid,
@@ -646,6 +689,8 @@ function convexHulls(nodes, index, offset, pre) {
         pre_x: phulls[i][0][0],
         pre_y: phulls[i][0][1],
         pre_path: d3.polygonHull(phulls[i]),
+        hulls: hulls[i],
+        phulls: phulls[i],
       });
     } else {
       hullset.push({
@@ -679,14 +724,14 @@ function mouseOverBubbles(d) {
   if (d.group == -1) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   } else {
-    console.log("mouseOverBubbles", d.id)
-    dimAllBubbles(0.1);
-    dimAllCvxHulls(0.01);
+    console.log("mouseOverBubbles", d.id, d.group)
+    dimAllBubbles(0.5);
+    // dimAllCvxHulls(0.01);
     var circles = $("circle.bubble.g"+d.group);
     for (var l in circles) {
       if (circles[l].style) circles[l].style.opacity = 1;
     }
-    if ($("path#"+d.group+".hull")[0]) $("path#"+d.group+".hull")[0].style.opacity=0.2;
+    // if ($("path#"+d.group+".hull")[0]) $("path#"+d.group+".hull")[0].style.opacity=0.2;
     if ($("text#"+d.id+".bubble-label")[0]) $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   }
 }
