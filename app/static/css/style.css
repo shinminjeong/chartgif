@@ -221,6 +221,16 @@ text.time-slice {
 	rx: 3px;
 	fill: #eee;
 	z-index: 500;
+	cursor: pointer;
+}
+.time-slice-move-left,
+.time-slice-move-right {
+	position: absolute;
+	stroke: #000;
+	stroke-width: 1px;
+	fill: #002654;
+	z-index: 500;
+	cursor: pointer;
 }
 
 rect.time-slice-outer {

@@ -32,6 +32,7 @@ class TimeFrames {
       if (this.yearmap[y]["group"].length > 0) {
         // console.log("-", y, head_y, tail_y)
         groups = groups.concat(this.yearmap[y]["group"]);
+
         for (var r in this.yearmap[y]["reason"]) {
           var rr = this.yearmap[y]["reason"][r];
           var id = [rr["yrange"][0],rr["yrange"][rr["yrange"].length-1],rr["group"]].join("-");
@@ -54,6 +55,9 @@ class TimeFrames {
           }
           bound["prologue"] = this.createPrologue(bound);
           bound["epilogue"] = this.createEpilogue(bound);
+          for (r in reasons) {
+            this.framemap[r]["outerbound"] = head_y;
+          }
           this.outerbound[head_y] = bound;
         }
         head_y = tail_y = -1;

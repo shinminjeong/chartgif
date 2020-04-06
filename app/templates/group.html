@@ -200,6 +200,33 @@ function refresh() {
   updateSlider();
 }
 
+var swapArrayElements = function(arr, indexA, indexB) {
+  var temp = arr[indexA];
+  arr[indexA] = arr[indexB];
+  arr[indexB] = temp;
+};
+function moveFrameOrder(id, direction) {
+  var obound = testtimeframes.framemap[id].outerbound;
+  var reason_order = Object.keys(testtimeframes.outerbound[obound].reason);
+  // console.log("moveFrameOrder", id, reason_order, reason_order.indexOf(id));
+  var pos = reason_order.indexOf(id);
+  if (direction == "left") swapArrayElements(reason_order, pos, pos-1)
+  if (direction == "right") swapArrayElements(reason_order, pos, pos+1)
+  // console.log("result", reason_order)
+  var neworder = {};
+  for (var r in reason_order) {
+    neworder[reason_order[r]] = testtimeframes.outerbound[obound].reason[reason_order[r]];
+  }
+  testtimeframes.outerbound[obound].reason = neworder;
+}
+function findNextFrame(id, direction) {
+  var obound = testtimeframes.framemap[id].outerbound;
+  var reason_order = Object.keys(testtimeframes.outerbound[obound].reason);
+  var pos = reason_order.indexOf(id);
+  if (direction == "left") return reason_order[pos-1];
+  if (direction == "right") return reason_order[pos+1];
+}
+
 function kFormatter(num) {
     if (Math.abs(num) > 999999)
       return Math.sign(num)*((Math.abs(num)/1000000).toFixed(1)) + 'M'

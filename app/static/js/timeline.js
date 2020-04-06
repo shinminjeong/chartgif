@@ -518,6 +518,36 @@ function showOptions(chart_id, id) {
     .attr("x", x+width)
     .attr("y", y)
     .on("click", function() { hideOptions(id);removeTimeSlice(id) });
+
+  var w = 14, h = 20, h_margin = 16;
+  var left_points = [
+      [x-w, h_margin+y+h/2].join(","),
+      [x, h_margin+y].join(","),
+      [x, h_margin+y+h].join(",")
+    ].join(" ");
+  var right_points = [
+      [x+width+w, h_margin+y+h/2].join(","),
+      [x+width, h_margin+y].join(","),
+      [x+width, h_margin+y+h].join(",")
+    ].join(" ");
+  var leftbtn = d3.select("g#"+chart_id).append("polygon")
+    .attr("points", left_points)
+    .attr("class", "time-slice-move-left")
+    .attr("id", id)
+    .on("click", function() { hideOptions(id); move(id, "left") });
+  var rightbtn = d3.select("g#"+chart_id).append("polygon")
+    .attr("points", right_points)
+    .attr("class", "time-slice-move-right")
+    .attr("id", id)
+    .on("click", function() { hideOptions(id); move(id, "right") });
+}
+
+function move(id, direction) {
+  var target_frame = findNextFrame(id, direction)
+  if (target_frame == undefined) return;
+  console.log(id, target_frame)
+  moveFrameOrder(id, direction);
+  refresh();
 }
 
 function hideOptions(id) {
@@ -527,4 +557,6 @@ function hideOptions(id) {
   if (target[0] == undefined) return;
   target[0].style.fillOpacity = 0.7;
   $("#"+id+".time-slice-remove").remove();
+  $("#"+id+".time-slice-move-left").remove();
+  $("#"+id+".time-slice-move-right").remove();
 }
