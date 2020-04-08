@@ -1,12 +1,14 @@
 Video,time_s,time_e,,hand gesture,,video editing,,time adjustment,
-https://www.youtube.com/watch?v=hVimVzgtD6w,3:51,3:58,Y,moving,N,,N,,
+"The best stats you've ever seen;TED, Jan 16, 2007",3:26,3:31,Y,pointing,N,,N,,adding video starting point
+,3:39,3:45,Y,pointing,N,,N,,https://www.youtube.com/watch?v=hVimVzgtD6w
+,3:51,3:58,Y,moving,N,,N,,
 ,4:06,4:10,Y,moving,N,,N,,
 ,4:18,4:20,Y,pointing,N,,N,,
 ,4:20,4:30,Y,moving,N,,N,,
 ,4:30,4:42,Y,pointing,N,,N,,
 ,4:48,4:58,Y,moving,N,,N,,
 ,5:04,5:14,N,,N,,Y,instant replay,
-https://www.youtube.com/watch?v=jbkSRLYSojo,0:34,0:53,Y,pointing,N,,N,,
+"Hans Rosling's 200 Countries, 200 Years, 4 Minutes;BBC, Nov 26, 2010",0:34,0:53,Y,pointing,N,,N,,https://www.youtube.com/watch?v=jbkSRLYSojo
 ,1:01,1:09,Y,pointing,N,,N,,
 ,1:10,1:13,Y,shaping,Y,labeling,N,,
 ,1:14,1:17,Y,pointing,N,,N,,
@@ -44,8 +46,9 @@ https://www.youtube.com/watch?v=jbkSRLYSojo,0:34,0:53,Y,pointing,N,,N,,
 ,3:53,3:57,Y,pointing,Y,labeling,Y,pause,
 ,3:57,4:15,N,,N,,Y,instant replay,
 ,4:16,4:28,N,,Y,labeling,N,,
-https://www.youtube.com/watch?v=ezVk1ahRF78&feature=youtu.be&t=463,2:47,2:53,N,,Y,labeling,N,,labeling accompany mouse cursor moving in this section
-,2:53,3:38,N,,Y,flickering,N,,
+"Religions and babies;TED, May 22, 2012",2:42,2:42,N,,N,,N,,adding video starting point
+,2:47,2:53,N,,Y,labeling,N,,https://www.youtube.com/watch?v=ezVk1ahRF78&feature=youtu.be&t=463
+,2:53,3:38,N,,Y,flickering,N,,labeling accompany mouse cursor moving in this section
 ,3:47,4:15,Y,pointing,N,,N,,
 ,4:18,4:21,N,,Y,flickering,N,,
 ,4:22,4:27,N,,Y,labeling,N,,
@@ -68,7 +71,7 @@ https://www.youtube.com/watch?v=ezVk1ahRF78&feature=youtu.be&t=463,2:47,2:53,N,,
 ,8:39,8:44,N,,Y,tracing,N,,
 ,9:55,9:58,N,,Y,labeling,N,,
 ,10:11,10:13,N,,Y,labeling,N,,
-https://www.youtube.com/watch?v=8suAGffNG6k&feature=youtu.be&t=272,3:20,3:31,Y,pointing,N,,N,,
+"Correlating income and life expectancy throughout history;Think Global School, Dec 1, 2015",3:20,3:31,Y,pointing,N,,N,,https://www.youtube.com/watch?v=8suAGffNG6k&feature=youtu.be&t=272
 ,3:34,3:36,Y,moving,N,,N,,
 ,3:42,3:47,N,,Y,labeling,N,,
 ,4:02,4:09,N,,N,,Y,move fast,
@@ -89,7 +92,7 @@ https://www.youtube.com/watch?v=8suAGffNG6k&feature=youtu.be&t=272,3:20,3:31,Y,p
 ,5:11,5:13,N,,N,,Y,go backward,
 ,5:15,5:21,N,,N,,Y,move fast,
 ,5:28,5:34,Y,pointing,N,,N,,
-https://www.youtube.com/watch?v=lYpX4l2UeZg,0:08,0:12,Y,shaping,N,,N,,
+"Hans Rosling: The River of Myths;Bill Gates, Jan 31, 2013",0:08,0:12,Y,shaping,N,,N,,https://www.youtube.com/watch?v=lYpX4l2UeZg
 ,0:13,0:33,Y,pointing,Y,labeling,N,,
 ,0:33,0:37,Y,pointing,N,,N,,
 ,0:48,0:56,N,,Y,labeling,N,,
