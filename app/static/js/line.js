@@ -198,15 +198,14 @@ function draw_rect_input(yrange, div_id, axes, reason) {
   for (var i in axes) {
     var names = div_id.split("_");
     var canvas = document.getElementById(div_id+"_"+axes[i]);
-    var rect = canvas.getBoundingClientRect();
-    var aidx = selectedAxis.indexOf(axes[i]);
     var e = document.createElement('div');
     // console.log("select_rectangle_", reason)
     e.className = 'select_rectangle select_rectangle_'+reason;
     e.id = [y_start, y_end, names[1], selectedAxis[i]].join("-");
-    e.style.left = ys + 'px';
+    e.style.left = ys;
     e.style.top = 0;
-    e.style.width = Math.abs(ye - ys) + 'px';
+    e.style.width = Math.abs(ye - ys);
+    e.style.paddingLeft = Math.abs(ye - ys)+2;
     e.style.height = "100%";
     e.innerHTML = reason;
     canvas.appendChild(e)
@@ -216,17 +215,15 @@ function draw_rect_move(e, canvas) {
   var rect = canvas.getBoundingClientRect();
   if (element !== null) {
     setMousePosition(e);
-    element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
-    // element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
+    element.style.width = Math.abs(mouse.x - mouse.startX);
     element.style.height = "100%";
-    element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x - rect.x + 'px' : mouse.startX - rect.x + 'px';
-    // element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y - rect.y + 'px' : mouse.startY - rect.y + 'px';
+    element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x - rect.x: mouse.startX - rect.x;
     element.style.top = 0;
   }
 }
 function draw_rect_click(e, canvas) {
   var rect = canvas.getBoundingClientRect();
-  var reason = "user"
+  var reason = "usr"
   setMousePosition(e);
   // console.log("draw_rect_click", rect);
   if (element !== null) {
@@ -234,12 +231,14 @@ function draw_rect_click(e, canvas) {
     console.log("draw_rect_click", names);
     left = +element.style.left.split("px")[0];
     width = +element.style.width.split("px")[0];
+    element.style.paddingLeft = width+2;
     element.innerHTML = reason;
     startYear = Math.floor(line_xscale.invert(left));
     endYear = Math.floor(line_xscale.invert(left+width));
     // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear+1), (x,i) => i + startYear)
     drawFrame(years, names[1], [names[2]], reason, reason);
+    draw_rect_trace(years, names[1], reason);
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
     element = null;

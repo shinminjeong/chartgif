@@ -92,7 +92,7 @@ body {
 	z-index: 2;
 }
 .group_trace {
-	/* margin: -20px -10px; */
+	margin: -20px -10px;
 	z-index: 1;
 }
 
@@ -152,22 +152,29 @@ body {
 	padding-left: 1px;
 }
 
-.select_rectangle {
+.select_rectangle,
+.select_trace {
 	position: absolute;
 	font-size: 10px;
 	padding-top: 15px;
+	border-radius: 3px;
+	background-color: #33333333;
+	border: 0.5px solid #666;
+	-webkit-text-fill-color: black;
+  -webkit-text-stroke-width: 0.1px;
+  -webkit-text-stroke-color: #666;
 }
 .select_rectangle_noc {
-  border: 1px solid #007bff;
+  /* border: 1px solid #007bff; */
 }
 .select_rectangle_var {
-  border: 1px solid #17a2b8;
+  /* border: 1px solid #17a2b8; */
 }
 .select_rectangle_spr {
-  border: 1px solid #df11fa;
+  /* border: 1px solid #df11fa; */
 }
 .select_rectangle_user {
-  border: 1px solid orange;
+  /* border: 1px solid orange; */
 }
 
 .timeline {

@@ -18,7 +18,7 @@ class TimeFrames {
       "noc": 2,
       "var": 15,
       "spr": 20,
-      "user": 10,
+      "usr": 10,
       "sum": 2,
     };
     this.captions = {};

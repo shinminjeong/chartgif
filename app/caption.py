@@ -88,7 +88,7 @@ caption_generator = {
     "spr": cap_mostSpread,
     "var": cap_valueChange,
     "noc": cap_noChange,
-    "user": cap_userGenerated,
+    "usr": cap_userGenerated,
     "sum": cap_summary
 }
 

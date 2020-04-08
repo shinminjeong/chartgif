@@ -3,6 +3,7 @@ var xrange = [10000000, 0],
     yrange = [10000000, 0];
 var tracehull = {};
 var traceline = {};
+var allyearmeans = {};
 
 class TraceChart {
 
@@ -88,15 +89,15 @@ class TraceChart {
         .style("opacity", 0.01)
         .style("fill", function(d) { return gcolor(d.group); });
 
-    var allyearmeans = [];
+    allyearmeans[this.g_id] = [];
     for (var i=0; i < years.length; i++) {
       var data = this.data[years[i]];
-      allyearmeans = allyearmeans.concat(traceMean(years[i], data, getGroup))
+      allyearmeans[this.g_id] = allyearmeans[this.g_id].concat(traceMean(years[i], data, getGroup))
     }
     // console.log(allyearmeans)
 
     traceline[this.g_id] = this.trace_path_g.selectAll(".tbubble")
-        .data(allyearmeans)
+        .data(allyearmeans[this.g_id])
       .enter().append("circle")
         .attr("class", "tbubble")
         .attr("id", d => this.g_id+"_"+d.time)
@@ -111,6 +112,41 @@ class TraceChart {
 
 
 const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
+
+function draw_rect_trace(yrange, group, reason) {
+  if (yrange[0] == "init") return;
+  var y_start = ""+yrange[0],
+      y_end = ""+yrange[yrange.length-1];
+  var years = [];
+  for (var i=timeseries.indexOf(y_start); i<=timeseries.indexOf(y_end); i++) {
+    years.push(timeseries[i]);
+  }
+  console.log("draw_rect_trace", yrange, years, group, reason)
+  var canvas = document.getElementById("trace_chart_"+group);
+  var rect = canvas.getBoundingClientRect();
+  var offset = 5;
+  var xs = [], ys = [];
+  for (var i=0; i < allyearmeans[group].length; i++) {
+    var d = allyearmeans[group][i];
+    if (years.indexOf(d.time) != -1) {
+      xs.push(t_xScale(d.x)-offset);
+      xs.push(t_xScale(d.x)+offset);
+      ys.push(t_yScale(d.y)-offset);
+      ys.push(t_yScale(d.y)+offset);
+    }
+  }
+  var e = document.createElement('div');
+  e.className = 'select_trace select_trace_'+reason;
+  e.id = [y_start, y_end, group, "trace"].join("-");
+  e.style.left = Math.min(...xs)+10;
+  e.style.top = rect.y+Math.min(...ys)-20;
+  e.style.width = Math.max(...xs)-Math.min(...xs);
+  e.style.height = Math.max(...ys)-Math.min(...ys);
+  e.style.paddingTop = Math.max(...ys)-Math.min(...ys)-5;
+  e.style.paddingLeft = 0;
+  e.innerHTML = reason;
+  canvas.appendChild(e)
+}
 
 function traceMean(time, nodes, index) {
   // console.log("traceMean")
