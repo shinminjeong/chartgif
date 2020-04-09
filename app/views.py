@@ -121,7 +121,7 @@ def main(request):
     focus_range.extend(initseq)
     # print(kgroups)
     return render(request, "group.html", {
-        "time_arr": timeseries,
+        "timeseries": timeseries,
         "timemap": timemap,
         "data": map.to_json(),
         "gname": c_group_inv,
