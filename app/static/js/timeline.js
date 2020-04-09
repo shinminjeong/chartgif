@@ -322,6 +322,21 @@ class TimeLine {
       .text(name);
     timeLabels.push(tframe_text);
     if (y_start != "init") {
+      var speedrate = delay/(timeseries.indexOf(y_end)-timeseries.indexOf(y_start)+1);
+      var tframe_text_speed = this.chart_g.append("text")
+        .attr("class", "time-slice")
+        .attr("id", frame_id)
+        .attr("x", left+4)
+        .attr("y", chartExpand?16+top+this.slice_h*gid:16+top)
+        .attr("data-s-time", f_start)
+        .attr("data-e-time", f_end)
+        .text("1/"+speedrate);
+      timeLabels.push(tframe_text_speed);
+      tframe_text_speed.on("click", function() {
+        var d = $("rect#"+frame_id+".time-slice");
+        if (d.attr("edit") == "on") hideOptions(frame_id);
+        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+      });
       tframe_text.on("click", function() {
         var d = $("rect#"+frame_id+".time-slice");
         if (d.attr("edit") == "on") hideOptions(frame_id);
@@ -330,22 +345,6 @@ class TimeLine {
     }
 
     if (pattern != undefined) {
-      // var tframe_text_2 = this.chart_g.append("text")
-      //   .attr("class", "time-slice")
-      //   .attr("id", frame_id)
-      //   .attr("x", left+2)
-      //   .attr("y", chartExpand?24+top+this.slice_h*gid:24+top)
-      //   .attr("data-s-time", f_start)
-      //   .attr("data-e-time", f_end)
-      //   .style("cursor", "pointer")
-      //   .text(pattern);
-      // timeLabels.push(tframe_text_2);
-      // tframe_text_2.on("click", function() {
-      //   var d = $("rect#"+frame_id+".time-slice");
-      //   if (d.attr("edit") == "on") hideOptions(frame_id);
-      //   else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
-      // });
-      // console.log(pattern);
       var tframe_text_3 = this.chart_g.append("image")
         .attr("class", "time-slice")
         .attr("id", frame_id)
