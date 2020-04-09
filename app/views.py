@@ -140,27 +140,32 @@ def main(request):
 def get_caption(request):
     global values, kgroups, options, timemap, timeseries, numTicks, countries
     outerbound = request.POST
-    head_y = int(outerbound.get("head"))
-    tail_y = int(outerbound.get("tail"))+1
+    print()
+    head_y = outerbound.get("start_time")
+    tail_y = outerbound.get("end_time")
     groups = {int(c):c_group_inv[int(c)] for c in outerbound.getlist("groups[]")}
     reasons = get_dict_from_request(dict(outerbound))
-    print("get_caption", head_y, tail_y, groups, reasons)
+    print("**** get_caption", head_y, tail_y, groups, reasons)
 
-    continents = list(groups.values())
-    if len(groups) > 2:
-        regions = ", ".join(continents[:-1]) + " and " + continents[-1]
-    elif len(groups) == 2:
-        regions = " and ".join(continents)
-    else:
-        regions = continents[0]
+    if (head_y == "Init"):
+        return JsonResponse({
+            "head": head_y,
+            "tail": tail_y,
+            "innergrp": {},
+            "caption": {k:v["caption"][0] for k,v in reasons.items()}
+        })
 
     printgrp = {}
     groupdesc = {}
     caption = {}
 
+    o_prologue = outerbound.get("prologue")
+    o_epilogue = outerbound.get("epilogue")
+
     for id, v in reasons.items():
         # row: selected countries
         g = int(v["group"][0])
+        print(id, g)
         cset = [v["index"] for k, v in kgroups.items() if g == 0 or v["group"] == g] # countries in selected continent
 
         # column: selected years of selected axis
@@ -188,10 +193,13 @@ def get_caption(request):
             groupdesc[g][c] = summarizeGroup(kgroups, [countries[vv] for vv in clist])
 
         axisNames = [options[a.lower()] for a in selectedAxis]
-        caption[id] = generateCaption(groups[g], axisNames, v["reason"][0], v["pattern"][0], timemap[yrange[0]], timemap[yrange[-1]], g == 0)
+        caption[id] = generateCaption(groups, g, axisNames, v["reason"][0], v["pattern"][0], yrange[0], yrange[-1], allgroup = reasons)
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")
     # print(groupdesc)
+
+    caption[o_prologue] = "Caption for prologue."
+    caption[o_epilogue] = "Caption for epilogue."
 
     return JsonResponse({
         "head": head_y,

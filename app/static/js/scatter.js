@@ -1,17 +1,19 @@
 var xScale, yScale, radius;
 var continent = ["Asia", "Europe", "North America", "South America", "Africa", "Oceania", "Antarctica"];
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
-var hullOffset = 10;
-var hull_labels, hull_label_force, pre_group;
+var hullOffset = 10, label_spread_x = true;
+var hull_labels, hull_label_links, pre_group;
+var savedCaptions;
 
 class ScatterPlot {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 10, bottom: 25, left:30};
+    this.margin = {top: 5, right: 5, bottom: 20, left:25};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
     this.bubble = {};
+    savedCaptions = {};
   }
 
   initChart(data2d, data_options, population, continent, group) {
@@ -30,7 +32,7 @@ class ScatterPlot {
     // console.log(data2d[year+"_x"], data2d[year+"_y"])
     // console.log(population[year]);
 
-    this.years = time_arr;
+    this.years = timeseries;
     this.data = {}
     this.xrange = [10000000, 0];
     this.yrange = [10000000, 0];
@@ -193,6 +195,8 @@ class ScatterPlot {
     this.bubble_trace_g = this.svg.append('g');
     this.bubble_shadow_g = this.svg.append('g');
     this.bubble_g = this.svg.append('g');
+    this.bubble_g_h = this.svg.append('g');
+    this.bubble_label_g = this.svg.append('g');
     this.hull_label_g = this.svg.append('g');
   }
 
@@ -286,9 +290,6 @@ class ScatterPlot {
     this.clear();
     var data = this.data[year];
 
-    var flagTrace = swtvalues["trace"],
-        flagConvexHulls = swtvalues["hull"];
-
     // console.log("updateChart", year, flagConvexHulls);
     var bubble = this.bubble_g.selectAll('.bubble')
         .data(data)
@@ -319,7 +320,7 @@ class ScatterPlot {
         .attr("cy", function(d){ return yScale(d.y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1;; })
 
-    this.bubble_g.selectAll('.bubble-label')
+    this.bubble_label_g.selectAll('.bubble-label')
         .data(data)
       .enter().append('text')
         .attr('id', function(d){return d.id;})
@@ -327,50 +328,13 @@ class ScatterPlot {
         .attr('x', function(d){return xScale(d.x)-20;})
         .attr('y', function(d){ return yScale(d.y); })
         .text(function(d){ return d.name; })
+        .attr('paint-order', 'stroke')
         .style('visibility', 'hidden')
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles);
 
-    this.hull_g.selectAll("path.hull").remove();
-    if (flagConvexHulls) {
-      this.hull_g.selectAll("path.hull")
-          .data(convexHulls(data, getGroup, hullOffset, false))
-        .enter().append("path")
-          .attr("class", "hull")
-          .attr("id", function(d) { return d.group; })
-          .attr("d", drawCluster)
-          .style("opacity", 0.2)
-          .style("fill", function(d) { return gcolor(d.group); })
-          .style('visibility', function(d) {
-            if (swtvalues["groups"][d.group]) return 'visible';
-            else return 'hidden';
-          });
-    }
-
-    this.trace_path_g.selectAll("circle.tbubble").remove();
-    if (flagTrace) {
-      var allyearmeans = [];
-      for (var i=0; i < this.years.length; i++) {
-        var data = this.data[this.years[i]];
-        allyearmeans = allyearmeans.concat(traceMean(this.years[i], data, getGroup))
-      }
-
-      this.trace_path_g.selectAll(".tbubble")
-          .data(allyearmeans)
-        .enter().append("circle")
-          .attr("class", "tbubble")
-          .attr("year", d => d.time)
-          .attr('cx', d => xScale(d.x))
-          .attr('cy', d => yScale(d.y))
-          .attr('r', 1)
-          .style("opacity", 1)
-          .style("fill", function(d) { return gcolor(d.group); })
-          .style('visibility', function(d) {
-            if (swtvalues["groups"][d.group]) return 'visible';
-            else return 'hidden';
-          });
-    }
+    pre_group = undefined;
   }
 
   clearFocus() {
@@ -380,16 +344,20 @@ class ScatterPlot {
 
   clear() {
     this.bubble_g.selectAll("*").remove();
+    this.bubble_g_h.selectAll("*").remove();
+    this.bubble_label_g.selectAll("*").remove();
     this.bubble_shadow_g.selectAll("*").remove();
     this.bubble_trace_g.selectAll("*").remove();
     this.hull_g.selectAll("path.hull").remove();
     this.hull_label_g.selectAll("text.hull-label").remove();
+    this.hull_label_g.selectAll('line.hull-label-link').remove();
   }
 
   updateFocus(time, swtvalues, innergrp, delay) {
     console.log("updateFocus", swtvalues, time, pre_group == JSON.stringify(swtvalues))
     this.bubble_g.selectAll("*").remove();
-    this.trace_path_g.selectAll("circle.tbubble").remove();
+    this.bubble_g_h.selectAll("*").remove();
+    // this.trace_path_g.selectAll("circle.tbubble").remove();
 
     var data = this.data[time];
     var flag_world = swtvalues["groups"][0];
@@ -431,8 +399,8 @@ class ScatterPlot {
         .attr('cx', function(d){return xScale(d.pre_x);})
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
-        .style('stroke', 'black')
-        .style('stroke-width', 0.5)
+        // .style('stroke', 'black')
+        // .style('stroke-width', 0.5)
         .style('opacity', 0.2)
         .style('fill', d => gcolor(d.group))
         .style('visibility', function(d) {
@@ -448,19 +416,12 @@ class ScatterPlot {
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', 'black')
-        .style('stroke-width', 0.5)
-        .style('fill', function(d){
-          if (swtvalues["groups"][d.group]) return gcolor(d.group);
-          else return "#ddd";
-        })
-        .style('opacity', function(d){
-          if (swtvalues["groups"][d.group]) return 1;
-          else return 0.3;
-        })
-        .style('visibility', function(d) {
-          return 'visible';
-          // if (swtvalues["groups"][d.group]) return 'visible';
-          // else return 'hidden';
+        .style('stroke-width', 0)
+        .style('fill', "#ddd")
+        .style('opacity', 0.5)
+        .style('display', function(d) {
+          if (swtvalues["groups"][d.group]) return 'none';
+          else return 'inline';
         })
       .transition()
         .duration(delay)
@@ -468,28 +429,59 @@ class ScatterPlot {
         .attr("cy", function(d){ return yScale(d.y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1; })
 
-    this.bubble_g.selectAll('.bubble-label')
+    var moving_bubble_h = this.bubble_g_h.selectAll('.bubble')
+        .data(data)
+      .enter().append('circle')
+        .attr('class', function(d){ return 'bubble g'+d.group; })
+        .attr('cx', function(d){return xScale(d.pre_x);})
+        .attr('cy', function(d){ return yScale(d.pre_y); })
+        .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
+        .style('stroke', 'black')
+        .style('stroke-width', 0.5)
+        .style('fill', d => gcolor(d.group))
+        .style('opacity', 1)
+        .style('display', function(d) {
+          if (swtvalues["groups"][d.group]) return 'inline';
+          else return 'none';
+        })
+        .on("mouseover", mouseOverBubbles)
+        .on("click", clickBubbles)
+        .on("mouseout", mouseOutBubbles)
+      .transition()
+        .duration(delay)
+        .attr("cx", function(d){return xScale(d.x);})
+        .attr("cy", function(d){ return yScale(d.y); })
+        .attr('r', function(d){ return radius(d.population)*1.3+1; })
+
+    this.bubble_label_g.selectAll('.bubble-label')
         .data(data)
       .enter().append('text')
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble-label g'+d.group; })
-        .attr('x', function(d){return xScale(d.x)-20;})
-        .attr('y', function(d){ return yScale(d.y); })
+        .attr('x', function(d){return xScale(d.pre_x)-20;})
+        .attr('y', function(d){ return yScale(d.pre_y); })
         .text(function(d){ return d.name; })
+        .attr('paint-order', 'stroke')
         .style('visibility', 'hidden')
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
-        .on("mouseout", mouseOutBubbles);
+        .on("mouseout", mouseOutBubbles)
+      .transition()
+        .duration(delay)
+        .attr("x", function(d){return xScale(d.x)-20;})
+        .attr("y", function(d){ return yScale(d.y); })
 
     this.hull_g.selectAll("path.hull").remove();
     this.hull_g.selectAll("path.hull")
         .data(dataCvxHulls)
       .enter().append("path")
         .attr("class", "hull")
-        .attr("id", function(d) { return d.group; })
+        .attr("id", d => d.id)
         .attr("d", drawPreCluster)
-        .style("opacity", 0.5)
-        .style("stroke", "#000")
+        .attr('data-p-path', d => d.phulls)
+        .attr('data-path', d => d.hulls)
+        .style("opacity", 0.4)
+        .style("stroke", "#333")
         .style("fill", function(d) { return "#bbb"; })
         .style('visibility', function(d) {
           if (d.group >= 0 && d.items < 1000) return 'visible';
@@ -501,50 +493,122 @@ class ScatterPlot {
 
     // update hull labels for a new group
     if (pre_group != JSON.stringify(swtvalues)) {
-
       this.hull_label_g.selectAll("text.hull-label").remove();
       hull_labels = this.hull_label_g.selectAll('.hull-label')
           .data(dataCvxHulls)
         .enter().append('text')
-          .attr('id', d => d.group)
+          .attr('id', d => d.id)
           .attr('class', function(d){ return 'hull-label wrap g'+d.group; })
-          // .attr('x', d => d.pre_x)
-          // .attr('y', d => d.pre_y)
-          .attr('font-size', 10)
-          .attr('text-anchor', 'start')
-          .style('visibility', function(d) {
-            if (d.group >= 0 && d.items < 1000) return 'visible';
-            else return 'hidden';
+          .attr("x", function (d) {
+            if (savedCaptions[d.id] == undefined) return Math.min(w-50, Math.max(80, d.avg_x));
+            else return savedCaptions[d.id].x;
           })
+          .attr("y", function (d) {
+            if (savedCaptions[d.id] == undefined) return Math.max(30, Math.min(h-150, d.avg_y));
+            else return savedCaptions[d.id].y;
+          })
+          .attr('paint-order', 'stroke')
+          .style('visibility', function(d) {
+            if (d.group >= 0) return 'visible';
+            else return 'hidden'; })
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
 
       hull_labels.selectAll("text.hull-label")
         .data(d => d.desc.split(";"))
         .enter().append("tspan")
           .attr("class", "text")
           .text(d => d)
-          .attr("dx", d => -5*d.length)
+          .attr("dx", function(d) {
+            if (d != undefined) return -5.8*d.length;
+          })
           .attr("dy", 12);
 
-      // this.hull_labels.transition()
-      //   .duration(delay)
-      //   .attr('x', d => d.x)
-      //   .attr('y', d => d.y)
-
-      hull_label_force = d3.forceSimulation(dataCvxHulls).alpha(0.1)
-        .force("center", d3.forceCenter(dataCvxHulls[0].avg_x, dataCvxHulls[0].avg_y))
-        .force('collide', d3.forceCollide().radius(50))
-        .force('charge', d3.forceManyBody().strength(-30).distanceMin(30).distanceMax(300))
-        .on("tick", this.ticked)
     }
+
+    this.hull_label_g.selectAll('line.hull-label-link').remove();
+    hull_labels.each(function() {
+      var text_bbox = this.getBBox();
+      var text_p = [text_bbox.x+text_bbox.width/2, text_bbox.y, text_bbox.x+text_bbox.width/2, text_bbox.y+text_bbox.height]
+      var matching_hull = d3.select("path#"+this.id+".hull").node();
+      var p_points = shortestPath(text_p, matching_hull.getAttribute("data-p-path").split(","))
+      var points = shortestPath(text_p, matching_hull.getAttribute("data-path").split(","))
+      d3.select(this.parentNode).append('line')
+        .attr("id", this.id)
+        .attr("class", function(d){ return 'hull-label-link g'+this.group; })
+        .attr("x1", p_points[0])
+        .attr("y1", p_points[1])
+        .attr("x2", p_points[2])
+        .attr("y2", p_points[3])
+      .transition()
+        .duration(delay)
+        .attr("x1", points[0])
+        .attr("y1", points[1])
+        .attr("x2", points[2])
+        .attr("y2", points[3])
+    })
 
     pre_group = JSON.stringify(swtvalues);
   }
+}
 
-  ticked() {
-    hull_labels
-      .attr("x", function (d) { return Math.min(w-30, Math.max(100, d.x)); })
-      .attr("y", function (d) { return Math.max(30, Math.min(h-120, d.y)); })
+function updateLabelLinks() {
+  hull_labels.each(function() {
+    var text_bbox = this.getBBox();
+    var text_p = [text_bbox.x+text_bbox.width/2, text_bbox.y, text_bbox.x+text_bbox.width/2, text_bbox.y+text_bbox.height]
+    var link = d3.select("line#"+this.id);
+    var points = shortestPath(text_p, [link.attr("x2"), link.attr("y2")])
+    link
+      .attr("x1", points[0])
+      .attr("y1", points[1])
+      .attr("x2", points[2])
+      .attr("y2", points[3])
+  })
+}
+
+function shortestPath(alist, blist) {
+  var points = [];
+  var min = 10000;
+  for (var a=0; a < alist.length; a += 2) {
+    for (var b=0; b < blist.length; b += 2) {
+      // console.log("shortestPath", alist[a], alist[a+1], blist[b], blist[b+1])
+      diff = Math.abs(alist[a]-blist[b])+Math.abs(alist[a+1]-blist[b+1])
+      if (diff < min) {
+        min = diff;
+        points = [alist[a], alist[a+1], blist[b], blist[b+1]];
+      }
+    }
   }
+  return points
+}
+
+function dragstarted(d) {
+  var point = d3.mouse(this);
+  var label = $("text#"+d.id+".hull-label");
+  // console.log("dragstarted", label, point)
+  label.attr("x", point[0])
+  label.attr("y", point[1])
+}
+
+function dragged(d) {
+  var point = d3.mouse(this);
+  var label = $("text#"+d.id+".hull-label");
+  // console.log("dragged", label, point)
+  label.attr("x", point[0])
+  label.attr("y", point[1])
+  updateLabelLinks();
+}
+
+function dragended(d) {
+  var point = d3.mouse(this);
+  console.log("dragended", d.id, point)
+  savedCaptions[d.id] = {
+    "x": point[0],
+    "y": point[1]
+  }
+  // console.log(savedCaptions)
 }
 
 function getTickValues(r, logflag) {
@@ -582,9 +646,9 @@ function convexHulls(nodes, index, offset, pre) {
   // create point sets
   for (var k=0; k<nodes.length; ++k) {
     var n = nodes[k];
-    if (n.size) continue;
-    var i = index(n),
-        l = hulls[i] || (hulls[i] = []),
+    var i = index(n);
+    if (n.size || i == -1) continue;
+    var l = hulls[i] || (hulls[i] = []),
         p = phulls[i] || (phulls[i] = []),
         x_arr = xs[i] || (xs[i] = []),
         y_arr = ys[i] || (ys[i] = []);
@@ -607,22 +671,30 @@ function convexHulls(nodes, index, offset, pre) {
   // create convex hulls
   var hullset = [];
   for (i in hulls) {
+    var hid = (desc[i].split(" ").join("-")).split(";").join("-")+"-"+hulls[i].length;
+    console.log("hid", hid, hulls[i][0][0], hulls[i][0][1])
     if (pre) {
       hullset.push({
+        id: hid,
         group: i,
         desc: desc[i],
         items: hulls[i].length,
         x: hulls[i][0][0],
         y: hulls[i][0][1],
-        avg_x: arrAvg(xs[i]),
-        avg_y: arrAvg(ys[i]),
+        // avg_x: arrAvg(xs[i]),
+        // avg_y: arrAvg(ys[i]),
+        avg_x: (Math.max(...xs[i])+Math.min(...xs[i]))/2,
+        avg_y: (Math.max(...ys[i])+Math.min(...ys[i]))/2,
         path: d3.polygonHull(hulls[i]),
         pre_x: phulls[i][0][0],
         pre_y: phulls[i][0][1],
         pre_path: d3.polygonHull(phulls[i]),
+        hulls: hulls[i],
+        phulls: phulls[i],
       });
     } else {
       hullset.push({
+        id: hid,
         group: i,
         desc: desc[i],
         items: hulls[i].length,
@@ -652,14 +724,14 @@ function mouseOverBubbles(d) {
   if (d.group == -1) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   } else {
-    console.log("mouseOverBubbles", d.id)
-    dimAllBubbles(0.1);
-    dimAllCvxHulls(0.01);
+    console.log("mouseOverBubbles", d.id, d.group)
+    dimAllBubbles(0.5);
+    // dimAllCvxHulls(0.01);
     var circles = $("circle.bubble.g"+d.group);
     for (var l in circles) {
       if (circles[l].style) circles[l].style.opacity = 1;
     }
-    if ($("path#"+d.group+".hull")[0]) $("path#"+d.group+".hull")[0].style.opacity=0.2;
+    // if ($("path#"+d.group+".hull")[0]) $("path#"+d.group+".hull")[0].style.opacity=0.2;
     if ($("text#"+d.id+".bubble-label")[0]) $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   }
 }
