@@ -47,7 +47,7 @@ legends = ["Hand gestures", "Video editing", "Video playback"]
 h_pattern = 20
 h_margin = h_pattern*3+40
 top_margin = 80
-left_margin = 640
+left_margin = 700
 right_margin = 20
 bottom_margin = 80
 t_width = 2000
@@ -62,8 +62,11 @@ for i, l in enumerate(legends):
 
 for i, v in enumerate(videos):
     print(v)
-    for j, text in enumerate(v["title"].split(";")):
-        d.append(draw.Text(text, 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*j, center=1, text_anchor="end", fill="black"))
+    texts = v["title"].split(";")
+    d.append(draw.Text(texts[0], 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*0, center=1, text_anchor="end", fill="black"))
+    t = "{} ({}'{}''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
+    d.append(draw.Text(t, 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*1, center=1, text_anchor="end", fill="black"))
+
     w100 = v["endtime"]-v["starttime"]
     d.append(draw.Rectangle(left_margin, t_height-top_margin-h_pattern*3-h_margin*i, t_width, h_pattern*3, fill="#eeeeee"))
     for frame in v["timeline"]:
