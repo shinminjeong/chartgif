@@ -39,12 +39,8 @@ options = {
     "yScale": {"id": "log", "name": "Log"},
 }
 
-# c_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":-1}
-# c_group_inv = {0: "the world", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
-c_group = {"China":1, "Japan":2, "Hong Kong":3, "Singapore":4, "S Korea":5, "Iran":6, "France":7, "US":8, "Italy":9, "UK":10, "Spain":11}
-c_group_inv = {0:"the world", 1:"China", 2:"Japan", 3:"Hong Kong", 4:"Singapore", 5: "S Korea", 6:"Iran", 7:"France", 8:"US", 9:"Italy", 10:"UK", 11:"Spain"}
-# c_group = {"China":1, "Japan":2, "Hong Kong":2, "Singapore":2, "S Korea":2, "Iran":3, "France":3, "US":4, "Italy":3, "UK":3, "Spain":3}
-# c_group_inv = {0:"World", 1:"China", 2:"Rest of Asia", 3:"Europe", 4:"America"}
+c_group = {"Asia":1, "Europe":2, "North America":3, "South America":3, "Africa":4, "Oceania":1, "Antarctica":1}
+c_group_inv = {0: "the world", 1: "Asia", 2: "Europe", 3: "America", 4: "Africa"}
 K = len(c_group_inv)
 
 values = None
@@ -63,17 +59,18 @@ def main(request):
         if id in label_map:
             options[k]["label"] = label_map[id]
 
-    print(options)
+    # print(options)
     selectedAxis = []
 
     pd_x = pd.read_csv(file_map[options["x"]["id"]])
     pd_y = pd.read_csv(file_map[options["y"]["id"]])
     timeseries = [x for x,y in zip(pd_x.columns.tolist()[1:], pd_y.columns.tolist()[1:]) if x==y]
+    # print("timeseries", timeseries)
 
     reader = csv.reader(open(file_map["timemap"]))
     heads = next(reader)
     timemap = {k:r for k, r in zip(heads, next(reader))}
-    print("timemap", timemap)
+    # print("timemap", timemap)
 
     numTicks = len(timeseries)
     df_x = pd_x[['country']+timeseries].dropna()
@@ -87,8 +84,7 @@ def main(request):
     df_c = df_c.loc[df_c['country'].isin(countries)].reset_index()
 
     selectedAxis = ["X", "Y", "S"]
-    # kgroups = {k:{"index": i, "group": c_group[df_c.iloc[i]["continent"]], "sub": df_c.iloc[i]["sub_region"]} for i, k in enumerate(countries)}
-    kgroups = {k:{"index": i, "group": c_group[df_c.iloc[i]["continent"]], "sub": ""} for i, k in enumerate(countries)}
+    kgroups = {k:{"index": i, "group": c_group[df_c.iloc[i]["continent"]], "sub": df_c.iloc[i]["sub_region"]} for i, k in enumerate(countries)}
     values = map.drop(columns='country').fillna(-1)
     values[["{}_s".format(y) for y in timeseries]] = df_s[timeseries].astype("float")
 
