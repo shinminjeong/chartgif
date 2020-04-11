@@ -533,6 +533,7 @@ class ScatterPlot {
       var text_bbox = this.getBBox();
       var text_p = [text_bbox.x+text_bbox.width/2, text_bbox.y, text_bbox.x+text_bbox.width/2, text_bbox.y+text_bbox.height]
       var matching_hull = d3.select("path#"+this.id+".hull").node();
+      console.log("matching_hull", this.id)
       var p_points = shortestPath(text_p, matching_hull.getAttribute("data-p-path").split(","))
       var points = shortestPath(text_p, matching_hull.getAttribute("data-path").split(","))
       d3.select(this.parentNode).append('line')
@@ -671,7 +672,7 @@ function convexHulls(nodes, index, offset, pre) {
   // create convex hulls
   var hullset = [];
   for (i in hulls) {
-    var hid = (desc[i].split(" ").join("-")).split(";").join("-")+"-"+hulls[i].length;
+    var hid = ((desc[i].split(" ").join("-")).split(",").join("-")).split(";").join("-")+"-"+hulls[i].length;
     console.log("hid", hid, hulls[i][0][0], hulls[i][0][1])
     if (pre) {
       hullset.push({

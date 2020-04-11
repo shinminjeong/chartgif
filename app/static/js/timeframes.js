@@ -65,6 +65,20 @@ class TimeFrames {
         reasons = {};
       }
     }
+    // add last bound
+    var end_t = this.timeseries[this.timeseries.indexOf(tail_y)];
+    var bound = {
+      "start_time": head_y,
+      "end_time": end_t,
+      "groups": Array.from(new Set(groups)).sort(),
+      "reason": reasons
+    }
+    bound["prologue"] = this.createPrologue(bound);
+    bound["epilogue"] = this.createEpilogue(bound);
+    for (r in reasons) {
+      this.framemap[r]["outerbound"] = head_y;
+    }
+    this.outerbound[head_y] = bound;
   }
 
   createPrologue(bound) {
@@ -229,7 +243,7 @@ class TimeFrames {
     for (var j=last_idx+1; j<=this.timeseries.length-1; j++) {
       this.timeFrames[i++] = this.timeseries[j];
     }
-    // this.timeFrames[i] = "finish";
+    this.timeFrames[i] = "finish";
   }
 
   updateCaption(id, value) {

@@ -22,6 +22,7 @@ file_map = {
     # "continent": "app/static/data/country_continent.csv",
     # "continent": "app/static/data/additional_data.csv",
     "confirmed": "app/static/data/covid-confirmed.csv",
+    "newcases": "app/static/data/covid-newcases.csv",
     "death": "app/static/data/covid-death.csv",
     "recovered": "app/static/data/covid-recovered.csv",
     "numdays": "app/static/data/covid-numdays.csv",
