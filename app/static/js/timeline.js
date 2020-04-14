@@ -330,7 +330,7 @@ class TimeLine {
         .attr("y", chartExpand?16+top+this.slice_h*gid:16+top)
         .attr("data-s-time", f_start)
         .attr("data-e-time", f_end)
-        .text("1/"+speedrate);
+        .text("x"+parseFloat((1/speedrate).toFixed(2)));
       timeLabels.push(tframe_text_speed);
       tframe_text_speed.on("click", function() {
         var d = $("rect#"+frame_id+".time-slice");
