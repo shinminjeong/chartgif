@@ -314,7 +314,8 @@ function updateSlider() {
   var slider = document.getElementById("mySlider");
   var length_timeFrames = testtimeframes.getTimeFrameLength();
   slider.min = timeScaleInvert(0);
-  slider.max = timeScaleInvert(length_timeFrames-1);
+  slider.max = timeScaleInvert(timeline.width);
+  slider.value = curFrame;
   changeSlider();
 }
 
@@ -425,7 +426,7 @@ function traceTimeline(timeFrames) {
     traceInitSeq(testtimeframes.getFrameContent(curFrame));
   }
 
-  changeSlider($("input[type='range']"), curFrame, true);
+  changeSlider();
   updateCaptionPanel(testtimeframes.getCaption(gid));
 }
 
