@@ -312,10 +312,10 @@ function drawTraceCharts(numGroup, height) {
 
 function updateSlider() {
   var slider = document.getElementById("mySlider");
-  slider.min = 0;
-  slider.max = testtimeframes.getTimeFrameLength();
-  slider.value = 0;
-  changeSlider($("input[type='range']"), curFrame);
+  var length_timeFrames = testtimeframes.getTimeFrameLength();
+  slider.min = timeScaleInvert(0);
+  slider.max = timeScaleInvert(length_timeFrames-1);
+  changeSlider();
 }
 
 function removeFrame(id) {
@@ -440,12 +440,13 @@ $("input[type='range']").change(function() {
   el = $(this);
   curFrame = parseInt(el.val());
   updateBackgoundYear("")
-  changeSlider(el, curFrame, false);
+  changeSlider();
 })
 // Fake a change to position bubble at page load
 .trigger('change');
 
-function changeSlider(el, curFrame) {
+function changeSlider() {
+  var el = $("input[type='range']");
   var length_timeFrames = testtimeframes.getTimeFrameLength();
   var timeFrames = testtimeframes.getTimeFrames();
   if (curFrame >= length_timeFrames) return;
@@ -466,6 +467,7 @@ function changeSlider(el, curFrame) {
     .text(curYear);
   el.val(curFrame);
 
+  if (curFrame < preFrame) chart.clear();
   if (curYear == "init") return;
 
   var frameContent = testtimeframes.getFrameContent(curFrame);
@@ -498,7 +500,6 @@ function changeSlider(el, curFrame) {
     chart.updateFocus(curYear, swtvalues, innergrp, delaytime);
   } else if (preYear != curYear) {
     // console.log("@ changeSlider -- Update", curYear);
-    chart.clear();
     chart.hideDesc(0);
     chart.updateChart(curYear, swtvalues);
   }

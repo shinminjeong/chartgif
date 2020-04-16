@@ -349,9 +349,9 @@ class ScatterPlot {
   }
 
   clear() {
-    // this.bubble_g.selectAll("*").remove();
-    // this.bubble_g_h.selectAll("*").remove();
-    // this.bubble_label_g.selectAll("*").remove();
+    this.bubble_g.selectAll("*").remove();
+    this.bubble_g_h.selectAll("*").remove();
+    this.bubble_label_g.selectAll("*").remove();
     this.bubble_shadow_g.selectAll("*").remove();
     this.bubble_trace_g.selectAll("*").remove();
     this.hull_g.selectAll("path.hull").remove();
@@ -447,9 +447,9 @@ class ScatterPlot {
           else return "";
         })
         .attr('class', function(d){ return 'bubble g'+d.group; })
-        .attr('cx', function(d){ return xScale(d.pre_x);})
-        .attr('cy', function(d){ return yScale(d.pre_y); })
-        .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
+        .attr('cx', function(d){ return xScale(d.x);})
+        .attr('cy', function(d){ return yScale(d.y); })
+        .attr('r', function(d){ return radius(d.population)*1.3+1; })
         .style('stroke', 'black')
         .style('stroke-width', 0.5)
         .style('fill', d => gcolor(d.group))

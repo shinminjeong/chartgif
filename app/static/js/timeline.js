@@ -450,6 +450,15 @@ class TimeLine {
   }
 }
 
+function timeScaleInvert(value) {
+  var domain = timeScale.domain();
+  var paddingOuter = timeScale(domain[0]);
+  var eachBand = timeScale.step();
+
+  var index = Math.floor(((value - paddingOuter) / eachBand));
+  return domain[Math.max(0,Math.min(index, domain.length-1))];
+}
+
 function zoom(svg) {
   const extent = [[0,0], [timeScale_width, 0]];
   svg.call(d3.zoom()
@@ -484,6 +493,9 @@ function zoom(svg) {
     svg.selectAll(".timeline-x-axis-grid").call(xAxis_3);
     svg.selectAll(".timeline-x-axis-year").call(xAxis_year);
     svg.selectAll(".timeline-x-axis-year-h").call(xAxis_year_h);
+
+    // update slider year
+    updateSlider();
   }
 }
 
