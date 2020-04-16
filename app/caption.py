@@ -49,10 +49,10 @@ def summarizeGroup(info, countries):
     sub_regions = [info[c]["sub"] for c in countries]
     region_counter = Counter(sub_regions)
     for c in region_counter.most_common(3):
-        if (c[1]/len(sub_regions) > 0.1):
+        if (c[1]/len(sub_regions) > 0.05):
             desc.append(format(c[0]))
             # desc += "{}({}%); ".format(c[0], int(100*c[1]/len(sub_regions)))
-    # print(desc)
+    print(desc)
     return ";".join(desc)
 
 def cap_mostSpread(y_s, y_e, groups, g, axes, pattern, allgroup):
