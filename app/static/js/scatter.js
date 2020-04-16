@@ -3,7 +3,7 @@ var continent = ["Asia", "Europe", "North America", "South America", "Africa", "
 var color = ["#F08391", "#FCEC71", "#AEED6C", "#AEED6C", "#80DBEB", "#F08391", "#000"];
 var hullOffset = 10, label_spread_x = true;
 var hull_labels, hull_label_links, pre_group;
-var savedCaptions;
+var savedCaptions, savedLabels;
 
 class ScatterPlot {
 
@@ -14,6 +14,7 @@ class ScatterPlot {
     this.div_id = div_id;
     this.bubble = {};
     savedCaptions = {};
+    savedLabels = {};
   }
 
   initChart(data2d, data_options, population, continent, group) {
@@ -329,7 +330,12 @@ class ScatterPlot {
         .attr('y', function(d){ return yScale(d.y); })
         .text(function(d){ return d.name; })
         .attr('paint-order', 'stroke')
-        .style('visibility', 'hidden')
+        .style('visibility', function(d) {
+          var selected = $("text#"+d.id+".bubble-label")[0];
+          if (selected.getAttribute("data-clicked") == "true") return "visible";
+          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return "visible";
+          else return "hidden";
+        })
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles);
@@ -471,7 +477,12 @@ class ScatterPlot {
         .attr('y', function(d){ return yScale(d.y); })
         .text(function(d){ return d.name; })
         .attr('paint-order', 'stroke')
-        .style('visibility', 'hidden')
+        .style('visibility', function(d) {
+          var selected = $("text#"+d.id+".bubble-label")[0];
+          if (selected.getAttribute("data-clicked") == "true") return "visible";
+          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return "visible";
+          else return "hidden";
+        })
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
         .on("mouseout", mouseOutBubbles)
@@ -754,7 +765,7 @@ function mouseOutBubbles(d) {
     dimAllCvxHulls(0.2);
     var labels = $("text.bubble-label.g"+d.group);
     for (var l=0; l < labels.length; l++) {
-      if (labels[l].getAttribute("data-clicked") != null) continue;
+      if (labels[l].getAttribute("data-clicked") == "true") continue;
       if (labels[l].style) labels[l].style.visibility = "hidden"
     }
   }
@@ -763,8 +774,21 @@ function mouseOutBubbles(d) {
 function clickBubbles(d){
   d3.select(this).style("cursor", "pointer");
   var selected = $("text#"+d.id+".bubble-label")[0];
-  selected.style.visibility="visible";
-  selected.setAttribute("data-clicked", curFrame);
+  console.log("clickBubble", d.id)
+  if (selected.getAttribute("data-clicked") == "true") {
+    var last_frame = savedLabels[d.id][savedLabels[d.id].length-1];
+    for (var f = last_frame+1; f <= curFrame; f++)
+      savedLabels[d.id].push(f);
+    selected.setAttribute("data-clicked", "false");
+    selected.style.visibility = "hidden";
+  } else {
+    if (savedLabels[d.id] == undefined) {
+      savedLabels[d.id] = [];
+    }
+    savedLabels[d.id].push(curFrame);
+    selected.setAttribute("data-clicked", "true");
+    selected.style.visibility = "visible";
+  }
 }
 
 function dimAllBubbles(dimlevel) {
