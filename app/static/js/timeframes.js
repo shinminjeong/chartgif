@@ -120,7 +120,7 @@ class TimeFrames {
 
       if (r[0]=="init") {
         outerbound.head = runningtime;
-      } else {
+      } else if (this.framemap[outerbound.prologue] != undefined){
         var prol = this.framemap[outerbound.prologue];
         outerbound.head = prol.head = runningtime;
         prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
@@ -135,7 +135,7 @@ class TimeFrames {
       }
       if (r[0]=="init") {
         outerbound.tail = runningtime;
-      } else {
+      } else if (this.framemap[outerbound.epilogue] != undefined){
         var epil = this.framemap[outerbound.epilogue];
         epil.head = runningtime;
         epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
@@ -207,6 +207,7 @@ class TimeFrames {
       for (var a in arr) {
         var r = arr[a];
         // console.log(r, this.framemap[r])
+        if (this.framemap[r] == undefined) continue;
         var s_idx = this.timeseries.indexOf(this.framemap[r].start_time),
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
             runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));
@@ -329,6 +330,7 @@ class TimeFrames {
       var y = this.timeseries[i];
       // remove group number from yearmap
       var idx = this.yearmap[y]["group"].indexOf(parseInt(ids[2]));
+      if (idx == -1) continue;
       this.yearmap[y]["group"].splice(idx, 1);
       delete this.yearmap[y]["reason"][id];
       if (this.yearmap[y]["group"].length == 0) {

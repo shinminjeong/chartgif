@@ -161,6 +161,7 @@ class TimeLine {
         oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
       for (var i in oframes) {
         var r = oframes[i];
+        if (fmap[r] == undefined) continue;
         // console.log("fmap", r, fmap[r]);
         this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
       }
@@ -408,6 +409,9 @@ class TimeLine {
   addCaption(gid, caption) {
     // console.log("addCaption", gid, caption)
     var corrFrame = $("rect#"+gid+".time-slice")[0];
+    if (corrFrame == undefined)
+      return;
+
     var f_start = corrFrame.getAttribute("data-s-time"),
         f_end = corrFrame.getAttribute("data-e-time");
     var s = timeScale(f_start),
