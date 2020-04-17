@@ -424,7 +424,7 @@ class TimeLine {
     tframe.setAttribute("data-e-time", f_end);
     tframe.setAttribute("data-o-width", e-s);
     tframe.setAttribute("data-o-height", this.caption_h);
-    tframe.addEventListener("mouseover", function(e) {
+    tframe.addEventListener("click", function(e) {
       e.target.style.overflowX = "visible";
       e.target.style.whiteSpace = "normal";
       e.target.style.width = Math.max(150, e.target.getAttribute("data-o-width"));
