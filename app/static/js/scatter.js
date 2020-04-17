@@ -275,7 +275,7 @@ class ScatterPlot {
         .attr('cy', function(d){ return yScale(d.y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', 'black')
-        .style('stroke-width', 0.5)
+        .style('stroke-width', 0.2)
         .style('fill', function(d){
           if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
           else return gcolor(d.group);
@@ -301,7 +301,7 @@ class ScatterPlot {
         .attr('r', function(d){ return radius(d.population)*1.3+1; })
         .style('opacity', 1)
         .style('stroke', 'black')
-        .style('stroke-width', 0.5)
+        .style('stroke-width', 0.2)
         .style('fill', function(d){
           // console.log(d.group);
           if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
@@ -451,7 +451,7 @@ class ScatterPlot {
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', 'black')
-        .style('stroke-width', 0.5)
+        .style('stroke-width', 0.2)
         .style('fill', d => gcolor(d.group))
         .style('opacity', 1)
         .style('display', function(d) {
@@ -502,6 +502,7 @@ class ScatterPlot {
         .attr('data-path', d => d.hulls)
         .style("opacity", 0.4)
         .style("stroke", "#333")
+        .style("stroke-width", 0.2)
         .style("fill", function(d) { return "#bbb"; })
         .style('visibility', function(d) {
           if (d.group >= 0 && d.items < 1000) return 'visible';

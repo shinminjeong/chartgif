@@ -36,6 +36,7 @@ class TimeLine {
       .attr('width', this.width + this.margin.left + this.margin.right)
       .attr('height', this.height);
 
+
     this.chart_g = this.svg.append('g')
       .attr("id", "chart_g")
       .attr('transform', 'translate(' + this.margin.left + ',0)')
