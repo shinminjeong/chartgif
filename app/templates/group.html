@@ -56,6 +56,9 @@
           </div>
         </div>
       </div>
+      <div class="chart-title">
+        <span id='infoChartTitle'></span>
+      </div>
       <div class="year-background">
         <span id='infoCurYear'></span>
       </div>
@@ -292,6 +295,28 @@ function initClusterinfo() {
   infodiv.appendChild(timebar);
 }
 
+function updateChartTitle(gid) {
+  var info_title = document.getElementById("infoChartTitle");
+  var title = "";
+  if (gid == undefined) {
+    // title += ' <i class="fa fa-play" aria-hidden="true"></i>';
+    title = "";
+  } else {
+    var names = gid.split("-");
+    if (names[2] == "p") {
+      title += ' <i class="fa fa-play" aria-hidden="true"></i> ';
+      title += names[0]+"-"+names[1];
+    } else if (names[2] == "e") {
+      title += ' <i class="fa fa-fast-backward" aria-hidden="true"></i> ';
+      title += names[0]+"-"+names[1];
+    } else {
+      title += ' <i class="fa fa-fast-backward" aria-hidden="true"></i> ';
+      title += names[0]+"-"+names[1] + " ";
+      title += '<span style="color:'+gcolor(names[2])+'">'+gname[names[2]]+'</span>';
+    }
+  }
+  info_title.innerHTML = title;
+}
 function updateBackgoundYear(year) {
   var info_year = document.getElementById("infoCurYear");
   info_year.innerHTML = year;
@@ -424,6 +449,8 @@ function traceTimeline(timeFrames) {
   if (curYear == "init") {
     changeSelectedConts([0,1,2,3,4]);
     traceInitSeq(testtimeframes.getFrameContent(curFrame));
+  } else {
+    updateChartTitle(gid);
   }
 
   changeSlider();

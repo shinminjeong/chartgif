@@ -102,6 +102,16 @@ body {
 	z-index: 1;
 }
 
+.chart-title {
+	font-family: "Helvetica Neue";
+	font-size: 24px;
+	position: absolute;
+  z-index: 30;
+  color: #aaa;
+  left: 100px;
+	top: 0px;
+}
+
 .year-background {
 	font-family: "Helvetica Neue";
 	font-size: 200px;
