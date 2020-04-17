@@ -303,7 +303,9 @@ function updateChartTitle(gid) {
     title = "";
   } else {
     var names = gid.split("-");
-    if (names[2] == "p") {
+    if (names[0] == "init") {
+      title = "";
+    } else if (names[2] == "p") {
       title += ' <i class="fa fa-play" aria-hidden="true"></i> ';
       title += names[0]+"-"+names[1];
     } else if (names[2] == "e") {
@@ -449,11 +451,10 @@ function traceTimeline(timeFrames) {
   if (curYear == "init") {
     changeSelectedConts([0,1,2,3,4]);
     traceInitSeq(testtimeframes.getFrameContent(curFrame));
-  } else {
-    updateChartTitle(gid);
   }
 
   changeSlider();
+  updateChartTitle(gid);
   updateCaptionPanel(testtimeframes.getCaption(gid));
 }
 
@@ -468,6 +469,7 @@ $("input[type='range']").change(function() {
   el = $(this);
   curFrame = parseInt(el.val());
   updateBackgoundYear("")
+  updateChartTitle(testtimeframes.getFrameContent(curFrame));
   changeSlider();
 })
 // Fake a change to position bubble at page load
