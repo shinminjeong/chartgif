@@ -245,10 +245,10 @@ class ScatterPlot {
   }
 
   hideDesc(delay) {
-    this.bottomleft.remove();
-    this.bottomright.remove();
-    this.upperleft.remove();
-    this.upperright.remove();
+    this.bottomleft.style("visibility", "hidden")
+    this.bottomright.style("visibility", "hidden")
+    this.upperleft.style("visibility", "hidden")
+    this.upperright.style("visibility", "hidden")
     this.xaxis.transition()
       .duration(delay)
       .style("visibility", "hidden")
@@ -422,9 +422,9 @@ class ScatterPlot {
           else return d.id;
         })
         .attr('class', function(d){ return 'bubble g'+d.group; })
-        .attr('cx', function(d){return xScale(d.x);})
-        .attr('cy', function(d){ return yScale(d.y); })
-        .attr('r', function(d){ return radius(d.population)*1.3+1; })
+        .attr('cx', function(d){return xScale(d.pre_x);})
+        .attr('cy', function(d){ return yScale(d.pre_y); })
+        .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', 'black')
         .style('stroke-width', 0)
         .style('fill', "#ddd")
@@ -447,9 +447,9 @@ class ScatterPlot {
           else return "";
         })
         .attr('class', function(d){ return 'bubble g'+d.group; })
-        .attr('cx', function(d){ return xScale(d.x);})
-        .attr('cy', function(d){ return yScale(d.y); })
-        .attr('r', function(d){ return radius(d.population)*1.3+1; })
+        .attr('cx', function(d){ return xScale(d.pre_x);})
+        .attr('cy', function(d){ return yScale(d.pre_y); })
+        .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', 'black')
         .style('stroke-width', 0.5)
         .style('fill', d => gcolor(d.group))

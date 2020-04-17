@@ -242,7 +242,7 @@ class TimeFrames {
   }
 
   addInitSeq(group, axis, reason, caption) {
-    var initdelay = {"X": 10, "Y": 10, "S": 10, "G": 10, "Trend": 20};
+    var initdelay = {"X": 10, "Y": 10, "S": 20, "G": 10, "Trend": 20};
     if (this.framemap["init"] == undefined) {
       this.framemap["init"] = {
         "head": 0,
