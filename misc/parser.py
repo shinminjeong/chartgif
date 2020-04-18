@@ -22,7 +22,8 @@ def parseTimetable(filename):
                 video["starttime"] = min(times)
                 video["endtime"] = max(times)
                 print(order, video["title"])
-                videos[order] = video
+                if order > -1:
+                    videos[order] = video
             video = {
                 "title": "",
                 "timeline": []
@@ -50,17 +51,18 @@ def parseTimetable(filename):
         video["starttime"] = min(times)
         video["endtime"] = max(times)
         print(order, video["title"])
-        videos[order] = video
+        if order > -1:
+            videos[order] = video
     return videos
 
 
 videos = parseTimetable("timetable.csv")
-# print(videos)
+# print(videos.keys())
 
 h_pattern = 20
 h_margin = h_pattern*3+40
 top_margin = 80
-left_margin = 720
+left_margin = 620
 right_margin = 20
 bottom_margin = 80
 t_width = 2000
@@ -74,16 +76,25 @@ for i, l in enumerate(legends):
     d.append(draw.Text(l, 24, left_margin+480+400*i+18+len(color[i])*30, t_height-top_margin+48, center=0, fill="black"))
 
 for i, v in videos.items():
-    # print(i, v)
+    print(i, v)
     texts = v["title"].split(";")
     d.append(draw.Text("[E{}] {}".format(i+1, texts[0]), 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*0, center=1, text_anchor="end", fill="black"))
-    t = "{} ({}'{}''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
+    if i==7:
+        t = "{} ({}'{}''-2'22'', 7'47''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
+    else:
+        t = "{} ({}'{}''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
     d.append(draw.Text(t, 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*1, center=1, text_anchor="end", fill="black"))
 
-    w100 = v["endtime"]-v["starttime"]
+    if i == 7: # for E8 -- merge two parts
+        w100 = v["endtime"]-v["starttime"]-300
+    else:
+        w100 = v["endtime"]-v["starttime"]
     d.append(draw.Rectangle(left_margin, t_height-top_margin-h_pattern*3-h_margin*i, t_width, h_pattern*3, fill="#eeeeee"))
     for frame in v["timeline"]:
-        x = t_width*(frame["st"]-v["starttime"])/w100
+        if i == 7: # for E8 -- merge two parts
+            x = t_width*(frame["st"]-v["starttime"] if frame["st"]<300 else frame["st"]-300-v["starttime"])/w100
+        else:
+            x = t_width*(frame["st"]-v["starttime"])/w100
         width = t_width*(frame["et"]-frame["st"])/w100
         for p, pattern in enumerate(zip(frame["pattern"],frame["reason"])):
             if (pattern[0] == "Y"):
