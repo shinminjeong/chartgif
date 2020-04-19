@@ -70,20 +70,24 @@ class TimeLine {
     this.setControlPanel();
     this.updateXaxis(timeframes);
     for (var f in forder) {
-      var outerbound = forder[f[0]].outerbound;
+      var outerbound = forder[f].outerbound;
       console.log("outerbound", outerbound, outerbound.head, outerbound.tail);
-      this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
-      var oframes = Object.keys(outerbound.reason);
-      if (outerbound.start_time != "Init")
-        oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
-      for (var i in oframes) {
-        var r = oframes[i];
-        console.log("fmap", r, fmap[r]);
-        this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
-        if (fmap[r].group == "p" || fmap[r].group == "e") continue;
-        addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason);
+      if (outerbound.reason == undefined) {// blank interval
+        timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
+      } else {
+        this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
+        var oframes = Object.keys(outerbound.reason);
+        if (outerbound.start_time != "Init")
+          oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
+        for (var i in oframes) {
+          var r = oframes[i];
+          console.log("fmap", r, fmap[r]);
+          this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+          if (fmap[r].group == "p" || fmap[r].group == "e") continue;
+          addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason);
+        }
+        getCaption(outerbound);
       }
-      getCaption(outerbound);
     }
     this.drawYearTicks();
   }
@@ -152,20 +156,24 @@ class TimeLine {
     var timeframes = Object.keys(timeframesmap);
     this.updateXaxis(timeframes);
     for (var f in forder) {
-      var outerbound = forder[f[0]].outerbound;
+      var outerbound = forder[f].outerbound;
       // console.log("outerbound", outerbound);
-      this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
+      if (outerbound.reason == undefined) {// blank interval
+        timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
+      } else {
+        this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
 
-      var oframes = Object.keys(outerbound.reason);
-      if (outerbound.start_time != "Init")
-        oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
-      for (var i in oframes) {
-        var r = oframes[i];
-        if (fmap[r] == undefined) continue;
-        // console.log("fmap", r, fmap[r]);
-        this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+        var oframes = Object.keys(outerbound.reason);
+        if (outerbound.start_time != "Init")
+          oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
+        for (var i in oframes) {
+          var r = oframes[i];
+          if (fmap[r] == undefined) continue;
+          // console.log("fmap", r, fmap[r]);
+          this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+        }
+        getCaption(outerbound);
       }
-      getCaption(outerbound);
     }
     this.drawYearTicks();
   }
@@ -406,14 +414,7 @@ class TimeLine {
     timeLabels.push(tframe_text);
   }
 
-  addCaption(gid, caption) {
-    // console.log("addCaption", gid, caption)
-    var corrFrame = $("rect#"+gid+".time-slice")[0];
-    if (corrFrame == undefined)
-      return;
-
-    var f_start = corrFrame.getAttribute("data-s-time"),
-        f_end = corrFrame.getAttribute("data-e-time");
+  createCaptionFrame(gid, f_start, f_end, caption) {
     var s = timeScale(f_start),
         e = timeScale(f_end);
     var tframe = document.createElement("textarea");
@@ -452,6 +453,23 @@ class TimeLine {
 
     timeCaptions.push(tframe);
     this.captionpanel.appendChild(tframe);
+  }
+
+  addBlankCaption(years, frames) {
+    // console.log("addBlankCaption", years, frames)
+    var gid = [years[0], years[1], 0].join("-");
+    this.createCaptionFrame(gid, frames[0], frames[1], "test");
+  }
+
+  addCaption(gid, caption) {
+    var corrFrame = $("rect#"+gid+".time-slice")[0];
+    // console.log("addCaption", gid, caption, corrFrame)
+    if (corrFrame == undefined)
+      return;
+
+    var f_start = corrFrame.getAttribute("data-s-time"),
+        f_end = corrFrame.getAttribute("data-e-time");
+    this.createCaptionFrame(gid, f_start, f_end, caption);
   }
 }
 

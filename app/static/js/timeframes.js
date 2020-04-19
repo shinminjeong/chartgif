@@ -114,33 +114,39 @@ class TimeFrames {
         var s_t = this.timeseries.indexOf(r[0]),
             e_t = this.timeseries.indexOf(r[1]);
         // console.log(r, s_t, e_t)
+        outerbound = {
+          "start_time": r[0],
+          "end_time": r[1],
+          "head": runningtime,
+          "tail": runningtime+(e_t-s_t+1),
+        }
         runningtime += (e_t-s_t+1);
-        continue;
-      }
+        // continue;
+      } else {
+        if (r[0]=="init") {
+          outerbound.head = runningtime;
+        } else if (this.framemap[outerbound.prologue] != undefined){
+          var prol = this.framemap[outerbound.prologue];
+          outerbound.head = prol.head = runningtime;
+          prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
+          runningtime += prol.runningtime;
+          prol.tail = runningtime;
+        }
 
-      if (r[0]=="init") {
-        outerbound.head = runningtime;
-      } else if (this.framemap[outerbound.prologue] != undefined){
-        var prol = this.framemap[outerbound.prologue];
-        outerbound.head = prol.head = runningtime;
-        prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
-        runningtime += prol.runningtime;
-        prol.tail = runningtime;
-      }
-
-      for (var b in outerbound.reason) {
-        this.framemap[b].head = runningtime;
-        this.framemap[b].tail = runningtime + this.framemap[b].runningtime;
-        runningtime += this.framemap[b].runningtime;
-      }
-      if (r[0]=="init") {
-        outerbound.tail = runningtime;
-      } else if (this.framemap[outerbound.epilogue] != undefined){
-        var epil = this.framemap[outerbound.epilogue];
-        epil.head = runningtime;
-        epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
-        runningtime += epil.runningtime;
-        outerbound.tail = epil.tail = runningtime;
+        for (var b in outerbound.reason) {
+          this.framemap[b].head = runningtime;
+          this.framemap[b].tail = runningtime + this.framemap[b].runningtime;
+          runningtime += this.framemap[b].runningtime;
+        }
+        if (r[0]=="init") {
+          outerbound.tail = runningtime;
+        } else if (this.framemap[outerbound.epilogue] != undefined){
+          var epil = this.framemap[outerbound.epilogue];
+          epil.head = runningtime;
+          epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
+          runningtime += epil.runningtime;
+          outerbound.tail = epil.tail = runningtime;
+        }
       }
 
       order.push({

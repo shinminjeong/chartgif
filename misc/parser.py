@@ -6,7 +6,7 @@ color = [["#00D2CB","#009E98","#006966"],
         ["#83C1FF","#6291BF","#52799F","#314860","#101820"]]
 legends = ["Hand gestures", "Video editing", "Video playback"]
 reasons = [["pointing","moving","shaping"],
-        ["labeling","tracing","flickering"],
+        ["labeling","flickering","tracing"],
         ["pause","slow down","move fast","go backward","instant replay"]]
 
 def parseTimetable(filename):
