@@ -204,7 +204,9 @@ class TimeFrames {
         this.framearr.push([this.timeseries[last_idx+1], this.timeseries[cur_s-1]]);
         i = this.getTimeFrameLength();
         for (var j=last_idx+1; j<=cur_s-1; j++) {
-          this.timeFrames[i++] = this.timeseries[j];
+          this.timeFrames[i] = this.timeseries[j];
+          this.timeFrameInfo[i] = [this.timeseries[last_idx+1], this.timeseries[cur_s-1], "b"].join("-");
+          i++;
         }
       }
 

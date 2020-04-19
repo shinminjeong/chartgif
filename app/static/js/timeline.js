@@ -79,14 +79,14 @@ class TimeLine {
         var oframes = Object.keys(outerbound.reason);
         if (outerbound.start_time != "Init")
           oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
-        for (var i in oframes) {
+        for (var i = 0; i < oframes.length; i++) {
           var r = oframes[i];
           console.log("fmap", r, fmap[r]);
           this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
           if (fmap[r].group == "p" || fmap[r].group == "e") continue;
           addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason);
         }
-        getCaption(outerbound);
+        createNewCaption(outerbound);
       }
     }
     this.drawYearTicks();
@@ -166,7 +166,7 @@ class TimeLine {
         var oframes = Object.keys(outerbound.reason);
         if (outerbound.start_time != "Init")
           oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
-        for (var i in oframes) {
+        for (var i = 0; i < oframes.length; i++) {
           var r = oframes[i];
           if (fmap[r] == undefined) continue;
           // console.log("fmap", r, fmap[r]);
@@ -457,8 +457,15 @@ class TimeLine {
 
   addBlankCaption(years, frames) {
     // console.log("addBlankCaption", years, frames)
-    var gid = [years[0], years[1], 0].join("-");
-    this.createCaptionFrame(gid, frames[0], frames[1], "test");
+    var gid = [years[0], years[1], "b"].join("-");
+    var caption;
+    if (testtimeframes.getCaption(gid) == undefined) {
+      caption = "From "+years[0]+" to "+years[1]+", here is the general trends.";
+    } else {
+      caption = testtimeframes.getCaption(gid);
+    }
+    this.createCaptionFrame(gid, frames[0], frames[1], caption);
+    updateCaption(gid, caption);
   }
 
   addCaption(gid, caption) {

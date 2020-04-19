@@ -303,16 +303,16 @@ function updateChartTitle(gid) {
     title = "";
   } else {
     var names = gid.split("-");
-    if (names[0] == "init") {
+    if (names[0] == "init" || names[2] == "b") {
       title = "";
     } else if (names[2] == "p") {
-      title += ' <i class="fa fa-play" aria-hidden="true"></i> ';
+      title += ' <i class="fa fa-play" style="color:#666"></i> ';
       title += names[0]+"-"+names[1];
     } else if (names[2] == "e") {
-      title += ' <i class="fa fa-fast-backward" aria-hidden="true"></i> ';
+      title += ' <i class="fa fa-fast-backward" style="color:#666"></i> ';
       title += names[0]+"-"+names[1];
     } else {
-      title += ' <i class="fa fa-fast-backward" aria-hidden="true"></i> ';
+      title += ' <i class="fa fa-fast-backward" style="color:'+gcolor(names[2])+'"></i> ';
       title += names[0]+"-"+names[1] + " ";
       title += '<span style="color:'+gcolor(names[2])+'">'+gname[names[2]]+'</span>';
     }
@@ -381,6 +381,18 @@ playon[0].addEventListener("change", function(e) {
 });
 
 function getCaption(bound) {
+  console.log("@@@getCaption", bound)
+  var reasons = [bound.prologue, ...Object.keys(bound.reason), bound.epilogue];
+  for (var i = 0; i < reasons.length; i++) {
+    var g = reasons[i];
+    console.log("g", g, testtimeframes.getCaption(g))
+    if (testtimeframes.getCaption(g) == undefined)
+      return createNewCaption(bound);
+    timeline.addCaption(g, testtimeframes.getCaption(g));
+  }
+}
+
+function createNewCaption(bound) {
   $.ajax({
     type: "POST",
     url: "/get_caption/",
@@ -505,7 +517,7 @@ function changeSlider() {
   if (frameContent != undefined) {
     var names = frameContent.split("-");
     // console.log("~~ switch to the group:", names[2])
-    if (names[2] == "p" || names[2] == "e") {
+    if (names[2] == "p" || names[2] == "e" || names[2] == "b") {
       focus = false;
       changeSelectedConts([0,1,2,3,4]);
     } else if (names[2] == 0) {
