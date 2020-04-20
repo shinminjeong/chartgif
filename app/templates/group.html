@@ -381,11 +381,12 @@ playon[0].addEventListener("change", function(e) {
 });
 
 function getCaption(bound) {
-  console.log("@@@getCaption", bound)
-  var reasons = [bound.prologue, ...Object.keys(bound.reason), bound.epilogue];
+  // console.log("getCaption", bound)
+  var reasons = Object.keys(bound.reason);
+  if (bound.start_time != "Init")
+    reasons = [bound.prologue, ...Object.keys(bound.reason), bound.epilogue];
   for (var i = 0; i < reasons.length; i++) {
     var g = reasons[i];
-    console.log("g", g, testtimeframes.getCaption(g))
     if (testtimeframes.getCaption(g) == undefined)
       return createNewCaption(bound);
     timeline.addCaption(g, testtimeframes.getCaption(g));
@@ -481,7 +482,9 @@ $("input[type='range']").change(function() {
   el = $(this);
   curFrame = parseInt(el.val());
   updateBackgoundYear("")
-  updateChartTitle(testtimeframes.getFrameContent(curFrame));
+  var gid = testtimeframes.getFrameContent(curFrame);
+  updateChartTitle(gid);
+  updateCaptionPanel(testtimeframes.getCaption(gid));
   changeSlider();
 })
 // Fake a change to position bubble at page load

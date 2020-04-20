@@ -693,7 +693,7 @@ function convexHulls(nodes, index, offset, pre) {
   var hullset = [];
   for (i in hulls) {
     var hid = (desc[i].split(" ").join("-")).split(";").join("-")+"-"+hulls[i].length;
-    console.log("hid", hid, hulls[i][0][0], hulls[i][0][1])
+    // console.log("hid", hid, hulls[i][0][0], hulls[i][0][1])
     if (pre) {
       hullset.push({
         id: hid,

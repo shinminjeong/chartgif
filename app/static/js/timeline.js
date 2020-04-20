@@ -71,7 +71,7 @@ class TimeLine {
     this.updateXaxis(timeframes);
     for (var f in forder) {
       var outerbound = forder[f].outerbound;
-      console.log("outerbound", outerbound, outerbound.head, outerbound.tail);
+      // console.log("outerbound", outerbound, outerbound.head, outerbound.tail);
       if (outerbound.reason == undefined) {// blank interval
         timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
       } else {
@@ -81,7 +81,7 @@ class TimeLine {
           oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
         for (var i = 0; i < oframes.length; i++) {
           var r = oframes[i];
-          console.log("fmap", r, fmap[r]);
+          // console.log("fmap", r, fmap[r]);
           this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
           if (fmap[r].group == "p" || fmap[r].group == "e") continue;
           addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason);
