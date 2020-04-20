@@ -236,9 +236,11 @@ class TimeFrames {
     i = this.getTimeFrameLength();
     // console.log("b~~~",i, this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1], last_idx, this.timeseries.length-1)
     for (var j=last_idx+1; j<=this.timeseries.length-1; j++) {
-      this.timeFrames[i++] = this.timeseries[j];
+      this.timeFrames[i] = this.timeseries[j];
+      this.timeFrameInfo[i] = [this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1], "b"].join("-");
+      i++;
     }
-    // this.timeFrames[i] = "finish";
+    this.timeFrames[i] = "finish";
   }
 
   updateCaption(id, value) {
