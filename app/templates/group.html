@@ -460,8 +460,11 @@ function traceInitSeq(gid) {
 
 function traceTimeline(timeFrames) {
   var curYear = timeFrames[curFrame];
-  var gid = testtimeframes.getFrameContent(curFrame);
   // console.log("traceTimeline", curFrame, curYear, gid);
+  if (curFrame == testtimeframes.getTimeFrameLength()-1) {
+    curFrame -= 1;
+  }
+  var gid = testtimeframes.getFrameContent(curFrame);
   // if init sequence
   if (curYear == "init") {
     changeSelectedConts([0,1,2,3,4]);
@@ -485,6 +488,10 @@ $("input[type='range']").change(function() {
   curFrame = parseInt(el.val());
   updateBackgoundYear("")
   var gid = testtimeframes.getFrameContent(curFrame);
+  if (curFrame == testtimeframes.getTimeFrameLength()-1) {
+    curFrame -= 1;
+    gid = testtimeframes.getFrameContent(curFrame);
+  }
   updateChartTitle(gid);
   updateCaptionPanel(testtimeframes.getCaption(gid));
   changeSlider();

@@ -290,6 +290,8 @@ class ScatterPlot {
     // console.log("updateChart", year);
     this.clear();
     var data = this.data[year];
+    if (data == undefined)
+      data = this.data[timeseries[timeseries.length-1]];
 
     var bubble = this.bubble_g.selectAll('.bubble').data(data);
     bubble.enter().append('circle')
