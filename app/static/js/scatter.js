@@ -332,7 +332,6 @@ class ScatterPlot {
         .attr('paint-order', 'stroke')
         .style('visibility', function(d) {
           var selected = $("text#"+d.id+".bubble-label")[0];
-          if (selected.getAttribute("data-clicked") == "true") return "visible";
           if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return "visible";
           else return "hidden";
         })
@@ -479,7 +478,6 @@ class ScatterPlot {
         .attr('paint-order', 'stroke')
         .style('visibility', function(d) {
           var selected = $("text#"+d.id+".bubble-label")[0];
-          if (selected.getAttribute("data-clicked") == "true") return "visible";
           if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return "visible";
           else return "hidden";
         })
@@ -777,16 +775,16 @@ function clickBubbles(d){
   var selected = $("text#"+d.id+".bubble-label")[0];
   console.log("clickBubble", d.id)
   if (selected.getAttribute("data-clicked") == "true") {
-    var last_frame = savedLabels[d.id][savedLabels[d.id].length-1];
-    for (var f = last_frame+1; f <= curFrame; f++)
-      savedLabels[d.id].push(f);
-    selected.setAttribute("data-clicked", "false");
-    selected.style.visibility = "hidden";
+    //
   } else {
     if (savedLabels[d.id] == undefined) {
       savedLabels[d.id] = [];
     }
-    savedLabels[d.id].push(curFrame);
+    var default_frame_count = 20;
+    for (var i = 0; i < default_frame_count; i++)
+      savedLabels[d.id].push(curFrame+i);
+    timeline.addLabel(curFrame, curFrame+default_frame_count, d.id);
+
     selected.setAttribute("data-clicked", "true");
     selected.style.visibility = "visible";
   }

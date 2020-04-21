@@ -231,6 +231,10 @@ body {
 	border-radius: 0 0 .2em .2em;
 	background: linear-gradient(#fff,#fff,#fff,#fff,#fff,#fff,#eee);
 }
+.timeline-label {
+	top: 25px;
+	position: relative;
+}
 .timeline-frame {
 	top: 45px;
 	position: relative;
@@ -306,7 +310,19 @@ text.time-slice-outer {
 	fill: #fff;
 	fill-opacity: 0.5;
 }
-
+.time-label {
+	position: absolute;
+	background-color: #fc9803;
+	border-radius: .2rem;
+	border: .2px solid #000;
+	color: #000;
+	font-size: 10px;
+	padding: 1px 2px 2px 2px;
+	overflow-x: hidden;
+	white-space: nowrap;
+	opacity: 1;
+	resize: none;
+}
 .time-caption {
 	position: absolute;
 	background-color: #002654;

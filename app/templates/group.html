@@ -80,6 +80,7 @@
       <div style="height:290;overflow-x:hidden;overflow-y:scroll">
         <div class="timeline timeline-background" id="timeline-background"></div>
         <div class="timeline timeline-frame" id="timeline"></div>
+        <div class="timeline timeline-label" id="timeline-label"></div>
         <div class="timeline timeline-legend" id="timeline-legend"></div>
         <div class="timeline timeline-control" id="timeline-control"></div>
         <div class="timeline timeline-slider">
@@ -148,6 +149,7 @@ document.getElementsByClassName("chart-background")[0].style.height = h-caption_
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
 document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-45;
+document.getElementsByClassName("timeline-label")[0].style.width = timeline_w-45;
 document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-45;
 document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-45;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);

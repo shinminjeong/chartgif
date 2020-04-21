@@ -13,6 +13,7 @@ class TimeLine {
     this.slice_h = 40;
     this.caption_h = 20;
     this.year_h = 20;
+    this.nfloorlabels = 0;
 
     timeSlices = [];
     timeLabels = [];
@@ -28,34 +29,34 @@ class TimeLine {
   initChart(timeframesmap, forder, fmap, gname) {
     var timeframes = Object.keys(timeframesmap);
     console.log("Timeline -- initchart", timeframes, gname);
+    this.labelpanel = document.getElementById(this.div_id + "-label");
     this.legendpanel = document.getElementById(this.div_id + "-legend");
     this.controlpanel = document.getElementById(this.div_id + "-control");
     this.captionpanel = document.getElementById(this.div_id);
     this.svg = d3.select("#"+this.div_id_frames)
       .append('svg')
       .attr('width', this.width + this.margin.left + this.margin.right)
-      .attr('height', this.height);
+      .attr('height', this.height)
+      .attr('transform', 'translate(' + this.margin.left + ',0)');
 
-
-    this.chart_g = this.svg.append('g')
-      .attr("id", "chart_g")
-      .attr('transform', 'translate(' + this.margin.left + ',0)')
-      .call(zoom);
-
-    this.background = this.chart_g.append("rect")
+    this.background = this.svg.append("rect")
       .attr("x", 0)
       .attr("y", this.margin.top)
       .attr("width", this.width)
       .attr("height", this.height-this.margin.top-this.margin.bottom)
       .style("fill", "#d3d3d3");
 
-    this.grid = this.chart_g.append("g");
+    this.chart_g = this.svg.append('g')
+      .attr("id", "chart_g")
+      .call(zoom);
+
+    this.grid = this.svg.append("g");
     this.x_1 = this.grid.append("g");
     this.x_2 = this.grid.append("g");
     this.x_3 = this.grid.append("g");
-    this.x_year = this.grid.append("g");
-    this.x_year_h = this.grid.append("g");
-    this.framegrid = this.grid.append("g").attr("class", "grid");
+    this.x_year = this.chart_g.append("g");
+    this.x_year_h = this.chart_g.append("g");
+    this.framegrid = this.chart_g.append("g").attr("class", "grid");
     this.framegrid
       .selectAll("line")
       .data([this.caption_h, this.caption_h+this.slice_h])
@@ -245,7 +246,7 @@ class TimeLine {
       .tickFormat("")
       .tickValues(this.tickEveryYear);
     this.x_year
-      .attr("transform", "translate(0," + this.height + ")")
+      .attr("transform", "translate(0," + (this.height-this.getLabelHeight()) + ")")
       .attr("class", "timeline-x-axis timeline-x-axis-year").call(xAxis_year);
 
     this.x_year_h.selectAll("*").remove();
@@ -258,7 +259,7 @@ class TimeLine {
       .tickValues(this.tickHighlightYears);
 
     this.x_year_h
-      .attr("transform", "translate(0," + this.height + ")")
+      .attr("transform", "translate(0," + (this.height-this.getLabelHeight()) + ")")
       .attr("class", "timeline-x-axis timeline-x-axis-year-h").call(xAxis_year_h);
     this.x_year_h.selectAll('.timeline-x-axis-year-h text')
       .attr('transform', 'translate(12,+15)');
@@ -404,7 +405,7 @@ class TimeLine {
       .attr("data-s-time", y_start)
       .attr("data-e-time", y_end)
       .attr("x", s+timeScale.bandwidth()/2)
-      .attr("y", this.height-this.margin.bottom-3)
+      .attr("y", this.height-this.getLabelHeight()-this.margin.bottom-3)
       .text(name);
 
     this.h_years.push(obound.start_time);
@@ -477,6 +478,45 @@ class TimeLine {
     var f_start = corrFrame.getAttribute("data-s-time"),
         f_end = corrFrame.getAttribute("data-e-time");
     this.createCaptionFrame(gid, f_start, f_end, caption);
+  }
+
+  getLabelHeight() {
+    return this.nfloorlabels*this.caption_h;
+  }
+
+  updateLabelHeight() {
+    console.log("increaseLabelHeight")
+    this.captionpanel.style.marginTop = this.getLabelHeight();
+
+    this.s_height = this.getLabelHeight()+this.slice_h+this.caption_h+this.year_h+this.margin.top+this.margin.bottom;
+    this.l_height = this.getLabelHeight()+this.caption_h+this.slice_h*legendCount+this.year_h+this.margin.top+this.margin.bottom;
+    if (chartExpand) this.height = this.l_height;
+    else this.height = this.s_height;
+
+    this.legendpanel.style.height = this.height;
+    this.controlpanel.style.height = this.height;
+    document.getElementById(this.div_id + "-background").style.height = this.height;
+
+    this.svg.attr("height", this.height);
+    this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+    this.chart_g.attr('transform', 'translate(0,'+this.getLabelHeight()+')');
+  }
+
+  addLabel(f_start, f_end, id) {
+    var s = timeScale(f_start),
+        e = timeScale(f_end);
+    var label = document.createElement("div");
+    label.className = "time-label"
+    label.id = id;
+    label.style.top = 0;
+    label.style.left = this.margin.left+s;
+    label.style.width = e-s;
+    label.style.height = this.caption_h;
+    label.innerHTML = id;
+    this.labelpanel.appendChild(label);
+
+    this.nfloorlabels = 1;
+    this.updateLabelHeight();
   }
 }
 
