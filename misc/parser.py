@@ -1,12 +1,12 @@
 import os, csv
 import drawSvg as draw
 
-color = [["#00D2CB","#009E98","#006966"],
-        ["#FFC702","#BF9502","#806401"],
-        ["#83C1FF","#6291BF","#52799F","#314860","#101820"]]
+color = [["#abc760","#60a561","#025b42"],
+        ["#feca1f","#ff8800","#ef7674","#ca054d"],
+        ["#05668d","#00aae3","#80ced7","#d4c1ec","#82204a"]]
 legends = ["Hand gestures", "Video editing", "Video playback"]
 reasons = [["pointing","moving","shaping"],
-        ["labeling","flickering","tracing"],
+        ["labeling","flickering","tracing","accumulating"],
         ["pause","slow down","move fast","go backward","instant replay"]]
 
 def parseTimetable(filename):
@@ -37,8 +37,12 @@ def parseTimetable(filename):
         r1 = reasons[0].index(r[5]) if r[5].strip() else -1
         r2 = reasons[1].index(r[7]) if r[7].strip() else -1
         r3 = reasons[2].index(r[9]) if r[9].strip() else -1
-        s_sec = int(s[0])*60+int(s[1])
-        e_sec = int(e[0])*60+int(e[1])
+        if len(s) == 3:
+            s_sec = int(s[0])*3600+int(s[1])*60+int(s[2])
+            e_sec = int(e[0])*3600+int(e[1])*60+int(e[2])
+        else:
+            s_sec = int(s[0])*60+int(s[1])
+            e_sec = int(e[0])*60+int(e[1])
         times.append(s_sec)
         times.append(e_sec)
         video["timeline"].append({
