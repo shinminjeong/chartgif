@@ -86,7 +86,7 @@ class TraceChart {
       .enter().append("path")
         .attr("class", "trace")
         .attr("d", drawCluster)
-        .style("opacity", 0.01)
+        .style("opacity", 0.02)
         .style("fill", function(d) { return gcolor(d.group); });
 
     allyearmeans[this.g_id] = [];

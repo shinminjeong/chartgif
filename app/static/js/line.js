@@ -140,7 +140,7 @@ class LineChart {
       path_svg.append("text")
         .attr("x", line_xscale(minYear)-12)
         .attr("y", y_pos+2)
-        .text(axis + ":" + data_options[axis.toLowerCase()]["id"])
+        .text(data_options[axis.toLowerCase()]["id"])
         .attr("class", this.div_id)
         .attr("axis", axis)
         .attr("fill", "#000")
