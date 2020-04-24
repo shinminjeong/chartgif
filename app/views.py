@@ -18,6 +18,7 @@ file_map = {
     "income": "app/static/data/income_per_person_gdppercapita_ppp_inflation_adjusted.csv",
     "lifespan": "app/static/data/life_expectancy_years.csv",
     "fertility": "app/static/data/children_per_woman_total_fertility.csv",
+    "mortality": "app/static/data/child_mortality_0_5_year_olds_dying_percentage.csv",
     "population": "app/static/data/population_total.csv",
     # "continent": "app/static/data/country_continent.csv",
     # "continent": "app/static/data/additional_data.csv",
@@ -190,13 +191,13 @@ def get_caption(request):
             groupdesc[g][c] = summarizeGroup(kgroups, [countries[vv] for vv in clist])
 
         axisNames = [options[a.lower()] for a in selectedAxis]
-        caption[id] = generateCaption(groups, g, axisNames, v["reason"][0], v["pattern"][0], yrange[0], yrange[-1], allgroup = reasons)
+        caption[id] = generateCaption(groups, g, axisNames, v["reason"][0], v["pattern"][0], timemap[yrange[0]], timemap[yrange[-1]], allgroup = reasons)
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")
     # print(groupdesc)
 
-    caption[o_prologue] = "Caption for prologue."
-    caption[o_epilogue] = "Caption for epilogue."
+    caption[o_prologue] = generatePrologue(groups, reasons, timemap[head_y], timemap[tail_y])
+    caption[o_epilogue] = generatePrologue(groups, reasons, timemap[head_y], timemap[tail_y])
 
     return JsonResponse({
         "head": head_y,

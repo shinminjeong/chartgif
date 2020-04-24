@@ -16,6 +16,7 @@ name_map = {
     "income": "Income",
     "fertility": "Babies per woman",
     "lifespan": "Life Expectancy",
+    "mortality": "Child Mortality",
     "population": "Population",
     "continent": "Continent",
     "confirmed": "Confirmed",
@@ -30,6 +31,7 @@ name_map = {
 label_map = {
     "income": {"desc": "wealth", "low": "poor", "high": "rich"},
     "fertility": {"desc": "family size", "low": "few", "high": "many"},
+    "mortality": {"desc": "child health", "low": "healthy", "high": "sick"},
     "lifespan": {"desc": "health", "low": "sick", "high": "healthy"},
     "population": {"desc": "population", "low": "few", "high": "many"},
     "confirmed": {"desc": "confirmed", "low": "few", "high": "many"},
@@ -45,6 +47,15 @@ unit_map = {
     "lifespan": "years",
     "population": "",
 }
+desc = {
+    "downup": "went down then up",
+    "updown": "went up then down",
+    "increased": "increased",
+    "decreased": "decreased",
+    "mostspread": "was most spread",
+    "nochange": "does not change much",
+    "user": "something happened"
+}
 
 
 def summarizeGroup(info, countries):
@@ -56,32 +67,32 @@ def summarizeGroup(info, countries):
     sub_regions = [info[c]["sub"] for c in countries]
     region_counter = Counter(sub_regions)
     for c in region_counter.most_common(3):
-        if (c[1]/len(sub_regions) > 0.1):
+        if (c[1]/len(sub_regions) > 0.05):
             desc.append(format(c[0]))
             # desc += "{}({}%); ".format(c[0], int(100*c[1]/len(sub_regions)))
     # print(desc)
     return ";".join(desc)
 
 def cap_mostSpread(y_s, y_e, groups, g, axes, pattern, allgroup):
-    return "In {}, differences between the countries of the world was wider than ever.".format(y_s)
+    return "In {}, the difference between the countries of the world was wider than ever.".format(y_s)
 
 def cap_noChange(y_s, y_e, groups, g, axes, pattern, allgroup):
     cap = ""
     for axis in axes:
-        cap += "{} in {} STUCK between {} and {}.".format(axis["name"], groups[g], y_s, y_e)
+        cap += "{} in {} does not change much between {} and {}.".format(axis["name"], groups[g], y_s, y_e)
     return cap
 
 def cap_valueChange(y_s, y_e, groups, g, axes, pattern, allgroup):
     cap = ""
     for axis in axes:
-        how = pattern.upper() if pattern else "" ## by n unit_map[axis["id"]]
+        how = desc[pattern] if pattern else "" ## by n unit_map[axis["id"]]
         cap += "{} in {} {} between {} and {}.".format(axis["name"], groups[g], how, y_s, y_e)
     return cap
 
 def cap_userGenerated(y_s, y_e, groups, g, axes, pattern, allgroup):
     cap = ""
     for axis in axes:
-        cap += "{} in {}, Something happened between {} and {}.".format(axis["name"], groups[g], y_s, y_e)
+        cap += "{} in {}, something happened between {} and {}.".format(axis["name"], groups[g], y_s, y_e)
     return cap
 
 def cap_summary(y_s, y_e, groups, g, axes, pattern, allgroup):
@@ -117,7 +128,7 @@ def cap_trend(options, x_move, y_move):
 
 def cap_size(a, options):
     key = a.lower()
-    return "The size of the bubbles shows the size of {}.".format(options[key]["name"])
+    return "The size of the bubbles shows the size of the {}.".format(options[key]["name"].lower())
 
 def generateInitSeq(options, groups, values):
     print("generateInitSeq", groups, options)
@@ -141,6 +152,30 @@ def generateInitSeq(options, groups, values):
 
 
 def generateCaption(groups, g, axes, reason, pattern, head_y, tail_y, allgroup):
-    # print("generateCaption", gname, axes)
+    # print("generateCaption", groups, g, axes, reason, pattern)
     caption = caption_generator[reason](head_y, tail_y, groups, g, axes, pattern, allgroup)
+    return caption
+
+def aggrNames(groups, nlist):
+    if 0 in groups and groups[0] in nlist:
+        return groups[0]
+    if len(nlist) == 1:
+        return nlist[0]
+    return ", ".join(nlist[:-1])+" and "+nlist[-1]
+
+def generatePrologue(groups, reasons, head_y, tail_y):
+    # print("generatePrologue", groups, reasons, head_y, tail_y)
+    reason_group = {}
+    for r, v in reasons.items():
+        pattern = v["pattern"][0]
+        if pattern not in reason_group:
+            reason_group[pattern] = []
+        reason_group[pattern].append(r)
+
+    caption = "From {} to {}, ".format(head_y, tail_y)
+    for r, ids in reason_group.items():
+        gnames = [groups[int(g.split("-")[-1])] for g in ids]
+        caption += "{} {}. ".format(aggrNames(groups, gnames), desc[r])
+    # print(caption)
+    # print()
     return caption

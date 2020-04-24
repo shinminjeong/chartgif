@@ -16,7 +16,7 @@ class TimeFrames {
     }
     this.default_slowdown = {
       "noc": 2,
-      "var": 15,
+      "var": 5,
       "spr": 20,
       "usr": 10,
       "sum": 2,
@@ -128,33 +128,39 @@ class TimeFrames {
         var s_t = this.timeseries.indexOf(r[0]),
             e_t = this.timeseries.indexOf(r[1]);
         // console.log(r, s_t, e_t)
+        outerbound = {
+          "start_time": r[0],
+          "end_time": r[1],
+          "head": runningtime,
+          "tail": runningtime+(e_t-s_t+1),
+        }
         runningtime += (e_t-s_t+1);
-        continue;
-      }
-
-      if (r[0]=="init") {
-        outerbound.head = runningtime;
+        // continue;
       } else {
-        var prol = this.framemap[outerbound.prologue];
-        outerbound.head = prol.head = runningtime;
-        prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
-        runningtime += prol.runningtime;
-        prol.tail = runningtime;
-      }
+        if (r[0]=="init") {
+          outerbound.head = runningtime;
+        } else if (this.framemap[outerbound.prologue] != undefined){
+          var prol = this.framemap[outerbound.prologue];
+          outerbound.head = prol.head = runningtime;
+          prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
+          runningtime += prol.runningtime;
+          prol.tail = runningtime;
+        }
 
-      for (var b in outerbound.reason) {
-        this.framemap[b].head = runningtime;
-        this.framemap[b].tail = runningtime + this.framemap[b].runningtime;
-        runningtime += this.framemap[b].runningtime;
-      }
-      if (r[0]=="init") {
-        outerbound.tail = runningtime;
-      } else {
-        var epil = this.framemap[outerbound.epilogue];
-        epil.head = runningtime;
-        epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
-        runningtime += epil.runningtime;
-        outerbound.tail = epil.tail = runningtime;
+        for (var b in outerbound.reason) {
+          this.framemap[b].head = runningtime;
+          this.framemap[b].tail = runningtime + this.framemap[b].runningtime;
+          runningtime += this.framemap[b].runningtime;
+        }
+        if (r[0]=="init") {
+          outerbound.tail = runningtime;
+        } else if (this.framemap[outerbound.epilogue] != undefined){
+          var epil = this.framemap[outerbound.epilogue];
+          epil.head = runningtime;
+          epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
+          runningtime += epil.runningtime;
+          outerbound.tail = epil.tail = runningtime;
+        }
       }
 
       order.push({
@@ -212,7 +218,9 @@ class TimeFrames {
         this.framearr.push([this.timeseries[last_idx+1], this.timeseries[cur_s-1]]);
         i = this.getTimeFrameLength();
         for (var j=last_idx+1; j<=cur_s-1; j++) {
-          this.timeFrames[i++] = this.timeseries[j];
+          this.timeFrames[i] = this.timeseries[j];
+          this.timeFrameInfo[i] = [this.timeseries[last_idx+1], this.timeseries[cur_s-1], "b"].join("-");
+          i++;
         }
       }
 
@@ -221,6 +229,7 @@ class TimeFrames {
       for (var a in arr) {
         var r = arr[a];
         // console.log(r, this.framemap[r])
+        if (this.framemap[r] == undefined) continue;
         var s_idx = this.timeseries.indexOf(this.framemap[r].start_time),
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
             runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));
@@ -241,7 +250,9 @@ class TimeFrames {
     i = this.getTimeFrameLength();
     // console.log("b~~~",i, this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1], last_idx, this.timeseries.length-1)
     for (var j=last_idx+1; j<=this.timeseries.length-1; j++) {
-      this.timeFrames[i++] = this.timeseries[j];
+      this.timeFrames[i] = this.timeseries[j];
+      this.timeFrameInfo[i] = [this.timeseries[last_idx+1], this.timeseries[this.timeseries.length-1], "b"].join("-");
+      i++;
     }
     this.timeFrames[i] = "finish";
   }
@@ -256,7 +267,7 @@ class TimeFrames {
   }
 
   addInitSeq(group, axis, reason, caption) {
-    var initdelay = {"X": 10, "Y": 10, "S": 10, "G": 10, "Trend": 20};
+    var initdelay = {"X": 10, "Y": 10, "S": 20, "G": 10, "Trend": 20};
     if (this.framemap["init"] == undefined) {
       this.framemap["init"] = {
         "head": 0,
@@ -343,6 +354,7 @@ class TimeFrames {
       var y = this.timeseries[i];
       // remove group number from yearmap
       var idx = this.yearmap[y]["group"].indexOf(parseInt(ids[2]));
+      if (idx == -1) continue;
       this.yearmap[y]["group"].splice(idx, 1);
       delete this.yearmap[y]["reason"][id];
       if (this.yearmap[y]["group"].length == 0) {

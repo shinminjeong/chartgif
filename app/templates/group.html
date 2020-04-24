@@ -60,13 +60,11 @@
           </div>
         </div>
       </div>
+      <div class="chart-title">
+        <span id='infoChartTitle'></span>
+      </div>
       <div class="year-background">
         <span id='infoCurYear'></span>
-      </div>
-      <div class="custom-control custom-switch-play">
-        <label>
-          <input type="checkbox" class="custom-control-input" id="switchPlay">
-        <i id="play_icon" class="fa fa-play"></i></label>
       </div>
       <div class="caption-panel">
         <span id='caption'></span>
@@ -77,10 +75,16 @@
     </div>
   </div>
   <div class="row" id="timeline-panel" style="padding: 20px 10px;">
+    <div class="custom-control custom-switch-play">
+      <label>
+        <input type="checkbox" class="custom-control-input" id="switchPlay">
+      <i id="play_icon" class="fa fa-play"></i></label>
+    </div>
     <div class="col-md-12">
       <div style="height:290;overflow-x:hidden;overflow-y:scroll">
         <div class="timeline timeline-background" id="timeline-background"></div>
         <div class="timeline timeline-frame" id="timeline"></div>
+        <div class="timeline timeline-label" id="timeline-label"></div>
         <div class="timeline timeline-legend" id="timeline-legend"></div>
         <div class="timeline timeline-control" id="timeline-control"></div>
         <div class="timeline timeline-slider">
@@ -103,7 +107,7 @@
 <script src="{% static 'js/timeline.js' %}"></script>
 <script>
 var morecolor = d3.scaleOrdinal(d3.schemeCategory10);
-var colorarray = ["#666", "#F08391", "#ffe940", "#AEED6C", "#80DBEB"];
+var colorarray = ["#666", "#F08391", "#FFCF2B", "#AEED6C", "#80DBEB"];
 let gcolor = function(i){
   if (i < colorarray.length) {
     return colorarray[i];
@@ -150,6 +154,7 @@ document.getElementsByClassName("chart-background")[0].style.height = h-caption_
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
 document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-45;
+document.getElementsByClassName("timeline-label")[0].style.width = timeline_w-45;
 document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-45;
 document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-45;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
@@ -298,6 +303,30 @@ function initClusterinfo() {
   infodiv.appendChild(timebar);
 }
 
+function updateChartTitle(gid) {
+  var info_title = document.getElementById("infoChartTitle");
+  var title = "";
+  if (gid == undefined) {
+    // title += ' <i class="fa fa-play" aria-hidden="true"></i>';
+    title = "";
+  } else {
+    var names = gid.split("-");
+    if (names[0] == "init" || names[2] == "b") {
+      title = "";
+    } else if (names[2] == "p") {
+      title += ' <i class="fa fa-play" style="color:#666"></i> ';
+      title += timemap[names[0]]+"-"+timemap[names[1]];
+    } else if (names[2] == "e") {
+      title += ' <i class="fa fa-fast-backward" style="color:#666"></i> ';
+      title += timemap[names[0]]+"-"+timemap[names[1]];
+    } else {
+      title += ' <i class="fa fa-fast-backward" style="color:'+gcolor(names[2])+'"></i> ';
+      title += timemap[names[0]]+"-"+timemap[names[1]] + " ";
+      title += '<span style="color:'+gcolor(names[2])+'">'+gname[names[2]]+'</span>';
+    }
+  }
+  info_title.innerHTML = title;
+}
 function updateBackgoundYear(year) {
   var info_year = document.getElementById("infoCurYear");
   if (timemap[year])
@@ -319,10 +348,11 @@ function drawTraceCharts(numGroup, height) {
 
 function updateSlider() {
   var slider = document.getElementById("mySlider");
-  slider.min = 0;
-  slider.max = testtimeframes.getTimeFrameLength();
-  slider.value = 0;
-  changeSlider($("input[type='range']"), curFrame);
+  var length_timeFrames = testtimeframes.getTimeFrameLength();
+  slider.min = timeScaleInvert(0);
+  slider.max = timeScaleInvert(timeline.width);
+  slider.value = curFrame;
+  changeSlider();
 }
 
 function removeFrame(id) {
@@ -360,6 +390,19 @@ playon[0].addEventListener("change", function(e) {
 });
 
 function getCaption(bound) {
+  // console.log("getCaption", bound)
+  var reasons = Object.keys(bound.reason);
+  if (bound.start_time != "Init")
+    reasons = [bound.prologue, ...Object.keys(bound.reason), bound.epilogue];
+  for (var i = 0; i < reasons.length; i++) {
+    var g = reasons[i];
+    if (testtimeframes.getCaption(g) == undefined)
+      return createNewCaption(bound);
+    timeline.addCaption(g, testtimeframes.getCaption(g));
+  }
+}
+
+function createNewCaption(bound) {
   $.ajax({
     type: "POST",
     url: "/get_caption/",
@@ -424,15 +467,19 @@ function traceInitSeq(gid) {
 
 function traceTimeline(timeFrames) {
   var curYear = timeFrames[curFrame];
-  var gid = testtimeframes.getFrameContent(curFrame);
   // console.log("traceTimeline", curFrame, curYear, gid);
+  if (curFrame == testtimeframes.getTimeFrameLength()-1) {
+    curFrame -= 1;
+  }
+  var gid = testtimeframes.getFrameContent(curFrame);
   // if init sequence
   if (curYear == "init") {
     changeSelectedConts([0,1,2,3,4]);
     traceInitSeq(testtimeframes.getFrameContent(curFrame));
   }
 
-  changeSlider($("input[type='range']"), curFrame, true);
+  changeSlider();
+  updateChartTitle(gid);
   updateCaptionPanel(testtimeframes.getCaption(gid));
 }
 
@@ -450,12 +497,20 @@ $("input[type='range']").change(function() {
   el = $(this);
   curFrame = parseInt(el.val());
   updateBackgoundYear("")
-  changeSlider(el, curFrame, false);
+  var gid = testtimeframes.getFrameContent(curFrame);
+  if (curFrame == testtimeframes.getTimeFrameLength()-1) {
+    curFrame -= 1;
+    gid = testtimeframes.getFrameContent(curFrame);
+  }
+  updateChartTitle(gid);
+  updateCaptionPanel(testtimeframes.getCaption(gid));
+  changeSlider();
 })
 // Fake a change to position bubble at page load
 .trigger('change');
 
-function changeSlider(el, curFrame) {
+function changeSlider() {
+  var el = $("input[type='range']");
   var length_timeFrames = testtimeframes.getTimeFrameLength();
   var timeFrames = testtimeframes.getTimeFrames();
   if (curFrame >= length_timeFrames) return;
@@ -469,13 +524,14 @@ function changeSlider(el, curFrame) {
   el.next("output")
     .css({
       "marginLeft": width * newPoint + 36,
-      "marginTop": -20,
+      "marginTop": -18,
       "font-size": 10,
       "color": "#000"
     })
-    .text(curYear);
+    .text(timemap[curYear]);
   el.val(curFrame);
 
+  if (curFrame < preFrame) chart.clear();
   if (curYear == "init") return;
 
   var frameContent = testtimeframes.getFrameContent(curFrame);
@@ -483,7 +539,7 @@ function changeSlider(el, curFrame) {
   if (frameContent != undefined) {
     var names = frameContent.split("-");
     // console.log("~~ switch to the group:", names[2])
-    if (names[2] == "p" || names[2] == "e") {
+    if (names[2] == "p" || names[2] == "e" || names[2] == "b") {
       focus = false;
       changeSelectedConts([0,1,2,3,4]);
     } else if (names[2] == 0) {
@@ -508,7 +564,6 @@ function changeSlider(el, curFrame) {
     chart.updateFocus(curYear, swtvalues, innergrp, delaytime);
   } else if (preYear != curYear) {
     // console.log("@ changeSlider -- Update", curYear);
-    chart.clear();
     chart.hideDesc(0);
     chart.updateChart(curYear, swtvalues);
   }
