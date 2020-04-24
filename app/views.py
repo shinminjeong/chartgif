@@ -18,6 +18,7 @@ file_map = {
     "income": "app/static/data/income_per_person_gdppercapita_ppp_inflation_adjusted.csv",
     "lifespan": "app/static/data/life_expectancy_years.csv",
     "fertility": "app/static/data/children_per_woman_total_fertility.csv",
+    "mortality": "app/static/data/child_mortality_0_5_year_olds_dying_percentage.csv",
     "population": "app/static/data/population_total.csv",
     # "continent": "app/static/data/country_continent.csv",
     "continent": "app/static/data/additional_data.csv"
@@ -57,6 +58,7 @@ def main(request):
     pd_x = pd.read_csv(file_map[options["x"]["id"]])
     pd_y = pd.read_csv(file_map[options["y"]["id"]])
     timeseries = [x for x,y in zip(pd_x.columns.tolist()[1:], pd_y.columns.tolist()[1:]) if x==y]
+    # timeseries = [x for x,y in zip(pd_x.columns.tolist()[1:], pd_y.columns.tolist()[1:]) if x==y and int(x) >= 1960]
 
     numTicks = len(timeseries)
     df_x = pd_x[['country']+timeseries].dropna()

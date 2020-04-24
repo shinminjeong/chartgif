@@ -16,6 +16,7 @@ name_map = {
     "income": "Income",
     "fertility": "Babies per woman",
     "lifespan": "Life Expectancy",
+    "mortality": "Child Mortality",
     "population": "Population",
     "continent": "Continent",
     "confirmed": "Confirmed",
@@ -28,6 +29,7 @@ name_map = {
 label_map = {
     "income": {"desc": "wealth", "low": "poor", "high": "rich"},
     "fertility": {"desc": "family size", "low": "few", "high": "many"},
+    "mortality": {"desc": "child health", "low": "healthy", "high": "sick"},
     "lifespan": {"desc": "health", "low": "sick", "high": "healthy"},
     "population": {"desc": "population", "low": "few", "high": "many"},
     "none": {"desc": "", "high": ""},
@@ -39,12 +41,12 @@ unit_map = {
     "population": "",
 }
 desc = {
-    "downup": "dropped and recovered",
+    "downup": "went down then up",
     "updown": "went up then down",
     "increased": "increased",
     "decreased": "decreased",
     "mostspread": "was most spread",
-    "nochange": "show no change",
+    "nochange": "does not change much",
     "user": "something happened"
 }
 
