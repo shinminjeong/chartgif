@@ -574,6 +574,27 @@ class ScatterPlot {
 
     pre_group = JSON.stringify(swtvalues);
   }
+
+  drawAllTrace(id){
+    var trace_for_id = [];
+    var gid;
+    for (var y in this.data) {
+      trace_for_id.push(this.data[y][id]);
+      gid = this.data[y][id].group;
+    }
+    var lineFunction = d3.line()
+          .x(function(d) { return xScale(d.x); })
+          .y(function(d) { return yScale(d.y); })
+          .curve(d3.curveMonotoneX);
+
+    // console.log(lineFunction(trace_for_id))
+    var trace = this.bubble_trace_g.append("path")
+      .attr("d", lineFunction(trace_for_id))
+      .attr("fill", "none")
+      .attr("stroke", d => gcolor(gid))
+      .attr("stroke-width", radius(1)*1.3+1)
+      .style('opacity', 0.3)
+  }
 }
 
 function updateLabelLinks() {
@@ -790,6 +811,7 @@ function clickBubbles(d){
 
     selected.setAttribute("data-clicked", "true");
     selected.style.visibility = "visible";
+    chart.drawAllTrace(d.id);
   }
 }
 
