@@ -39,16 +39,22 @@ class TimeLine {
       .attr('height', this.height)
       .attr('transform', 'translate(' + this.margin.left + ',0)');
 
-    this.background = this.svg.append("rect")
+    this.chart_g = this.svg.append('g')
+      .attr("id", "chart_g")
+      .call(zoom);
+
+    this.background_label = this.svg.append("rect")
+      .attr("x", 0)
+      .attr("y", this.margin.top)
+      .attr("width", this.width)
+      .attr("height", 0)
+      .style("fill", "#d3d3d3");
+    this.background = this.chart_g.append("rect")
       .attr("x", 0)
       .attr("y", this.margin.top)
       .attr("width", this.width)
       .attr("height", this.height-this.margin.top-this.margin.bottom)
       .style("fill", "#d3d3d3");
-
-    this.chart_g = this.svg.append('g')
-      .attr("id", "chart_g")
-      .call(zoom);
 
     this.grid = this.svg.append("g");
     this.x_1 = this.grid.append("g");
@@ -498,7 +504,7 @@ class TimeLine {
     document.getElementById(this.div_id + "-background").style.height = this.height;
 
     this.svg.attr("height", this.height);
-    this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+    this.background_label.attr("height", this.getLabelHeight());
     this.chart_g.attr('transform', 'translate(0,'+this.getLabelHeight()+')');
   }
 
@@ -508,14 +514,14 @@ class TimeLine {
     var label = document.createElement("div");
     label.className = "time-label"
     label.id = id;
-    label.style.top = 0;
+    label.style.top = -this.caption_h*this.nfloorlabels;
     label.style.left = this.margin.left+s;
     label.style.width = e-s;
     label.style.height = this.caption_h;
     label.innerHTML = id;
     this.labelpanel.appendChild(label);
 
-    this.nfloorlabels = 1;
+    this.nfloorlabels += 1;
     this.updateLabelHeight();
   }
 }
