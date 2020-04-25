@@ -63,10 +63,12 @@ def parseTimetable(filename):
 videos = parseTimetable("timetable.csv")
 # print(videos.keys())
 
+video_numbering = ["R1","R2","R3","R4","R5","R6","T1","T2","N1","W1","M1"]
+
 h_pattern = 20
-h_margin = h_pattern*3+40
+h_margin = h_pattern*3+30
 top_margin = 80
-left_margin = 620
+left_margin = 670
 right_margin = 20
 bottom_margin = 80
 t_width = 2000
@@ -82,8 +84,10 @@ for i, l in enumerate(legends):
 for i, v in videos.items():
     print(i, v)
     texts = v["title"].split(";")
-    d.append(draw.Text("[E{}] {}".format(i+1, texts[0]), 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*0, center=1, text_anchor="end", fill="black"))
-    if i==7:
+    d.append(draw.Text("[{}] {}".format(video_numbering[i], texts[0]), 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*0, center=1, text_anchor="end", fill="black"))
+    if i==6:
+        t = "{} (20'20''-23'42'')".format(texts[1])
+    elif i==7:
         t = "{} ({}'{}''-2'22'', 7'47''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
     else:
         t = "{} ({}'{}''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
