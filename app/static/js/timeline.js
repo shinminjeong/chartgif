@@ -138,12 +138,12 @@ class TimeLine {
       this.height = this.l_height;
       for (var i = 0; i <= legendCount; i++) framelines.push(this.caption_h+i*this.slice_h);
       this.svg.attr('height', this.height);
-      this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+      this.background.attr("height", this.height-this.getLabelHeight()-his.margin.top-this.margin.bottom);
     } else {
       this.height = this.s_height;
       framelines = [this.caption_h, this.caption_h+this.slice_h];
       this.svg.attr('height', this.height);
-      this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+      this.background.attr("height", this.height-this.getLabelHeight()-this.margin.top-this.margin.bottom);
     }
     this.legendpanel.style.height = this.height;
     this.controlpanel.style.height = this.height;
@@ -501,14 +501,14 @@ class TimeLine {
 
     this.legendpanel.style.height = this.height;
     this.controlpanel.style.height = this.height;
-    document.getElementById(this.div_id + "-background").style.height = this.height;
+    expandChart(chartExpand);
 
     this.svg.attr("height", this.height);
     this.background_label.attr("height", this.getLabelHeight());
     this.chart_g.attr('transform', 'translate(0,'+this.getLabelHeight()+')');
   }
 
-  addLabel(f_start, f_end, id) {
+  addLabel(f_start, f_end, id, name) {
     var s = timeScale(f_start),
         e = timeScale(f_end);
     var label = document.createElement("div");
@@ -518,7 +518,7 @@ class TimeLine {
     label.style.left = this.margin.left+s;
     label.style.width = e-s;
     label.style.height = this.caption_h;
-    label.innerHTML = id;
+    label.innerHTML = name;
     this.labelpanel.appendChild(label);
 
     this.nfloorlabels += 1;
