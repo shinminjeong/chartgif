@@ -136,7 +136,7 @@ function draw_rect_trace(yrange, group, reason) {
   e.className = 'select_trace select_trace_'+reason;
   e.id = [y_start, y_end, group, "trace"].join("-");
   e.style.left = Math.min(...xs)+10+trace_offset_l;
-  e.style.top = rect.y+Math.min(...ys)-20+trace_offset_t;
+  e.style.top = rect.y+Math.min(...ys)-10+trace_offset_t;
   e.style.width = Math.max(...xs)-Math.min(...xs);
   e.style.height = Math.max(...ys)-Math.min(...ys);
   e.style.paddingTop = Math.max(...ys)-Math.min(...ys)-5;

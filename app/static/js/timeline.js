@@ -132,7 +132,7 @@ class TimeLine {
       this.height = this.l_height;
       for (var i = 0; i <= legendCount; i++) framelines.push(this.caption_h+i*this.slice_h);
       this.svg.attr('height', this.height);
-      this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+      this.background.attr("height", this.height-this.getLabelHeight()-this.margin.top-this.margin.bottom);
     } else {
       this.height = this.s_height;
       framelines = [this.caption_h, this.caption_h+this.slice_h];
@@ -523,12 +523,14 @@ class TimeLine {
     label.style.left = this.margin.left+s;
     label.style.width = e-s;
     label.style.height = this.caption_h;
-    label.innerHTML = id;
+    label.innerHTML = name;
     this.labelpanel.appendChild(label);
 
     if (this.nfloorlabels < num_labels)
       this.nfloorlabels = num_labels;
     this.updateLabelHeight();
+
+    return f_end-f_start;
   }
 }
 
