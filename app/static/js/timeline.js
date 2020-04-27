@@ -495,27 +495,39 @@ class TimeLine {
 
     this.legendpanel.style.height = this.height;
     this.controlpanel.style.height = this.height;
-    document.getElementById(this.div_id + "-background").style.height = this.height;
+    document.getElementsByClassName("timeline-background")[0].style.height = this.height;
+    document.getElementsByClassName("timeline-slider-extend")[0].style.height = this.height;
 
     this.svg.attr("height", this.height);
     this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
     this.chart_g.attr('transform', 'translate(0,'+this.getLabelHeight()+')');
   }
 
-  addLabel(f_start, f_end, id) {
+  addLabel(f_start, cur_event_id, id, name) {
+    var cur_time_slice = $("rect#"+cur_event_id+".time-slice");
+    var f_end = parseFloat(cur_time_slice.attr("data-e-time"));
     var s = timeScale(f_start),
         e = timeScale(f_end);
+    var num_labels = 1;
+    if (cur_time_slice.attr("num-labels") == undefined) {
+      cur_time_slice.attr("num-labels", 1);
+    } else {
+      num_labels = 1+parseInt(cur_time_slice.attr("num-labels"));
+      cur_time_slice.attr("num-labels", num_labels);
+    }
+    console.log("@@@ addLabel", curFrame, num_labels, f_start, f_end, s, e)
     var label = document.createElement("div");
     label.className = "time-label"
     label.id = id;
-    label.style.top = 0;
+    label.style.top = -this.caption_h*(num_labels-1);
     label.style.left = this.margin.left+s;
     label.style.width = e-s;
     label.style.height = this.caption_h;
     label.innerHTML = id;
     this.labelpanel.appendChild(label);
 
-    this.nfloorlabels = 1;
+    if (this.nfloorlabels < num_labels)
+      this.nfloorlabels = num_labels;
     this.updateLabelHeight();
   }
 }
