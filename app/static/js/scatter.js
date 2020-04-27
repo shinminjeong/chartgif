@@ -8,7 +8,7 @@ var savedCaptions, savedLabels;
 class ScatterPlot {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 5, bottom: 20, left:25};
+    this.margin = {top: 5, right: 5, bottom: 20, left:30};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
