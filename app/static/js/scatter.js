@@ -782,10 +782,9 @@ function clickBubbles(d){
     if (savedLabels[d.id] == undefined) {
       savedLabels[d.id] = [];
     }
-    var default_frame_count = 30;
-    for (var i = 0; i < default_frame_count; i++)
+    var frame_count = timeline.addLabel(curFrame, testtimeframes.getFrameContent(curFrame), d.id, selected.innerHTML);
+    for (var i = 0; i < frame_count; i++)
       savedLabels[d.id].push(curFrame+i);
-    timeline.addLabel(curFrame, curFrame+default_frame_count, d.id, selected.innerHTML);
 
     selected.setAttribute("data-clicked", "true");
     selected.style.visibility = "visible";

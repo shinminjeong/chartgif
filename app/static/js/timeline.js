@@ -138,7 +138,7 @@ class TimeLine {
       this.height = this.l_height;
       for (var i = 0; i <= legendCount; i++) framelines.push(this.caption_h+i*this.slice_h);
       this.svg.attr('height', this.height);
-      this.background.attr("height", this.height-this.getLabelHeight()-his.margin.top-this.margin.bottom);
+      this.background.attr("height", this.height-this.getLabelHeight()-this.margin.top-this.margin.bottom);
     } else {
       this.height = this.s_height;
       framelines = [this.caption_h, this.caption_h+this.slice_h];
@@ -508,9 +508,11 @@ class TimeLine {
     this.chart_g.attr('transform', 'translate(0,'+this.getLabelHeight()+')');
   }
 
-  addLabel(f_start, f_end, id, name) {
+  addLabel(f_start, cur_event_id, id, name) {
+    var f_end = parseFloat($("rect#"+cur_event_id+".time-slice").attr("data-e-time"));
     var s = timeScale(f_start),
         e = timeScale(f_end);
+    console.log("addLabel", curFrame, f_start, f_end, s, e)
     var label = document.createElement("div");
     label.className = "time-label"
     label.id = id;
@@ -523,6 +525,8 @@ class TimeLine {
 
     this.nfloorlabels += 1;
     this.updateLabelHeight();
+
+    return f_end-f_start;
   }
 }
 
