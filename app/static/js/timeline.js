@@ -461,7 +461,7 @@ class TimeLine {
     var gid = [years[0], years[1], "b"].join("-");
     var caption;
     if (testtimeframes.getCaption(gid) == undefined) {
-      caption = "From "+years[0]+" to "+years[1]+", here is the general trends.";
+      caption = "From "+timemap[years[0]]+" to "+timemap[years[1]]+", here is the general trends.";
     } else {
       caption = testtimeframes.getCaption(gid);
     }

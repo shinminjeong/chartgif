@@ -168,7 +168,7 @@ def get_caption(request):
 
         # column: selected years of selected axis
         selectedCol = []
-        axes = ["X", "Y", "S"]
+        axes = ["X", "Y"]
         selectedAxis = list(v["axis"])
         yrange = v["yrange"]
         ys = timeseries.index(yrange[0])

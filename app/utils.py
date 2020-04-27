@@ -45,7 +45,7 @@ def get_evt_rapid_change(timeseries, groups, axes, V):
             minv = min([v["min"] for v in V[g][a]])
             maxv = max([v["max"] for v in V[g][a]])
             # threshold_max = (maxv-minv)*0.15
-            threshold_max = (maxv-minv)*0.03
+            threshold_max = (maxv-minv)*0.04
             range_max[g][a] = {v["time"]:abs(w["value"]-v["value"]) for w, v in zip(V[g][a],V[g][a][1:]) if abs(w["value"]-v["value"]) > threshold_max}
             for y, thd in range_max[g][a].items():
                 if len(yrange) > 0 and timeseries.index(y) - timeseries.index(yrange[-1]) >= cont_threshold:

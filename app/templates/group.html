@@ -296,7 +296,7 @@ function initClusterinfo() {
     linecharts_v[g] = new LineChart(div_group_timeline_avg_v.id, line_w, group_h, axis_h);
     linecharts_v[g].drawChart(data_avg_velocity[g], data_options);
   }
-  drawTraceCharts(numGroup, group_h+20);
+  drawTraceCharts(numGroup, group_h);
 
   timebar = document.createElement("div");
   timebar.className = "line-timebar";

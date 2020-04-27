@@ -4,6 +4,7 @@ var xrange = [10000000, 0],
 var tracehull = {};
 var traceline = {};
 var allyearmeans = {};
+var trace_offset_l = 15, trace_offset_t = 5;
 
 class TraceChart {
 
@@ -22,8 +23,7 @@ class TraceChart {
       .append('svg')
       .attr('width', this.trace_width)
       .attr('height', this.trace_height)
-    .append('g')
-      .attr('transform', 'translate(15,5)');
+      .attr('transform', 'translate('+trace_offset_l+','+trace_offset_t+')');
 
     this.countries = data2d.country;
     this.continentMap = continent.continent;
@@ -135,8 +135,8 @@ function draw_rect_trace(yrange, group, reason) {
   var e = document.createElement('div');
   e.className = 'select_trace select_trace_'+reason;
   e.id = [y_start, y_end, group, "trace"].join("-");
-  e.style.left = Math.min(...xs)+25;
-  e.style.top = rect.y+Math.min(...ys)-15;
+  e.style.left = Math.min(...xs)+10+trace_offset_l;
+  e.style.top = rect.y+Math.min(...ys)-20+trace_offset_t;
   e.style.width = Math.max(...xs)-Math.min(...xs);
   e.style.height = Math.max(...ys)-Math.min(...ys);
   e.style.paddingTop = Math.max(...ys)-Math.min(...ys)-5;
