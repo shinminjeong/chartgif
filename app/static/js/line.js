@@ -262,7 +262,7 @@ function draw_rect_move(e, canvas) {
 }
 function draw_rect_click(e, canvas) {
   var rect = canvas.getBoundingClientRect();
-  var reason = "usr"
+  var reason = "Usr"
   setMousePosition(e);
   // console.log("draw_rect_click", rect);
   if (element !== null) {

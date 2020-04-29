@@ -182,9 +182,21 @@ testtimeframes.calculateTimeFrames();
 timeline.initChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
 updateSlider();
 
-function addEventinLinechart(yrange, group, axes, reason) {
-  draw_rect_input(yrange, "lines_"+group, axes, reason);
-  draw_rect_trace(yrange, group, reason)
+function addEventinLinechart(yrange, group, axes, reason, pattern) {
+  console.log("pattern", pattern)
+  var newname = {
+    "nochange": "Plt",
+    "increased": "R",
+    "decreased": "D",
+    "downup": "T",
+    "updown": "P",
+    "mostspread": "S",
+    "user": "U"
+  }
+  draw_rect_input(yrange, "lines_"+group, axes, newname[pattern]);
+  draw_rect_trace(yrange, group, newname[pattern])
+  // draw_rect_input(yrange, "lines_"+group, axes, pattern);
+  // draw_rect_trace(yrange, group, pattern);
 }
 
 function drawFrame(yrange, group, axes, reason, pattern) {

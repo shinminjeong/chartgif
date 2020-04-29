@@ -91,7 +91,7 @@ class TimeLine {
           // console.log("fmap", r, fmap[r]);
           this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
           if (fmap[r].group == "p" || fmap[r].group == "e") continue;
-          addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason);
+          addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason, fmap[r].pattern);
         }
         createNewCaption(outerbound);
       }
