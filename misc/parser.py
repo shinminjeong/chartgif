@@ -69,7 +69,7 @@ video_numbering = ["R7","R8","R9","R10", "N2", "W2", "M2"]
 h_pattern = 20
 h_margin = h_pattern*3+30
 top_margin = 80
-left_margin = 710
+left_margin = 815
 right_margin = 20
 bottom_margin = 80
 t_width = 2000
@@ -87,18 +87,18 @@ for i, v in videos.items():
     i = -i-2
     texts = v["title"].split(";")
     d.append(draw.Text("[{}] {}".format(video_numbering[i], texts[0]), 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*0, center=1, text_anchor="end", fill="black"))
-    if i==6:
-        t = "{} (20'20''-23'42'')".format(texts[1])
-    elif i==7:
-        t = "{} ({}'{}''-2'22'', 7'47''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
-    else:
-        t = "{} ({}'{}''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
+    # if i==6:
+    #     t = "{} (20'20''-23'42'')".format(texts[1])
+    # elif i==7:
+    #     t = "{} ({}'{}''-2'22'', 7'47''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
+    # else:
+    t = "{} ({}'{}''-{}'{}'')".format(texts[1], int(v["starttime"]/60), v["starttime"]%60, int(v["endtime"]/60), v["endtime"]%60)
     d.append(draw.Text(t, 24, left_margin-16, t_height-top_margin-h_margin*i-10-26*1, center=1, text_anchor="end", fill="black"))
 
-    if i == 7: # for E8 -- merge two parts
-        w100 = v["endtime"]-v["starttime"]-300
-    else:
-        w100 = v["endtime"]-v["starttime"]
+    # if i == 7: # for E8 -- merge two parts
+    #     w100 = v["endtime"]-v["starttime"]-300
+    # else:
+    w100 = v["endtime"]-v["starttime"]
     d.append(draw.Rectangle(left_margin, t_height-top_margin-h_pattern*3-h_margin*i, t_width, h_pattern*3, fill="#eeeeee"))
     for frame in v["timeline"]:
         if i == 7: # for E8 -- merge two parts
