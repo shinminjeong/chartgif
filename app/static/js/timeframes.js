@@ -79,7 +79,7 @@ class TimeFrames {
       "runningtime": (e_t-s_t+1)*this.default_slowdown["sum"],
       "group": "p",
       "axis": ["X", "Y", "S"],
-      "name": "P",
+      "name": "I",
       "reason": "pro",
     }
     return id;
@@ -97,7 +97,7 @@ class TimeFrames {
       "runningtime": (e_t-s_t+1)*this.default_slowdown["sum"],
       "group": "e",
       "axis": ["X", "Y", "S"],
-      "name": "E",
+      "name": "O",
       "reason": "pro",
     }
     return id;
