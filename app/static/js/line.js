@@ -262,7 +262,7 @@ function draw_rect_move(e, canvas) {
 }
 function draw_rect_click(e, canvas) {
   var rect = canvas.getBoundingClientRect();
-  var reason = "Usr"
+  var reason = "usr"
   setMousePosition(e);
   // console.log("draw_rect_click", rect);
   if (element !== null) {
@@ -271,7 +271,7 @@ function draw_rect_click(e, canvas) {
     left = +element.style.left.split("px")[0];
     width = +element.style.width.split("px")[0];
     element.style.paddingLeft = width+2;
-    element.innerHTML = reason;
+    element.innerHTML = "Usr";
     startYear = Math.floor(line_xscale.invert(left));
     endYear = Math.floor(line_xscale.invert(left+width));
     // console.log("selectedYears", startYear, endYear);

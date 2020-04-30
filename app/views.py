@@ -181,7 +181,7 @@ def get_caption(request):
     # print(groupdesc)
 
     caption[o_prologue] = generatePrologue(groups, reasons, head_y, tail_y)
-    caption[o_epilogue] = generatePrologue(groups, reasons, head_y, tail_y)
+    caption[o_epilogue] = ""
 
     return JsonResponse({
         "head": head_y,

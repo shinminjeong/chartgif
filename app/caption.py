@@ -47,7 +47,7 @@ desc = {
     "decreased": "decreased",
     "mostspread": "was most spread",
     "nochange": "does not change much",
-    "user": "something happened"
+    "usr": "something happened"
 }
 
 
