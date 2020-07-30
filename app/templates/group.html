@@ -79,7 +79,7 @@
       <i id="play_icon" class="fa fa-play"></i></label>
     </div>
     <div class="col-md-12">
-      <div style="height:290;overflow-x:hidden;overflow-y:scroll">
+      <div style="height:290;overflow-x:hidden;">
         <div class="timeline timeline-background" id="timeline-background"></div>
         <div class="timeline timeline-frame" id="timeline"></div>
         <div class="timeline timeline-label" id="timeline-label"></div>
@@ -141,7 +141,7 @@ var w = document.getElementById("myChart").offsetWidth,
 var leftTimelineMargin = 100;
 var timeline_w = document.getElementById("timeline-panel").offsetWidth;
 var label_w = Math.min(200, Math.max(120, w*0.2));
-var left_offset = 66, caption_h = 65;
+var left_offset = 66, caption_h = 65, timeline_w_margin = 60;
 var chart = new ScatterPlot("myChart", w, h-caption_h);
 for (var k in data_options) {
   params[k] = data_options[k].id;
@@ -150,10 +150,10 @@ document.getElementsByClassName("chart-background")[0].style.width = w;
 document.getElementsByClassName("chart-background")[0].style.height = h-caption_h;
 document.getElementById("dropdown_Y").style.marginTop = w/2-100;
 document.getElementById("dropdown_Y_scale").style.marginTop = w/2-210;
-document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-45;
-document.getElementsByClassName("timeline-label")[0].style.width = timeline_w-45;
-document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-45;
-document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-45;
+document.getElementsByClassName("timeline-background")[0].style.width = timeline_w-timeline_w_margin;
+document.getElementsByClassName("timeline-label")[0].style.width = timeline_w-timeline_w_margin;
+document.getElementsByClassName("timeline-frame")[0].style.width = timeline_w-timeline_w_margin;
+document.getElementsByClassName("timeline-slider")[0].style.width = timeline_w-timeline_w_margin;
 chart.initChart(data_plot, data_options, data_population, data_continent, data_group);
 
 $(".dropdown-menu a").click(function () {
@@ -277,9 +277,15 @@ function initClusterinfo() {
 
     var div_group_label = document.createElement("div");
     div_group_label.style = "display:inline-block; vertical-align:top; width:"+label_w+"px; height: "+group_h+"px;";
-    div_group_label.innerHTML += "<span class='badge'>" + gname[g] + "</span><br>";
-    // div_group_label.innerHTML += "<div class='group_label'><span id='infoMinMax_"+g+"'></span></div>"
-    div_group_label.innerHTML += "<div class='group_trace' id='trace_chart_" + g + "'></div>"
+
+    var div_group_badge = document.createElement("span");
+    div_group_badge.className = "badge";
+    div_group_badge.innerText = gname[g];
+    var div_group_trace = document.createElement("div");
+    div_group_trace.id = "trace_chart_" + g;
+    div_group_trace.className = "group_trace";
+    div_group_label.append(div_group_badge);
+    div_group_label.append(div_group_trace);
 
     var line_w = w-label_w-10;
     var div_group_timeline = document.createElement("div");

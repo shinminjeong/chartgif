@@ -39,45 +39,6 @@ class LineChart {
         .tickSize(this.height)
         .tickFormat("")
       );
-    var defs = svg.append("defs");
-    // var filter = defs.append("filter")
-    //   .attr("id", "drop-shadow")
-    //   .attr("filterUnits", "objectBoundingBox")
-    //   .attr("x", "-10%")
-    //   .attr("y", "-10%")
-    //   .attr("width", "150%")
-    //   .attr("height", "150%");
-    //
-    // filter.append("feGaussianBlur")
-    //   .attr("in", "SourceAlpha")
-    //   .attr("stdDeviation", 1)
-    //   .attr("result", "blur")
-    // var feLight = filter.append("feSpecularLighting")
-    //   .attr("in", "blur")
-    //   .attr("surfaceScale", 5)
-    //   .attr("specularConstant", 0.5)
-    //   .attr("specularExponent", 10)
-    //   .attr("result", "specOut")
-    //   .attr("lighting-color", "white");
-    // feLight.append("fePointLight")
-    //   .attr("x", -5000)
-    //   .attr("y", -10000)
-    //   .attr("z", "0000");
-    // filter.append("feComposite")
-    //   .attr("in", "specOut")
-    //   .attr("in2", "SourceAlpha")
-    //   .attr("operator", "in")
-    //   .attr("result", "specOut2");
-    // filter.append("feComposite")
-    //   .attr("in", "SourceGraphic")
-    //   .attr("in2", "specOut2")
-    //   .attr("operator", "arithmetic")
-    //   .attr("k1", 0)
-    //   .attr("k2", 1)
-    //   .attr("k3", 1)
-    //   .attr("k4", 0)
-    //   .attr("result", "litPaint");
-
     // common y axis for display
     var y = d3.scaleLinear()
       .domain([0, 1])

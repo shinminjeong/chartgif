@@ -107,7 +107,7 @@ class TimeLine {
     this.controlpanel.style.height = this.height;
 
     var resetBtn = document.createElement("button");
-    resetBtn.className = "control-bottom control-bottom-reset";
+    resetBtn.className = "control-buttom control-buttom-reset";
     resetBtn.innerText = "reset";
     resetBtn.addEventListener("click", function() {
       console.log("reset button clicked!");
@@ -115,7 +115,7 @@ class TimeLine {
     });
 
     var expandBtn = document.createElement("button");
-    expandBtn.className = "control-bottom control-bottom-expand";
+    expandBtn.className = "control-buttom control-buttom-expand";
     expandBtn.innerHTML = "<i class='fa fa-chevron-down'></i>";
     expandBtn.addEventListener("click", function(e) {
       chartExpand = !chartExpand;
