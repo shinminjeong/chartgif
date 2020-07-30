@@ -12,84 +12,91 @@
   <title>Chartgif</title>
 </head>
 <body>
-  <div class="row">
-    <div id="dropdown_Y_scale" class="dropdown">
-      <button class="btn btn-sm btn-info dropdown-toggle rotate" type="button" id="dropdownMenuButton_yScale" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        {{ options.yScale.name }}
-      </button>
-      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_yScale">
-        <a class="dropdown-item" name="yScale" id="lin" href="#">Lin</a>
-        <a class="dropdown-item" name="yScale" id="log" href="#">Log</a>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Roslingifier</a>
+    <button class="btn btn-sm btn-outline-secondary btn-menu" id="btn-save" type="submit">Save Session</button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu" id="btn-reset" type="submit">Reset</button>
+  </nav>
+  <div class="content">
+    <div class="row">
+      <div id="dropdown_Y_scale" class="dropdown">
+        <button class="btn btn-sm btn-info dropdown-toggle rotate" type="button" id="dropdownMenuButton_yScale" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{ options.yScale.name }}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_yScale">
+          <a class="dropdown-item" name="yScale" id="lin" href="#">Lin</a>
+          <a class="dropdown-item" name="yScale" id="log" href="#">Log</a>
+        </div>
       </div>
-    </div>
-    <div id="dropdown_Y" class="dropdown">
-      <button class="btn btn-sm btn-outline-dark dropdown-toggle rotate" type="button" id="dropdownMenuButton_y" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        {{ options.y.name }}
-      </button>
-      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_Y">
-        <a class="dropdown-item" name="y" id="income" href="#">Income</a>
-        <a class="dropdown-item" name="y" id="lifespan" href="#">Life Expectancy</a>
-        <a class="dropdown-item" name="y" id="fertility" href="#">Babies per woman</a>
-        <a class="dropdown-item" name="y" id="mortality" href="#">Child mortality</a>
+      <div id="dropdown_Y" class="dropdown">
+        <button class="btn btn-sm btn-outline-dark dropdown-toggle rotate" type="button" id="dropdownMenuButton_y" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{ options.y.name }}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_Y">
+          <a class="dropdown-item" name="y" id="income" href="#">Income</a>
+          <a class="dropdown-item" name="y" id="lifespan" href="#">Life Expectancy</a>
+          <a class="dropdown-item" name="y" id="fertility" href="#">Babies per woman</a>
+          <a class="dropdown-item" name="y" id="mortality" href="#">Child mortality</a>
+        </div>
       </div>
-    </div>
-    <div class="col-md-6" style="padding: 0 0 0 60px;">
-      <div class="chart-background"></div>
-      <div id="myChart"></div>
-      <div align="center">
-        <div id="dropdown_X" class="dropdown">
-          <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" id="dropdownMenuButton_x" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {{ options.x.name }}
-          </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_X">
-            <a class="dropdown-item" name="x" id="income" href="#">Income</a>
-            <a class="dropdown-item" name="x" id="lifespan" href="#">Life Expectancy</a>
-            <a class="dropdown-item" name="x" id="fertility" href="#">Babies per woman</a>
-            <a class="dropdown-item" name="x" id="mortality" href="#">Child mortality</a>
+      <div class="col-md-6" style="padding: 0 0 0 60px;">
+        <div class="chart-background"></div>
+        <div id="myChart"></div>
+        <div align="center">
+          <div id="dropdown_X" class="dropdown">
+            <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" id="dropdownMenuButton_x" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{ options.x.name }}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_X">
+              <a class="dropdown-item" name="x" id="income" href="#">Income</a>
+              <a class="dropdown-item" name="x" id="lifespan" href="#">Life Expectancy</a>
+              <a class="dropdown-item" name="x" id="fertility" href="#">Babies per woman</a>
+              <a class="dropdown-item" name="x" id="mortality" href="#">Child mortality</a>
+            </div>
+          </div>
+          <div id="dropdown_X_scale" class="dropdown">
+            <button class="btn btn-sm btn-info dropdown-toggle" type="button" id="dropdownMenuButton_xScale" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{ options.xScale.name }}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_xScale">
+              <a class="dropdown-item" name="xScale" id="lin" href="#">Lin</a>
+              <a class="dropdown-item" name="xScale" id="log" href="#">Log</a>
+            </div>
           </div>
         </div>
-        <div id="dropdown_X_scale" class="dropdown">
-          <button class="btn btn-sm btn-info dropdown-toggle" type="button" id="dropdownMenuButton_xScale" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {{ options.xScale.name }}
-          </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_xScale">
-            <a class="dropdown-item" name="xScale" id="lin" href="#">Lin</a>
-            <a class="dropdown-item" name="xScale" id="log" href="#">Log</a>
+        <div class="chart-title">
+          <span id='infoChartTitle'></span>
+        </div>
+        <div class="year-background">
+          <span id='infoCurYear'></span>
+        </div>
+        <div class="caption-panel">
+          <span id='caption'></span>
+        </div>
+      </div>
+      <div class="col-md-6" style="padding:0 35px 0 30px">
+        <div id="clusterinfo" class="row"></div>
+      </div>
+    </div>
+    <div class="row" id="timeline-panel" style="padding: 20px 0px;">
+      <div class="custom-control custom-switch-play">
+        <label>
+          <input type="checkbox" class="custom-control-input" id="switchPlay">
+        <i id="play_icon" class="fa fa-play"></i></label>
+      </div>
+      <div class="col-md-12" style="padding:0">
+        <div style="height:290;overflow-x:hidden;">
+          <div class="timeline timeline-background" id="timeline-background"></div>
+          <div class="timeline timeline-frame" id="timeline"></div>
+          <div class="timeline timeline-label" id="timeline-label"></div>
+          <div class="timeline timeline-legend" id="timeline-legend"></div>
+          <div class="timeline timeline-control" id="timeline-control"></div>
+          <div class="timeline timeline-slider">
+            <input type="range" class="slider" name="mySlider" id=mySlider min="0" max="0" value="0"></input>
+            <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
           </div>
+          <div class="timeline timeline-slider-extend" id="slider-extend"></div>
         </div>
-      </div>
-      <div class="chart-title">
-        <span id='infoChartTitle'></span>
-      </div>
-      <div class="year-background">
-        <span id='infoCurYear'></span>
-      </div>
-      <div class="caption-panel">
-        <span id='caption'></span>
-      </div>
-    </div>
-    <div class="col-md-6" style="padding:0 35px 0 30px">
-      <div id="clusterinfo" class="row"></div>
-    </div>
-  </div>
-  <div class="row" id="timeline-panel" style="padding: 20px 10px;">
-    <div class="custom-control custom-switch-play">
-      <label>
-        <input type="checkbox" class="custom-control-input" id="switchPlay">
-      <i id="play_icon" class="fa fa-play"></i></label>
-    </div>
-    <div class="col-md-12">
-      <div style="height:290;overflow-x:hidden;">
-        <div class="timeline timeline-background" id="timeline-background"></div>
-        <div class="timeline timeline-frame" id="timeline"></div>
-        <div class="timeline timeline-label" id="timeline-label"></div>
-        <div class="timeline timeline-legend" id="timeline-legend"></div>
-        <div class="timeline timeline-control" id="timeline-control"></div>
-        <div class="timeline timeline-slider">
-          <input type="range" class="slider" name="mySlider" id=mySlider min="0" max="0" value="0"></input>
-          <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
-        </div>
-        <div class="timeline timeline-slider-extend" id="slider-extend"></div>
       </div>
     </div>
   </div>
@@ -138,10 +145,10 @@ var params = {
 var timeunit = 200;
 var w = document.getElementById("myChart").offsetWidth,
     h = window.innerHeight-400;
-var leftTimelineMargin = 100;
+var leftTimelineMargin = 115;
 var timeline_w = document.getElementById("timeline-panel").offsetWidth;
 var label_w = Math.min(200, Math.max(120, w*0.2));
-var left_offset = 66, caption_h = 65, timeline_w_margin = 60;
+var left_offset = 66, caption_h = 65, timeline_w_margin = 0;
 var chart = new ScatterPlot("myChart", w, h-caption_h);
 for (var k in data_options) {
   params[k] = data_options[k].id;
@@ -164,7 +171,6 @@ $(".dropdown-menu a").click(function () {
   window.location.href = "?"+$.param( params );
 });
 
-var innergrp = {};
 var curFrame = 0, preFrame = -1;
 var play_timer = undefined;
 var el, newPoint, timebar;
@@ -179,8 +185,13 @@ var testtimeframes = new TimeFrames(timeseries, gname);
 var timeline = new TimeLine("timeline", timeline_w);
 testtimeframes.addFrames(data_focus_range);
 testtimeframes.calculateTimeFrames();
-timeline.initChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
-updateSlider();
+timeline.initChart();
+if (sessionStorage.storySaved == "true" && performance.navigation.type == performance.navigation.TYPE_RELOAD) {
+  console.log("[*] Load saved data");
+  loadSavedSession();
+} else {
+  refresh();
+}
 
 function addEventinLinechart(yrange, group, axes, reason, pattern) {
   console.log("pattern", pattern)
@@ -376,6 +387,20 @@ function removeFrame(id) {
   updateSlider();
 }
 
+var btnSave = document.getElementById("btn-save");
+btnSave.addEventListener("click", function(e) {
+  alert("Current session is saved. Does not work when the tab is closed.");
+  saveCurrentSession();
+});
+var btnReset = document.getElementById("btn-reset");
+btnReset.addEventListener("click", function(e) {
+  testtimeframes = new TimeFrames(timeseries, gname);
+  testtimeframes.addFrames(data_focus_range);
+  testtimeframes.calculateTimeFrames();
+  timeline.initChart();
+  refresh();
+});
+
 var playon = document.querySelectorAll("input#switchPlay");
 playon[0].addEventListener("change", function(e) {
   console.log("playon", e.target.checked, curFrame);
@@ -409,10 +434,25 @@ function getCaption(bound) {
     reasons = [bound.prologue, ...Object.keys(bound.reason), bound.epilogue];
   for (var i = 0; i < reasons.length; i++) {
     var g = reasons[i];
-    if (testtimeframes.getCaption(g) == undefined)
-      return createNewCaption(bound);
+    if (testtimeframes.getCaption(g) == undefined) {
+      createNewCaption(bound);
+    }
     timeline.addCaption(g, testtimeframes.getCaption(g));
   }
+}
+
+sessionStorage.storySaved = false;
+function saveCurrentSession() {
+  console.log("[*] CurrentSession is saved");
+  sessionStorage.storySaved = true;
+  sessionStorage.story = JSON.stringify(testtimeframes);
+}
+
+function loadSavedSession() {
+  storydata = JSON.parse(sessionStorage.story);
+  testtimeframes = new TimeFrames(storydata.timeseries, storydata.gname);
+  testtimeframes.loadData(storydata);
+  refresh();
 }
 
 function createNewCaption(bound) {
@@ -422,10 +462,8 @@ function createNewCaption(bound) {
     dataType: "json",
     data: bound,
     success: function(res){
-      console.log("getCaption success", res);
-      for (var y = res["head"]; y <= res["tail"]; y++) {
-        innergrp[y] = res["innergrp"];
-      }
+      // console.log("createNewCaption success", res);
+      testtimeframes.saveInnerGroupInfo(res["head"], res["tail"], res["innergrp"]);
       for (var g in res["caption"]) {
         testtimeframes.saveCaption(g, res["caption"][g])
         timeline.addCaption(g, res["caption"][g]);
@@ -528,7 +566,7 @@ function changeSlider() {
 
   width = el.width()-32;
   newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
-  $("#slider-extend")[0].style.left = width * newPoint + leftTimelineMargin+13;
+  $("#slider-extend")[0].style.left = width * newPoint + leftTimelineMargin;
   var preYear = timeFrames[preFrame],
       curYear = timeFrames[curFrame];
   el.next("output")
@@ -571,6 +609,7 @@ function changeSlider() {
     chart.hideDesc(0);
     var reason = testtimeframes.framemap[frameContent].reason;
     var delaytime = testtimeframes.default_slowdown[reason]*timeunit;
+    var innergrp = testtimeframes.innergrp;
     chart.updateFocus(curYear, swtvalues, innergrp, delaytime);
   } else if (preYear != curYear) {
     // console.log("@ changeSlider -- Update", curYear);

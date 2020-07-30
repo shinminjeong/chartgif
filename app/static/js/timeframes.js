@@ -6,6 +6,7 @@ class TimeFrames {
     this.framearr = []; // order of outerbound
     this.framemap = {}; // info of inner frames for each outerbound
     this.yearmap = {};
+    this.innergrp = {};
     for (var t = 0; t < timeseries.length; t++) {
       var y = this.timeseries[t];
       this.yearmap[y] = {
@@ -22,6 +23,20 @@ class TimeFrames {
       "sum": 2,
     };
     this.captions = {};
+  }
+
+  loadData(data) {
+    this.timeseries = data.timeseries;
+    this.gname = data.gname;
+    this.playtime = data.playtime;
+    this.framearr = data.framearr;
+    this.framemap = data.framemap;
+    this.yearmap = data.yearmap;
+    this.captions = data.captions;
+    this.innergrp = data.innergrp;
+    this.outerbound = data.outerbound;
+    this.timeFrames = data.timeFrames;
+    this.timeFrameInfo = data.timeFrameInfo;
   }
 
   calculateOuterbound() {
@@ -156,6 +171,12 @@ class TimeFrames {
       });
     }
     return order;
+  }
+
+  saveInnerGroupInfo(head, tail, groupinfo) {
+    for (var y = head; y <= tail; y++) {
+      this.innergrp[y] = groupinfo;
+    }
   }
 
   saveCaption(gid, text){
@@ -348,7 +369,7 @@ class TimeFrames {
         this.yearmap[y]["reason"] = {};
       }
     }
-    // console.log("RemoveFrame", id)
+    // console.log("removeFrame -- delete frame", id)
     delete this.framemap[id];
     this.calculateOuterbound();
   }

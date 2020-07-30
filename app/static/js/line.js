@@ -194,14 +194,16 @@ function draw_rect_input(yrange, div_id, axes, reason) {
       y_end = yrange[yrange.length-1];
   var ys = line_xscale(y_start)-0.5,
       ye = line_xscale(y_end)+0.5;
-  console.log("draw_rect_input", yrange, ys, ye, div_id, axes);
+  // console.log("draw_rect_input", yrange, ys, ye, div_id, axes);
   for (var i in axes) {
     var names = div_id.split("_");
     var canvas = document.getElementById(div_id+"_"+axes[i]);
+    var rect_id = [y_start, y_end, names[1], selectedAxis[i]].join("-");
+    if (document.getElementById(rect_id) != undefined) continue;
+
     var e = document.createElement('div');
-    // console.log("select_rectangle_", reason)
     e.className = 'select_rectangle select_rectangle_'+reason;
-    e.id = [y_start, y_end, names[1], selectedAxis[i]].join("-");
+    e.id = rect_id;
     e.style.left = ys;
     e.style.top = 0;
     e.style.width = Math.abs(ye - ys);

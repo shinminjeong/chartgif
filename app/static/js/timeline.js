@@ -5,7 +5,7 @@ var timeSlices, timeLabels, timeCaptions, chartExpand;
 class TimeLine {
 
   constructor(div_id, w) {
-    this.margin = {top: 25, right: 45, bottom: 25, left:leftTimelineMargin};
+    this.margin = {top: 25, right: 60, bottom: 25, left:leftTimelineMargin};
     this.width = timeScale_width = w - this.margin.left - this.margin.right;
     this.div_id_frames = div_id + "-background";
     this.div_id = div_id;
@@ -26,9 +26,8 @@ class TimeLine {
     this.height = this.s_height;
   }
 
-  initChart(timeframesmap, forder, fmap, gname) {
-    var timeframes = Object.keys(timeframesmap);
-    console.log("Timeline -- initchart", timeframes, gname);
+  initChart() {
+    console.log("Timeline -- initchart");
     this.labelpanel = document.getElementById(this.div_id + "-label");
     this.legendpanel = document.getElementById(this.div_id + "-legend");
     this.controlpanel = document.getElementById(this.div_id + "-control");
@@ -63,40 +62,8 @@ class TimeLine {
     this.x_year = this.chart_g.append("g");
     this.x_year_h = this.chart_g.append("g");
     this.framegrid = this.chart_g.append("g").attr("class", "grid");
-    this.framegrid
-      .selectAll("line")
-      .data([this.caption_h, this.caption_h+this.slice_h])
-    .enter().append("line")
-      .attr("x1", 0)
-      .attr("y1", d => d+this.margin.top)
-      .attr("x2", this.width)
-      .attr("y2", d => d+this.margin.top)
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
 
     this.setControlPanel();
-    this.updateXaxis(timeframes);
-    for (var f in forder) {
-      var outerbound = forder[f].outerbound;
-      // console.log("outerbound", outerbound, outerbound.head, outerbound.tail);
-      if (outerbound.reason == undefined) {// blank interval
-        timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
-      } else {
-        this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
-        var oframes = Object.keys(outerbound.reason);
-        if (outerbound.start_time != "Init")
-          oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
-        for (var i = 0; i < oframes.length; i++) {
-          var r = oframes[i];
-          // console.log("fmap", r, fmap[r]);
-          this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
-          if (fmap[r].group == "p" || fmap[r].group == "e") continue;
-          addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason, fmap[r].pattern);
-        }
-        createNewCaption(outerbound);
-      }
-    }
-    this.drawYearTicks();
   }
 
   setControlPanel() {
@@ -108,7 +75,7 @@ class TimeLine {
 
     var resetBtn = document.createElement("button");
     resetBtn.className = "control-buttom control-buttom-reset";
-    resetBtn.innerText = "reset";
+    resetBtn.innerText = "Reset zoom";
     resetBtn.addEventListener("click", function() {
       console.log("reset button clicked!");
       refresh();
@@ -178,6 +145,9 @@ class TimeLine {
           if (fmap[r] == undefined) continue;
           // console.log("fmap", r, fmap[r]);
           this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+
+          if (fmap[r].group == "p" || fmap[r].group == "e") continue;
+          addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason, fmap[r].pattern);
         }
         getCaption(outerbound);
       }
@@ -298,7 +268,7 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = timeScale(f_start),
         e = timeScale(f_end);
-    console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
+    // console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
 
     var top = this.margin.top+this.caption_h,
         left = s+timeScale.bandwidth()/2;
@@ -394,7 +364,7 @@ class TimeLine {
     var s = timeScale(y_start),
         e = timeScale(y_end);
 
-    console.log("addOuterBound", y_start, y_end, s, e)
+    // console.log("addOuterBound", y_start, y_end, s, e)
     var tframe = this.chart_g.append("rect")
       .attr("class", "time-slice-outer")
       .attr("data-s-time", y_start)
