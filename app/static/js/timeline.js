@@ -38,6 +38,28 @@ class TimeLine {
       .attr('height', this.height)
       .attr('transform', 'translate(' + this.margin.left + ',0)');
 
+    var defs = this.svg.append("defs");
+    defs.append("pattern")
+     .attr("id", "icon_delete_w")
+     .attr("width", 15)
+     .attr("height", 15)
+     .append("image")
+     .attr("width", 15)
+     .attr("height", 15)
+     .attr("x", 0)
+     .attr("y", 0)
+     .attr("xlink:href", "/static/images/icon_delete_w.png");
+   defs.append("pattern")
+    .attr("id", "icon_delete_h")
+    .attr("width", 15)
+    .attr("height", 15)
+    .append("image")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("xlink:href", "/static/images/icon_delete_h.png");
+
     this.chart_g = this.svg.append('g')
       .attr("id", "chart_g")
       .call(zoom);
@@ -91,6 +113,7 @@ class TimeLine {
       console.log("expand button clicked!", chartExpand, target);
       if (chartExpand) target.innerHTML = "<i class='fa fa-chevron-up'></i>";
       else target.innerHTML = "<i class='fa fa-chevron-down'></i>";
+      hideAllOptions();
       expandChart(chartExpand);
     });
 
@@ -294,7 +317,7 @@ class TimeLine {
       tframe.on("click", function() {
         var d = $("rect#"+frame_id+".time-slice");
         if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+        else if (d.attr("edit") == "off") showOptions(frame_id);
       });
     }
     timeSlices.push(tframe);
@@ -322,12 +345,12 @@ class TimeLine {
       tframe_text_speed.on("click", function() {
         var d = $("rect#"+frame_id+".time-slice");
         if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+        else if (d.attr("edit") == "off") showOptions(frame_id);
       });
       tframe_text.on("click", function() {
         var d = $("rect#"+frame_id+".time-slice");
         if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+        else if (d.attr("edit") == "off") showOptions(frame_id);
       });
     }
 
@@ -349,7 +372,7 @@ class TimeLine {
       tframe_text_3.on("click", function() {
         var d = $("rect#"+frame_id+".time-slice");
         if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
+        else if (d.attr("edit") == "off") showOptions(frame_id);
       });
     }
   }
@@ -568,7 +591,8 @@ function removeTimeSlice(id) {
   removeFrame(id);
 }
 
-function showOptions(chart_id, id) {
+function showOptions(id) {
+  hideAllOptions();
   var target = $("rect#"+id+".time-slice");
   target.attr("edit", "on");
   target[0].style.fillOpacity = 1;
@@ -577,19 +601,13 @@ function showOptions(chart_id, id) {
   var x = +target.attr("x"),
       y = +target.attr("y"),
       width = +target.attr("width");
-  var removebtn = d3.select("g#"+chart_id).append("rect")
+  var removebtn = d3.select("g#chart_g").append("rect")
     .attr("class", "time-slice-remove")
     .attr("id", id)
     .attr("x", x+width)
     .attr("y", y)
-    .on("mouseover", function() { removebtn.attr("class", "time-slice-remove hover") })
-    .on("click", function() { hideOptions(id);removeTimeSlice(id) });
-  var removebtn_x = d3.select("g#"+chart_id).append("image")
-    .attr("class", "time-slice-remove")
-    .attr("id", id)
-    .attr("href", "/static/images/icon_delete.png")
-    .attr("x", x+width)
-    .attr("y", y)
+    .on("mouseover", function() { removebtn.attr("class", "time-slice-remove-hover") })
+    .on("mouseout", function() { removebtn.attr("class", "time-slice-remove") })
     .on("click", function() { hideOptions(id);removeTimeSlice(id) });
 
   var w = 14, h = 20, h_margin = 16;
@@ -603,16 +621,20 @@ function showOptions(chart_id, id) {
       [x+width, h_margin+y].join(","),
       [x+width, h_margin+y+h].join(",")
     ].join(" ");
-  var leftbtn = d3.select("g#"+chart_id).append("polygon")
+  var leftbtn = d3.select("g#chart_g").append("polygon")
     .attr("points", left_points)
     .attr("class", "time-slice-move-left")
     .attr("id", id)
-    .on("click", function() { hideOptions(id); move(id, "left") });
-  var rightbtn = d3.select("g#"+chart_id).append("polygon")
+    .on("mouseover", function() { leftbtn.attr("class", "time-slice-move-left-hover") })
+    .on("mouseout", function() { leftbtn.attr("class", "time-slice-move-left") })
+    .on("click", function() { move(id, "left"); hideAllOptions(); });
+  var rightbtn = d3.select("g#chart_g").append("polygon")
     .attr("points", right_points)
     .attr("class", "time-slice-move-right")
     .attr("id", id)
-    .on("click", function() { hideOptions(id); move(id, "right") });
+    .on("mouseover", function() { rightbtn.attr("class", "time-slice-move-right-hover") })
+    .on("mouseout", function() { rightbtn.attr("class", "time-slice-move-right") })
+    .on("click", function() { move(id, "right"); hideAllOptions(); });
 }
 
 function move(id, direction) {
@@ -632,4 +654,16 @@ function hideOptions(id) {
   $("#"+id+".time-slice-remove").remove();
   $("#"+id+".time-slice-move-left").remove();
   $("#"+id+".time-slice-move-right").remove();
+}
+
+function hideAllOptions() {
+  var targets = $("rect.time-slice");
+  targets.attr("edit", "off");
+  targets.attr("opacity", 0.7);
+  $(".time-slice-remove").remove();
+  $(".time-slice-remove-hover").remove();
+  $(".time-slice-move-left").remove();
+  $(".time-slice-move-right").remove();
+  $(".time-slice-move-left-hover").remove();
+  $(".time-slice-move-right-hover").remove();
 }

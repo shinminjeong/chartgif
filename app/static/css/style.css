@@ -294,9 +294,7 @@ text.time-slice {
 	cursor: pointer;
 }
 
-.hover {
-	fill: red;
-}
+
 .time-slice-remove {
 	position: absolute;
 	width: 15px;
@@ -305,7 +303,19 @@ text.time-slice {
 	stroke: #000;
 	stroke-width: .2px;
 	rx: .2rem;
-	fill: #eee;
+	fill: url(#icon_delete_h);
+	z-index: 500;
+	cursor: pointer;
+}
+.time-slice-remove-hover {
+	position: absolute;
+	width: 15px;
+	height: 15px;
+	font-size: 11px;
+	stroke: #eee;
+	stroke-width: .2px;
+	rx: .2rem;
+	fill: url(#icon_delete_w);
 	z-index: 500;
 	cursor: pointer;
 }
@@ -315,6 +325,15 @@ text.time-slice {
 	stroke: #000;
 	stroke-width: .2px;
 	fill: #002654;
+	z-index: 500;
+	cursor: pointer;
+}
+.time-slice-move-left-hover,
+.time-slice-move-right-hover {
+	position: absolute;
+	stroke: #eee;
+	stroke-width: .2px;
+	fill: #00469c;
 	z-index: 500;
 	cursor: pointer;
 }
