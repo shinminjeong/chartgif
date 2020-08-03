@@ -126,6 +126,8 @@ function draw_rect_trace(yrange, group, reason) {
     years.push(timeseries[i]);
   }
   // console.log("draw_rect_trace", yrange, years, group, reason)
+  var content = document.getElementsByClassName("content");
+  var navbar_h = content[0].getBoundingClientRect().top;
   var canvas = document.getElementById("trace_chart_"+group);
   var rect = canvas.getBoundingClientRect();
   var offset = 5;
@@ -142,8 +144,8 @@ function draw_rect_trace(yrange, group, reason) {
   var e = document.createElement('div');
   e.className = 'select_trace select_trace_'+reason;
   e.id = rect_id;
-  e.style.left = Math.min(...xs)+10;
-  e.style.top = rect.y+Math.min(...ys)-60;
+  e.style.left = Math.min(...xs)+20;
+  e.style.top = Math.min(...ys)+rect.top-navbar_h-15;
   e.style.width = Math.max(...xs)-Math.min(...xs);
   e.style.height = Math.max(...ys)-Math.min(...ys);
   e.style.paddingTop = Math.max(...ys)-Math.min(...ys)-5;

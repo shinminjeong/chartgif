@@ -1,5 +1,7 @@
 body {
 	font-family: "Helvetica Neue";
+	/* overflow-y: hidden; */
+	overflow-x: hidden;
 }
 .content {
 	padding: 15px;
@@ -163,14 +165,14 @@ body {
 	position: absolute;
 	z-index: 30;
 	margin-top: 28px;
-  left: 20px;
-  width: 75px;
+  left: 35px;
+  width: 70px;
   height: 50px;
   background: #007bff;
   color: #ffffff;
   border-radius: .2rem;
   font-size: 30px;
-  padding: 9px 26px;
+  padding: 9px 23px;
 	cursor: pointer;
 	border-width: 1px;
   border-style: solid;
@@ -208,11 +210,17 @@ body {
 .timeline {
 	position: absolute;
 }
+.timeline-cover {
+	background: white;
+	height: 100%;
+	top: 20px;
+	z-index: 5;
+}
 .timeline-slider {
 	top: 0px;
-	/* left: 15px; */
-	padding-left: 99px;
-	padding-right: 27px;
+	left: 20px;
+	padding-left: 85px;
+	padding-right: 45px;
 	height: 20px;
 	border-top: 1px solid #aaa;
 	border-bottom: 1px solid #aaa;
@@ -222,7 +230,7 @@ body {
 .timeline-slider-extend {
 	width: 2px;
 	top: 20px;
-	left: 99px;
+	left: 119px;
 	height: 130px;
 	background-color: #007bff;
 	z-index: 100;
@@ -230,6 +238,7 @@ body {
 }
 .timeline-background {
 	top: 20px;
+	left: 20px;
 	height: 130px;
 	/* background: #666; */
 	border-bottom: 1px solid #aaa;
@@ -238,15 +247,18 @@ body {
 }
 .timeline-label {
 	top: 25px;
+	left: 20px;
 	position: relative;
 }
 .timeline-frame {
 	top: 45px;
+	left: 20px;
 	position: relative;
 }
 .timeline-legend {
 	z-index: 9;
 	top: 20px;
+	left: 20px;
 	background: #ddd;
 	border-radius: 0 0 0 .2em;
 	border: 1px solid rgba(0,0,0,0.1);
@@ -282,6 +294,9 @@ text.time-slice {
 	cursor: pointer;
 }
 
+.hover {
+	fill: red;
+}
 .time-slice-remove {
 	position: absolute;
 	width: 15px;

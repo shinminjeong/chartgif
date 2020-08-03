@@ -34,7 +34,7 @@ class TimeLine {
     this.captionpanel = document.getElementById(this.div_id);
     this.svg = d3.select("#"+this.div_id_frames)
       .append('svg')
-      .attr('width', this.width + this.margin.left + this.margin.right)
+      .attr('width', this.width)
       .attr('height', this.height)
       .attr('transform', 'translate(' + this.margin.left + ',0)');
 
@@ -69,7 +69,7 @@ class TimeLine {
   setControlPanel() {
     this.legendpanel.style.width = this.margin.left;
     this.legendpanel.style.height = this.height;
-    this.controlpanel.style.marginLeft = this.width+this.margin.left;
+    this.controlpanel.style.marginLeft = this.width+this.margin.left+20;
     this.controlpanel.style.width = this.margin.right;
     this.controlpanel.style.height = this.height;
 
@@ -582,6 +582,7 @@ function showOptions(chart_id, id) {
     .attr("id", id)
     .attr("x", x+width)
     .attr("y", y)
+    .on("mouseover", function() { removebtn.attr("class", "time-slice-remove hover") })
     .on("click", function() { hideOptions(id);removeTimeSlice(id) });
   var removebtn_x = d3.select("g#"+chart_id).append("image")
     .attr("class", "time-slice-remove")

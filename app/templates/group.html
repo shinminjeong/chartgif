@@ -74,7 +74,7 @@
           <span id='caption'></span>
         </div>
       </div>
-      <div class="col-md-6" style="padding:0 35px 0 30px">
+      <div class="col-md-6" style="padding:0 25px 0 40px">
         <div id="clusterinfo" class="row"></div>
       </div>
     </div>
@@ -86,6 +86,8 @@
       </div>
       <div class="col-md-12" style="padding:0">
         <div style="height:290;overflow-x:hidden;">
+          <div class="timeline timeline-cover" style="left:0; width:30px"></div>
+          <div class="timeline timeline-cover" style="right:0; width:25px"></div>
           <div class="timeline timeline-background" id="timeline-background"></div>
           <div class="timeline timeline-frame" id="timeline"></div>
           <div class="timeline timeline-label" id="timeline-label"></div>
@@ -145,10 +147,10 @@ var params = {
 var timeunit = 200;
 var w = document.getElementById("myChart").offsetWidth,
     h = window.innerHeight-400;
-var leftTimelineMargin = 115;
+var leftTimelineMargin = 100;
 var timeline_w = document.getElementById("timeline-panel").offsetWidth;
 var label_w = Math.min(200, Math.max(120, w*0.2));
-var left_offset = 66, caption_h = 65, timeline_w_margin = 0;
+var left_offset = 66, caption_h = 65, timeline_w_margin = 50;
 var chart = new ScatterPlot("myChart", w, h-caption_h);
 for (var k in data_options) {
   params[k] = data_options[k].id;
@@ -269,7 +271,7 @@ function kFormatter(num) {
 function updateLineTimebar(curYear) {
   // console.log("updateLineTimebar", curYear);
   if (isNaN(curYear)) curYear = timeseries[0];
-  timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+22) + "px";
+  timebar.style.left = (+line_xscale(curYear)+label_w+left_offset+27) + "px";
   timebar.style.top = 10 + "px";
   timebar.style.height = (h+12) + "px";
 }
@@ -566,7 +568,7 @@ function changeSlider() {
 
   width = el.width()-32;
   newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
-  $("#slider-extend")[0].style.left = width * newPoint + leftTimelineMargin;
+  $("#slider-extend")[0].style.left = width * newPoint + leftTimelineMargin + 20;
   var preYear = timeFrames[preFrame],
       curYear = timeFrames[curFrame];
   el.next("output")
