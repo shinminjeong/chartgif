@@ -69,13 +69,13 @@ class TimeLine {
       .attr("y", this.margin.top)
       .attr("width", this.width)
       .attr("height", 0)
-      .style("fill", "#d3d3d3");
+      .style("fill", "#e3e3e3");
     this.background = this.chart_g.append("rect")
       .attr("x", 0)
       .attr("y", this.margin.top)
       .attr("width", this.width)
       .attr("height", this.height-this.margin.top-this.margin.bottom)
-      .style("fill", "#d3d3d3");
+      .style("fill", "#e3e3e3");
 
     this.grid = this.svg.append("g");
     this.x_1 = this.grid.append("g");
@@ -593,6 +593,10 @@ function removeTimeSlice(id) {
 
 function showOptions(id) {
   hideAllOptions();
+  var names = id.split("-");
+  if (names[2] == "p" || names[2] == "e")
+    return;
+
   var target = $("rect#"+id+".time-slice");
   target.attr("edit", "on");
   target[0].style.fillOpacity = 1;
@@ -606,7 +610,7 @@ function showOptions(id) {
     .attr("id", id)
     .attr("x", x+width)
     .attr("y", y)
-    .on("mouseover", function() { removebtn.attr("class", "time-slice-remove-hover") })
+    .on("mouseover", function() { removebtn.attr("class", "time-slice-remove hover") })
     .on("mouseout", function() { removebtn.attr("class", "time-slice-remove") })
     .on("click", function() { hideOptions(id);removeTimeSlice(id) });
 
@@ -625,14 +629,14 @@ function showOptions(id) {
     .attr("points", left_points)
     .attr("class", "time-slice-move-left")
     .attr("id", id)
-    .on("mouseover", function() { leftbtn.attr("class", "time-slice-move-left-hover") })
+    .on("mouseover", function() { leftbtn.attr("class", "time-slice-move-left hover") })
     .on("mouseout", function() { leftbtn.attr("class", "time-slice-move-left") })
     .on("click", function() { move(id, "left"); hideAllOptions(); });
   var rightbtn = d3.select("g#chart_g").append("polygon")
     .attr("points", right_points)
     .attr("class", "time-slice-move-right")
     .attr("id", id)
-    .on("mouseover", function() { rightbtn.attr("class", "time-slice-move-right-hover") })
+    .on("mouseover", function() { rightbtn.attr("class", "time-slice-move-right hover") })
     .on("mouseout", function() { rightbtn.attr("class", "time-slice-move-right") })
     .on("click", function() { move(id, "right"); hideAllOptions(); });
 }
@@ -661,9 +665,6 @@ function hideAllOptions() {
   targets.attr("edit", "off");
   targets.attr("opacity", 0.7);
   $(".time-slice-remove").remove();
-  $(".time-slice-remove-hover").remove();
   $(".time-slice-move-left").remove();
   $(".time-slice-move-right").remove();
-  $(".time-slice-move-left-hover").remove();
-  $(".time-slice-move-right-hover").remove();
 }

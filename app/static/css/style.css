@@ -307,7 +307,7 @@ text.time-slice {
 	z-index: 500;
 	cursor: pointer;
 }
-.time-slice-remove-hover {
+.time-slice-remove.hover {
 	position: absolute;
 	width: 15px;
 	height: 15px;
@@ -328,8 +328,8 @@ text.time-slice {
 	z-index: 500;
 	cursor: pointer;
 }
-.time-slice-move-left-hover,
-.time-slice-move-right-hover {
+.time-slice-move-left.hover,
+.time-slice-move-right.hover {
 	position: absolute;
 	stroke: #eee;
 	stroke-width: .2px;
@@ -343,11 +343,11 @@ rect.time-slice-outer {
 	stroke: #000;
 	stroke-width: .2px;
 	rx: .2rem;
-	fill-opacity: 0.4;
+	fill-opacity: 0.3;
 }
 text.time-slice-outer {
 	fill: #fff;
-	fill-opacity: 0.5;
+	fill-opacity: 0.6;
 }
 .time-label {
 	position: absolute;
