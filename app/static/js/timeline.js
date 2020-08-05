@@ -106,7 +106,7 @@ class TimeLine {
     resetBtn.innerText = "Reset zoom";
     resetBtn.addEventListener("click", function() {
       console.log("reset button clicked!");
-      refresh();
+      refresh(true);
     });
 
     var expandBtn = document.createElement("button");
@@ -127,7 +127,7 @@ class TimeLine {
     this.controlpanel.appendChild(expandBtn);
   }
 
-  updateChart(timeframesmap, forder, fmap, gname) {
+  updateChart(timeframesmap, forder, fmap, gname, resetZoom=false) {
     var framelines = [];
     if (chartExpand) {
       this.height = this.l_height;
@@ -156,7 +156,7 @@ class TimeLine {
       .attr("stroke-width", 1);
 
     var timeframes = Object.keys(timeframesmap);
-    this.updateXaxis(timeframes);
+    this.updateXaxis(timeframes, resetZoom);
     for (var f in forder) {
       var outerbound = forder[f].outerbound;
       // console.log("outerbound", outerbound);
@@ -194,9 +194,13 @@ class TimeLine {
     }
   }
 
-  updateXaxis(timeframes) {
+  updateXaxis(timeframes, resetZoom=false) {
     var zoomTransform = d3.zoomTransform(this.chart_g.node());
     // console.log("updateXaxis", timeframes.length, 0, this.width, zoomTransform)
+    if (resetZoom) {
+      zoomTransform = d3.zoomIdentity;
+      this.chart_g.call(this.zoom.transform, d3.zoomIdentity);
+    }
 
     this.calculateTickValues(timeframes);
     timeScale = d3.scaleBand()

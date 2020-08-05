@@ -228,8 +228,8 @@ function expandChart(flag_expand) {
   refresh();
 }
 
-function refresh() {
-  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
+function refresh(resetZoom=false) {
+  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname, resetZoom);
   updateSlider();
 }
 
