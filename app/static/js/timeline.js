@@ -60,9 +60,15 @@ class TimeLine {
     .attr("y", 0)
     .attr("xlink:href", "/static/images/icon_delete_h.png");
 
+    const extent = [[0,0], [timeScale_width, 0]];
+    this.zoom = d3.zoom()
+        .scaleExtent([1, 8])
+        .translateExtent(extent)
+        .extent(extent)
+        .on("zoom", zoomed);
     this.chart_g = this.svg.append('g')
       .attr("id", "chart_g")
-      .call(zoom);
+      .call(this.zoom);
 
     this.background_label = this.svg.append("rect")
       .attr("x", 0)
@@ -120,7 +126,6 @@ class TimeLine {
     this.controlpanel.appendChild(resetBtn);
     this.controlpanel.appendChild(expandBtn);
   }
-
 
   updateChart(timeframesmap, forder, fmap, gname) {
     var framelines = [];
@@ -190,12 +195,13 @@ class TimeLine {
   }
 
   updateXaxis(timeframes) {
-    // console.log("updateXaxis", timeframes.length)
-    this.calculateTickValues(timeframes);
+    var zoomTransform = d3.zoomTransform(this.chart_g.node());
+    // console.log("updateXaxis", timeframes.length, 0, this.width, zoomTransform)
 
+    this.calculateTickValues(timeframes);
     timeScale = d3.scaleBand()
       .domain(timeframes)
-      .range([ 0, this.width ])
+      .range([ zoomTransform.x, zoomTransform.x+zoomTransform.k*this.width ])
       .paddingInner(0)
       .paddingOuter(0);
 
@@ -443,7 +449,7 @@ class TimeLine {
       e.target.style.whiteSpace = "nowrap";
       e.target.style.width = e.target.getAttribute("data-o-width");
       e.target.style.height = e.target.getAttribute("data-o-height");
-      e.target.style.zIndex = 8;
+      e.target.style.zIndex = 3;
       e.target.style.backgroundColor = "#002654";
     });
     tframe.addEventListener("change", function(e) {
@@ -543,44 +549,37 @@ function timeScaleInvert(value) {
   return domain[Math.max(0,Math.min(index, domain.length-1))];
 }
 
-function zoom(svg) {
-  const extent = [[0,0], [timeScale_width, 0]];
-  svg.call(d3.zoom()
-      .scaleExtent([1, 8])
-      .translateExtent(extent)
-      .extent(extent)
-      .on("zoom", zoomed));
+function zoomed() {
+  timeScale.range([0, timeScale_width].map(d => d3.event.transform.applyX(d)));
+  timeSlices.forEach(function(d) {
+    d.attr("x", timeScale(d.attr("data-s-time")))
+    d.attr("width", timeScale(d.attr("data-e-time"))-timeScale(d.attr("data-s-time")))
+    hideOptions(d.attr("id"));
+  })
+  timeLabels.forEach(function(d) {
+    if (d.attr("data-n-length") != undefined) {
+      d.attr("x", 12*d.attr("data-n-length")+timeScale(d.attr("data-s-time")))
+    } else {
+      d.attr("x", 4+timeScale(d.attr("data-s-time")))
+    }
+  })
+  timeCaptions.forEach(function(d) {
+    var e = timeScale(d.getAttribute("data-e-time")),
+        s = timeScale(d.getAttribute("data-s-time"));
+    d.style.left = leftTimelineMargin+s;
+    d.style.width = e-s;
+    d.setAttribute("data-o-width", e-s);
+  })
+  d3.selectAll(".timeline-x-axis-min").call(xAxis_1);
+  d3.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
+  d3.selectAll(".timeline-x-axis-grid").call(xAxis_3);
+  d3.selectAll(".timeline-x-axis-year").call(xAxis_year);
+  d3.selectAll(".timeline-x-axis-year-h").call(xAxis_year_h);
 
-  function zoomed() {
-    timeScale.range([0, timeScale_width].map(d => d3.event.transform.applyX(d)));
-    timeSlices.forEach(function(d) {
-      d.attr("x", timeScale(d.attr("data-s-time")))
-      d.attr("width", timeScale(d.attr("data-e-time"))-timeScale(d.attr("data-s-time")))
-      hideOptions(d.attr("id"));
-    })
-    timeLabels.forEach(function(d) {
-      if (d.attr("data-n-length") != undefined) {
-        d.attr("x", 12*d.attr("data-n-length")+timeScale(d.attr("data-s-time")))
-      } else {
-        d.attr("x", 4+timeScale(d.attr("data-s-time")))
-      }
-    })
-    timeCaptions.forEach(function(d) {
-      var e = timeScale(d.getAttribute("data-e-time")),
-          s = timeScale(d.getAttribute("data-s-time"));
-      d.style.left = leftTimelineMargin+s;
-      d.style.width = e-s;
-      d.setAttribute("data-o-width", e-s);
-    })
-    svg.selectAll(".timeline-x-axis-min").call(xAxis_1);
-    svg.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
-    svg.selectAll(".timeline-x-axis-grid").call(xAxis_3);
-    svg.selectAll(".timeline-x-axis-year").call(xAxis_year);
-    svg.selectAll(".timeline-x-axis-year-h").call(xAxis_year_h);
-
-    // update slider year
-    updateSlider();
-  }
+  // update slider year
+  var el = $("input[type='range']");
+  curFrame = parseInt(el.val());
+  updateSlider();
 }
 
 function removeTimeSlice(id) {
@@ -625,20 +624,25 @@ function showOptions(id) {
       [x+width, h_margin+y].join(","),
       [x+width, h_margin+y+h].join(",")
     ].join(" ");
-  var leftbtn = d3.select("g#chart_g").append("polygon")
-    .attr("points", left_points)
-    .attr("class", "time-slice-move-left")
-    .attr("id", id)
-    .on("mouseover", function() { leftbtn.attr("class", "time-slice-move-left hover") })
-    .on("mouseout", function() { leftbtn.attr("class", "time-slice-move-left") })
-    .on("click", function() { move(id, "left"); hideAllOptions(); });
-  var rightbtn = d3.select("g#chart_g").append("polygon")
-    .attr("points", right_points)
-    .attr("class", "time-slice-move-right")
-    .attr("id", id)
-    .on("mouseover", function() { rightbtn.attr("class", "time-slice-move-right hover") })
-    .on("mouseout", function() { rightbtn.attr("class", "time-slice-move-right") })
-    .on("click", function() { move(id, "right"); hideAllOptions(); });
+  var leftbtn, rightbtn;
+  if (findNextFrame(id, "left") != undefined) {
+    leftbtn = d3.select("g#chart_g").append("polygon")
+      .attr("points", left_points)
+      .attr("class", "time-slice-move-left")
+      .attr("id", id)
+      .on("mouseover", function() { leftbtn.attr("class", "time-slice-move-left hover") })
+      .on("mouseout", function() { leftbtn.attr("class", "time-slice-move-left") })
+      .on("click", function() { move(id, "left"); hideAllOptions(); });
+  }
+  if (findNextFrame(id, "right") != undefined) {
+    rightbtn = d3.select("g#chart_g").append("polygon")
+      .attr("points", right_points)
+      .attr("class", "time-slice-move-right")
+      .attr("id", id)
+      .on("mouseover", function() { rightbtn.attr("class", "time-slice-move-right hover") })
+      .on("mouseout", function() { rightbtn.attr("class", "time-slice-move-right") })
+      .on("click", function() { move(id, "right"); hideAllOptions(); });
+  }
 }
 
 function move(id, direction) {

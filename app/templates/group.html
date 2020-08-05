@@ -196,7 +196,7 @@ if (sessionStorage.storySaved == "true" && performance.navigation.type == perfor
 }
 
 function addEventinLinechart(yrange, group, axes, reason, pattern) {
-  console.log("pattern", pattern)
+  // console.log("pattern", pattern)
   var newname = {
     "nochange": "Plt",
     "increased": "R",
@@ -378,6 +378,7 @@ function updateSlider() {
   slider.min = timeScaleInvert(0);
   slider.max = timeScaleInvert(timeline.width);
   slider.value = curFrame;
+  // console.log("UpdateSlider", slider.min, slider.max, slider.value)
   changeSlider();
 }
 
@@ -564,16 +565,19 @@ function changeSlider() {
   var length_timeFrames = testtimeframes.getTimeFrameLength();
   var timeFrames = testtimeframes.getTimeFrames();
   if (curFrame >= length_timeFrames) return;
-  // console.log("changeSlider", curFrame, el.attr("min"), el.attr("max"), el.val())
+  // console.log("changeSlider", curFrame, timeFrames[curFrame], el.attr("min"), el.attr("max"), el.val())
 
   width = el.width()-32;
   newPoint = (curFrame-el.attr("min")) / (el.attr("max")-el.attr("min"));
-  $("#slider-extend")[0].style.left = width * newPoint + leftTimelineMargin + 20;
+  var sliderMin = leftTimelineMargin+20;
+  var sliderMax = sliderMin+width;
+  var sliderPos = Math.max(sliderMin, Math.min(width * newPoint + leftTimelineMargin + 20, sliderMax));
+  $("#slider-extend")[0].style.left = sliderPos;
   var preYear = timeFrames[preFrame],
       curYear = timeFrames[curFrame];
   el.next("output")
     .css({
-      "marginLeft": width * newPoint + 36,
+      "marginLeft": sliderPos-leftTimelineMargin+15,
       "marginTop": -18,
       "font-size": 10,
       "color": "#000"
