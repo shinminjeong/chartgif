@@ -110,11 +110,24 @@ body {
 	border-color: #aaa;
 }
 
-.group_label {
-	font-size: 12px;
-	padding: 5px 0 0 20px;
-	margin-bottom: -20px;
-	z-index: 2;
+.event_types {
+	text-align: right;
+	padding-right: 10px;
+	padding-bottom: 5px;
+}
+.event_type {
+	display: inline-block;
+	height: 30px;
+	font-size: 14px;
+}
+.event_type > img {
+	width: 12px;
+	height: 12px;
+	margin-left: 8px;
+}
+
+.badge {
+	font-size: 14px;
 }
 .group_trace {
 	margin: -20px -10px;
@@ -197,8 +210,8 @@ body {
 .select_rectangle,
 .select_trace {
 	position: absolute;
-	font-size: 10px;
-	padding-top: 15px;
+	font-size: 12px;
+	padding-top: 10px;
 	border-radius: .2rem;
 	background-color: rgba(0,0,0,.2);
 	border: 0.4px solid rgba(0,0,0,.3);
@@ -378,7 +391,7 @@ text.time-slice-outer {
 
 .line-timebar {
 	position: absolute;
-	width: 3px;
+	width: 2px;
 	background-color: #007bff;
 	box-shadow: 0 0 5px 1px rgba(0,123,255,.35)
 }

@@ -8,7 +8,7 @@ var savedCaptions, savedLabels;
 class ScatterPlot {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 5, bottom: 20, left:25};
+    this.margin = {top: 5+desc_h, right: 5, bottom: 20, left:25};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
@@ -139,6 +139,31 @@ class ScatterPlot {
         .attr("text-anchor", "end")
         .attr('transform', 'rotate(-90)')
         .text(data_options["y"]["name"]);
+
+    //size axis
+    this.slegend = this.svg.append('g');
+    this.slegend.append("text")
+      .attr('x', this.width-100)
+      .attr('y', -20)
+      .attr("text-anchor", "end")
+      .attr('font-size', '14px')
+      .text(data_options["s"]["name"])
+    var slegend = [500, 10000, 30000], spadding = [80, 50, 15];
+    for (var i = 0; i < 3; i++) {
+      this.slegend.append("circle")
+        .attr('cx', this.width-spadding[i])
+        .attr('cy', -25)
+        .attr('r', radius(slegend[i]))
+        .style('stroke', 'black')
+        .style('stroke-width', 0.5)
+        .style('fill', 'white');
+      this.slegend.append("text")
+        .attr('x', this.width-spadding[i])
+        .attr('y', -10)
+        .attr("text-anchor", "middle")
+        .attr('font-size', '0.6em')
+        .text(kFormatter(slegend[i]*1000))
+    }
 
     this.saxis = this.svg.append('g').attr("class", "chart-desc");
     this.saxis.append("text")

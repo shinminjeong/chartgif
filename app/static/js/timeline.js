@@ -588,10 +588,13 @@ function zoomed() {
 
 function removeTimeSlice(id) {
   console.log("removebutton clicked", id)
+  var timeframe_text = $("text#"+id+".time-slice");
+  var axes = timeframe_text.text().split("x")[0];
+  console.log(axes)
+  timeframe_text.remove();
   $("rect#"+id+".time-slice").remove();
-  $("text#"+id+".time-slice").remove();
   $("textarea#"+id+".time-caption").remove();
-  removeFrame(id);
+  removeFrame(id, axes);
 }
 
 function showOptions(id) {

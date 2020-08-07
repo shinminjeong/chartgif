@@ -106,7 +106,7 @@ class LineChart {
         .attr("axis", axis)
         .attr("fill", "#000")
         .attr("font-family", "Helvetica Neue")
-        .attr("font-size", 9)
+        .attr("font-size", 10)
         .attr("textLength", name_len)
         .attr("lengthAdjust", "spacing")
         .attr("text-anchor", "end")
@@ -186,19 +186,30 @@ var mouse = {
   startX: 0,
   startY: 0
 };
-function remove_all_rect() {
 
+function remove_rect_line(id, axes) {
+  var a = axes.split(",");
+  for (var i = 0; i < a.length; i++) {
+    var selectedEvent = document.getElementById(id+"-"+a[i]);
+    selectedEvent.remove();
+  }
 }
+function remove_rect_trace(id) {
+  var selectedEvent = document.getElementById(id+"-trace");
+  selectedEvent.remove();
+}
+
+
 function draw_rect_input(yrange, div_id, axes, reason) {
-  var y_start = yrange[0],
-      y_end = yrange[yrange.length-1];
-  var ys = line_xscale(y_start)-0.5,
-      ye = line_xscale(y_end)+0.5;
-  // console.log("draw_rect_input", yrange, ys, ye, div_id, axes);
+  var y_start = parseInt(yrange[0]),
+      y_end = parseInt(yrange[yrange.length-1]);
+  var ys = line_xscale(y_start),
+      ye = line_xscale(y_end-1);
+  console.log("draw_rect_input", yrange, ys, ye, div_id, axes, reason);
   for (var i in axes) {
     var names = div_id.split("_");
     var canvas = document.getElementById(div_id+"_"+axes[i]);
-    var rect_id = [y_start, y_end, names[1], selectedAxis[i]].join("-");
+    var rect_id = [y_start, y_end, names[1], axes[i]].join("-");
     if (document.getElementById(rect_id) != undefined) continue;
 
     var e = document.createElement('div');
@@ -207,7 +218,7 @@ function draw_rect_input(yrange, div_id, axes, reason) {
     e.style.left = ys;
     e.style.top = 0;
     e.style.width = Math.abs(ye - ys);
-    e.style.paddingLeft = Math.abs(ye - ys)+2;
+    e.style.paddingLeft = Math.abs(ye - ys)+3;
     e.style.height = "100%";
     e.innerHTML = reason;
     canvas.appendChild(e)
@@ -223,27 +234,29 @@ function draw_rect_move(e, canvas) {
     element.style.top = 0;
   }
 }
+
 function draw_rect_click(e, canvas) {
   var rect = canvas.getBoundingClientRect();
-  var reason = "usr"
+  var reason = "usr";
   setMousePosition(e);
-  // console.log("draw_rect_click", rect);
+  // console.log("draw_rect_click", reason);
   if (element !== null) {
     names = canvas.id.split("_");
-    console.log("draw_rect_click", names);
+    // console.log("draw_rect_click", names);
     left = +element.style.left.split("px")[0];
     width = +element.style.width.split("px")[0];
     element.style.paddingLeft = width+2;
-    element.innerHTML = "Usr";
+    element.innerHTML = "U";
     startYear = Math.floor(line_xscale.invert(left));
     endYear = Math.floor(line_xscale.invert(left+width));
-    // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear+1), (x,i) => i + startYear)
     drawFrame(years, names[1], [names[2]], reason, reason);
     draw_rect_trace(years, names[1], reason);
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
+    element.remove();
     element = null;
+
   } else {
     mouse.startX = mouse.x;
     mouse.startY = mouse.y;
@@ -254,7 +267,7 @@ function draw_rect_click(e, canvas) {
     element.style.height = "100%";
     // element.style.top = mouse.y - rect.y + 'px';
     startYear = Math.floor(line_xscale.invert(mouse.x-rect.x));
-    // console.log("begun.", element, startYear);
+    // console.log("begun.", canvas, element, startYear);
     canvas.appendChild(element)
     // canvas.style.cursor = "crosshair";
   }
