@@ -144,7 +144,7 @@ class ScatterPlot {
     this.slegend = this.svg.append('g');
     this.slegend.append("text")
       .attr('x', this.width-100)
-      .attr('y', -20)
+      .attr('y', -21)
       .attr("text-anchor", "end")
       .attr('font-size', '14px')
       .text(data_options["s"]["name"])
