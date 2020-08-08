@@ -182,14 +182,10 @@ body {
   width: 70px;
   height: 50px;
   background: #007bff;
-  color: #ffffff;
   border-radius: .2rem;
   font-size: 30px;
-  padding: 9px 23px;
-	cursor: pointer;
 	border-width: 1px;
   border-style: solid;
-  border-color: rgb(116, 116, 116, .5) rgb(109, 109, 109, .5) rgb(86, 86, 86, .5);
 }
 .fa-play {
 	padding-left: 2px;

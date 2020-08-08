@@ -103,11 +103,14 @@
       </div>
     </div>
     <div class="row" id="timeline-panel" style="padding: 20px 0px;">
-      <div class="custom-control custom-switch-play">
+      <button id="switchPlay" type="button" class="btn btn-primary custom-switch-play" data-toggle="button" aria-pressed="false" autocomplete="off">
+        <i id="play_icon" class="fa fa-play"></i>
+      </button>
+      <!-- <div class="custom-control custom-switch-play" id="switchPlay">
         <label>
-          <input type="checkbox" class="custom-control-input" id="switchPlay">
+          <input type="checkbox" class="custom-control-input">
         <i id="play_icon" class="fa fa-play"></i></label>
-      </div>
+      </div> -->
       <div class="col-md-12" style="padding:0">
         <div style="height:290;overflow-x:hidden;">
           <div class="timeline timeline-cover" style="left:0; width:30px"></div>
@@ -430,18 +433,19 @@ btnReset.addEventListener("click", function(e) {
   refresh();
 });
 
-var playon = document.querySelectorAll("input#switchPlay");
-playon[0].addEventListener("change", function(e) {
-  console.log("playon", e.target.checked, curFrame);
-  if (e.target.checked) {
-    document.getElementById("play_icon").className = "fa fa-pause";
-  } else {
+var playon = document.getElementById("switchPlay");
+playon.addEventListener("click", function(e) {
+  var pressed = playon.getAttribute("aria-pressed") == "true";
+  // console.log("playon", pressed, curFrame);
+  if (pressed) {
     document.getElementById("play_icon").className = "fa fa-play";
+  } else {
+    document.getElementById("play_icon").className = "fa fa-pause";
   }
   testtimeframes.calculateTimeFrames();
   var length_timeFrames = testtimeframes.getTimeFrameLength();
   var timeFrames = testtimeframes.getTimeFrames();
-  if (play_timer == undefined && e.target.checked && curFrame < length_timeFrames) {
+  if (play_timer == undefined && !pressed && curFrame < length_timeFrames) {
     play_timer = setInterval(function() {
       curFrame += 1;
       if (curFrame >= length_timeFrames-1) {
