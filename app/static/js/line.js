@@ -187,6 +187,30 @@ var mouse = {
   startY: 0
 };
 
+function select_rect_line(id, axes) {
+  var a = axes.split(",");
+  for (var i = 0; i < a.length; i++) {
+    var selectedEvent = document.getElementById(id+"-"+a[i]);
+    selectedEvent.className = 'select_rectangle select_rectangle_highlight';
+  }
+}
+function select_rect_trace(id) {
+  var selectedEvent = document.getElementById(id+"-trace");
+  selectedEvent.className = 'select_trace select_trace_highlight';
+}
+
+function deselect_rect_line(id, axes) {
+  var a = axes.split(",");
+  for (var i = 0; i < a.length; i++) {
+    var selectedEvent = document.getElementById(id+"-"+a[i]);
+    selectedEvent.className = 'select_rectangle';
+  }
+}
+function deselect_rect_trace(id) {
+  var selectedEvent = document.getElementById(id+"-trace");
+  selectedEvent.className = 'select_trace';
+}
+
 function remove_rect_line(id, axes) {
   var a = axes.split(",");
   for (var i = 0; i < a.length; i++) {
@@ -213,7 +237,8 @@ function draw_rect_input(yrange, div_id, axes, reason) {
     if (document.getElementById(rect_id) != undefined) continue;
 
     var e = document.createElement('div');
-    e.className = 'select_rectangle select_rectangle_'+reason;
+    // e.className = 'select_rectangle select_rectangle_'+reason;
+    e.className = 'select_rectangle';
     e.id = rect_id;
     e.style.left = ys;
     e.style.top = 0;
@@ -272,6 +297,7 @@ function draw_rect_click(e, canvas) {
     // canvas.style.cursor = "crosshair";
   }
 }
+
 function setMousePosition(e) {
   var ev = e || window.event; //Moz || IE
   if (ev.pageX) { //Moz

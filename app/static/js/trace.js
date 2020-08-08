@@ -142,7 +142,8 @@ function draw_rect_trace(yrange, group, reason) {
     }
   }
   var e = document.createElement('div');
-  e.className = 'select_trace select_trace_'+reason;
+  // e.className = 'select_trace select_trace_'+reason;
+  e.className = 'select_trace';
   e.id = rect_id;
   e.style.left = Math.min(...xs)+20;
   e.style.top = Math.min(...ys)+rect.top-navbar_h-15;

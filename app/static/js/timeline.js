@@ -558,7 +558,6 @@ function zoomed() {
   timeSlices.forEach(function(d) {
     d.attr("x", timeScale(d.attr("data-s-time")))
     d.attr("width", timeScale(d.attr("data-e-time"))-timeScale(d.attr("data-s-time")))
-    hideOptions(d.attr("id"));
   })
   timeLabels.forEach(function(d) {
     if (d.attr("data-n-length") != undefined) {
@@ -574,6 +573,7 @@ function zoomed() {
     d.style.width = e-s;
     d.setAttribute("data-o-width", e-s);
   })
+  hideAllOptions();
   d3.selectAll(".timeline-x-axis-min").call(xAxis_1);
   d3.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
   d3.selectAll(".timeline-x-axis-grid").call(xAxis_3);
@@ -606,6 +606,11 @@ function showOptions(id) {
   var target = $("rect#"+id+".time-slice");
   target.attr("edit", "on");
   target[0].style.fillOpacity = 1;
+
+  var timeframe_text = $("text#"+id+".time-slice");
+  var axes = timeframe_text.text().split("x")[0];
+  select_rect_line(id, axes);
+  select_rect_trace(id);
   // console.log("showOption", id, target, target.attr("x"), target.attr("width"));
 
   var x = +target.attr("x"),
@@ -666,12 +671,21 @@ function hideOptions(id) {
   target.attr("edit", "off");
   if (target[0] == undefined) return;
   target[0].style.fillOpacity = 0.7;
+
+  var timeframe_text = $("text#"+id+".time-slice");
+  var axes = timeframe_text.text().split("x")[0];
+  deselect_rect_line(id, axes);
+  deselect_rect_trace(id);
+
   $("#"+id+".time-slice-remove").remove();
   $("#"+id+".time-slice-move-left").remove();
   $("#"+id+".time-slice-move-right").remove();
 }
 
 function hideAllOptions() {
+  document.querySelectorAll("div.select_rectangle_highlight").forEach(e => e.className = "select_rectangle");
+  document.querySelectorAll("div.select_trace_highlight").forEach(e => e.className = "select_trace");
+
   var targets = $("rect.time-slice");
   targets.attr("edit", "off");
   targets.attr("opacity", 0.7);

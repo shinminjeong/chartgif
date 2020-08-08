@@ -216,6 +216,13 @@ body {
   -webkit-text-stroke-color: #aaa;
 }
 
+.select_rectangle_highlight,
+.select_trace_highlight {
+	font-weight: bold;
+	background-color: rgba(0,123,255,.4);
+	box-shadow: 0 0 0 0.2rem rgba(0,123,255,.2);
+}
+
 .timeline {
 	position: absolute;
 }
