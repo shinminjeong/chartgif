@@ -451,3 +451,38 @@ text.time-slice-outer {
 	-webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 52% 100%, 48% 100%, 0% 65%);
   clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 52% 100%, 48% 100%, 0% 65%);
 }
+
+.context-menu {
+	display: none;
+  position: absolute;
+  z-index: 500;
+	width: 120px;
+	height: 75px;
+	background-color: white;
+	font-size: 12px;
+	border-radius: .2rem;
+	border-width: 1px;
+  border-style: solid;
+  border-color: rgb(116, 116, 116, .5) rgb(109, 109, 109, .5) rgb(86, 86, 86, .5);
+	cursor: pointer;
+}
+.context-menu__items {
+	padding: 0;
+	list-style-type: none;
+}
+.context-menu__item {
+	padding: 3px 15px 3px 15px;
+}
+.context-menu__item_active {
+	background-color: rgba(0,123,255,.35);
+}
+.context-menu__border {
+	border-bottom: 1px solid rgb(116, 116, 116, .5);
+}
+.context-menu--active {
+  display: block;
+}
+.disable {
+	color: #aaa;
+	background-color: #eee;
+}

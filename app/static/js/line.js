@@ -191,24 +191,24 @@ function select_rect_line(id, axes) {
   var a = axes.split(",");
   for (var i = 0; i < a.length; i++) {
     var selectedEvent = document.getElementById(id+"-"+a[i]);
-    selectedEvent.className = 'select_rectangle select_rectangle_highlight';
+    if (selectedEvent) selectedEvent.className = 'select_rectangle select_rectangle_highlight';
   }
 }
 function select_rect_trace(id) {
   var selectedEvent = document.getElementById(id+"-trace");
-  selectedEvent.className = 'select_trace select_trace_highlight';
+  if (selectedEvent) selectedEvent.className = 'select_trace select_trace_highlight';
 }
 
 function deselect_rect_line(id, axes) {
   var a = axes.split(",");
   for (var i = 0; i < a.length; i++) {
     var selectedEvent = document.getElementById(id+"-"+a[i]);
-    selectedEvent.className = 'select_rectangle';
+    if (selectedEvent) selectedEvent.className = 'select_rectangle';
   }
 }
 function deselect_rect_trace(id) {
   var selectedEvent = document.getElementById(id+"-trace");
-  selectedEvent.className = 'select_trace';
+  if (selectedEvent) selectedEvent.className = 'select_trace';
 }
 
 function remove_rect_line(id, axes) {
@@ -299,15 +299,17 @@ function draw_rect_click(e, canvas) {
 }
 
 function setMousePosition(e) {
+  var content = document.getElementsByClassName("content");
+  var navbar_h = 45-content[0].getBoundingClientRect().top;
   var ev = e || window.event; //Moz || IE
   if (ev.pageX) { //Moz
     mouse.x = ev.pageX + window.pageXOffset;
-    mouse.y = ev.pageY + window.pageYOffset;
+    mouse.y = ev.pageY + window.pageYOffset-navbar_h;
   } else if (ev.clientX) { //IE
     mouse.x = ev.clientX + document.body.scrollLeft;
-    mouse.y = ev.clientY + document.body.scrollTop;
+    mouse.y = ev.clientY + document.body.scrollTop-navbar_h;
   }
-  // console.log(mouse)
+  // console.log("navbar_h", navbar_h)
 }
 
 function mouseOverPaths(d) {

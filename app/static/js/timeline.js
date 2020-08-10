@@ -1,6 +1,7 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3, xAxis_year, xAxis_year_h;
 var timeSlices, timeLabels, timeCaptions, chartExpand;
+var selected_tframe;
 
 class TimeLine {
 
@@ -119,7 +120,7 @@ class TimeLine {
       console.log("expand button clicked!", chartExpand, target);
       if (chartExpand) target.innerHTML = "<i class='fa fa-chevron-up'></i>";
       else target.innerHTML = "<i class='fa fa-chevron-down'></i>";
-      hideAllOptions();
+      toggleMenuOff();
       expandChart(chartExpand);
     });
 
@@ -323,13 +324,7 @@ class TimeLine {
       .attr("data-e-time", f_end)
       .style("fill", gcolor(gid));
 
-    if (y_start != "init") {
-      tframe.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions(frame_id);
-      });
-    }
+    addTFrameListener(tframe, frame_id);
     timeSlices.push(tframe);
 
     var tframe_text = this.chart_g.append("text")
@@ -352,17 +347,9 @@ class TimeLine {
         .attr("data-e-time", f_end)
         .text("x"+parseFloat((1/speedrate).toFixed(2)));
       timeLabels.push(tframe_text_speed);
-      tframe_text_speed.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions(frame_id);
-      });
-      tframe_text.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions(frame_id);
-      });
+      addTFrameListener(tframe_text_speed, frame_id);
     }
+    addTFrameListener(tframe_text, frame_id);
 
     if (pattern != undefined) {
       var tframe_text_3 = this.chart_g.append("image")
@@ -379,11 +366,7 @@ class TimeLine {
         .style("cursor", "pointer")
         .text([y_start, y_end].join("-"));
       timeLabels.push(tframe_text_3);
-      tframe_text_3.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions(frame_id);
-      });
+      addTFrameListener(tframe_text_3, frame_id);
     }
   }
 
@@ -573,7 +556,7 @@ function zoomed() {
     d.style.width = e-s;
     d.setAttribute("data-o-width", e-s);
   })
-  hideAllOptions();
+  toggleMenuOff();
   d3.selectAll(".timeline-x-axis-min").call(xAxis_1);
   d3.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
   d3.selectAll(".timeline-x-axis-grid").call(xAxis_3);
@@ -597,65 +580,154 @@ function removeTimeSlice(id) {
   removeFrame(id, axes);
 }
 
-function showOptions(id) {
-  hideAllOptions();
-  var names = id.split("-");
-  if (names[2] == "p" || names[2] == "e")
-    return;
+function addTFrameListener(frame, frame_id) {
+  frame.on("mouseover", function(e) { highlightTFrame(frame_id); });
+  frame.on("mouseout", function(e) { muteTFrame(frame_id); });
+  frame.on("contextmenu", function(d, i) {
+    showContextMenu(frame_id)
+  });
+}
 
+var menu = document.querySelector(".context-menu");
+var menuId = 0, menuState = 0;
+var activeClassName = "context-menu--active";
+function showContextMenu(id) {
+  // console.log("showContextMenu")
+  if (findNextFrame(id, "left") == undefined) {
+    document.querySelector(".context-menu__moveleft").classList.add("disable");
+  } else {
+    document.querySelector(".context-menu__moveleft").classList.remove("disable");
+  }
+  if (findNextFrame(id, "right") == undefined) {
+    document.querySelector(".context-menu__moveright").classList.add("disable");
+  } else {
+    document.querySelector(".context-menu__moveright").classList.remove("disable");
+  }
+
+  var e = d3.event;
+  if ( menuState !== 1 || menuId != id) {
+    e.preventDefault();
+    setMousePosition(e)
+    toggleMenuOn();
+  } else {
+    toggleMenuOff();
+  }
+  menuId = id;
+}
+function toggleMenuOn() {
+  menuState = 1;
+  menu.classList.add(activeClassName);
+  menu.style.left = mouse.x;
+  menu.style.top = mouse.y;
+}
+function toggleMenuOff() {
+  menuState = 0;
+  menu.classList.remove(activeClassName);
+}
+
+var context_items = document.querySelectorAll(".context-menu__item");
+for (var i = 0; i < context_items.length; i++) {
+  context_items[i].addEventListener("click", function(e) {
+    console.log("selected_tframe", selected_tframe)
+    if (e.target.classList.contains("context-menu__moveleft")) {
+      move(selected_tframe, "left");
+    } else if (e.target.classList.contains("context-menu__moveright")) {
+      move(selected_tframe, "right");
+    } else if (e.target.classList.contains("context-menu__delete")) {
+      removeTimeSlice(selected_tframe);
+    }
+    toggleMenuOff();
+  })
+  context_items[i].addEventListener("mouseover", function(e) {
+    e.target.classList.add("context-menu__item_active");
+  })
+  context_items[i].addEventListener("mouseout", function(e) {
+    e.target.classList.remove("context-menu__item_active");
+  })
+}
+
+
+function highlightTFrame(id) {
+  selected_tframe = id;
   var target = $("rect#"+id+".time-slice");
-  target.attr("edit", "on");
   target[0].style.fillOpacity = 1;
 
   var timeframe_text = $("text#"+id+".time-slice");
   var axes = timeframe_text.text().split("x")[0];
   select_rect_line(id, axes);
   select_rect_trace(id);
-  // console.log("showOption", id, target, target.attr("x"), target.attr("width"));
-
-  var x = +target.attr("x"),
-      y = +target.attr("y"),
-      width = +target.attr("width");
-  var removebtn = d3.select("g#chart_g").append("rect")
-    .attr("class", "time-slice-remove")
-    .attr("id", id)
-    .attr("x", x+width)
-    .attr("y", y)
-    .on("mouseover", function() { removebtn.attr("class", "time-slice-remove hover") })
-    .on("mouseout", function() { removebtn.attr("class", "time-slice-remove") })
-    .on("click", function() { hideOptions(id);removeTimeSlice(id) });
-
-  var w = 14, h = 20, h_margin = 16;
-  var left_points = [
-      [x-w, h_margin+y+h/2].join(","),
-      [x, h_margin+y].join(","),
-      [x, h_margin+y+h].join(",")
-    ].join(" ");
-  var right_points = [
-      [x+width+w, h_margin+y+h/2].join(","),
-      [x+width, h_margin+y].join(","),
-      [x+width, h_margin+y+h].join(",")
-    ].join(" ");
-  var leftbtn, rightbtn;
-  if (findNextFrame(id, "left") != undefined) {
-    leftbtn = d3.select("g#chart_g").append("polygon")
-      .attr("points", left_points)
-      .attr("class", "time-slice-move-left")
-      .attr("id", id)
-      .on("mouseover", function() { leftbtn.attr("class", "time-slice-move-left hover") })
-      .on("mouseout", function() { leftbtn.attr("class", "time-slice-move-left") })
-      .on("click", function() { move(id, "left"); hideAllOptions(); });
-  }
-  if (findNextFrame(id, "right") != undefined) {
-    rightbtn = d3.select("g#chart_g").append("polygon")
-      .attr("points", right_points)
-      .attr("class", "time-slice-move-right")
-      .attr("id", id)
-      .on("mouseover", function() { rightbtn.attr("class", "time-slice-move-right hover") })
-      .on("mouseout", function() { rightbtn.attr("class", "time-slice-move-right") })
-      .on("click", function() { move(id, "right"); hideAllOptions(); });
-  }
 }
+
+function muteTFrame(id) {
+  var target = $("rect#"+id+".time-slice");
+  if (target[0] == undefined) return;
+  target[0].style.fillOpacity = 0.7;
+
+  var timeframe_text = $("text#"+id+".time-slice");
+  var axes = timeframe_text.text().split("x")[0];
+  deselect_rect_line(id, axes);
+  deselect_rect_trace(id);
+}
+
+// function showOptions(id) {
+//   hideAllOptions();
+//   var names = id.split("-");
+//   if (names[2] == "p" || names[2] == "e")
+//     return;
+//
+//   var target = $("rect#"+id+".time-slice");
+//   target.attr("edit", "on");
+//   target[0].style.fillOpacity = 1;
+//
+//   var timeframe_text = $("text#"+id+".time-slice");
+//   var axes = timeframe_text.text().split("x")[0];
+//   select_rect_line(id, axes);
+//   select_rect_trace(id);
+//   // console.log("showOption", id, target, target.attr("x"), target.attr("width"));
+//
+//   var x = +target.attr("x"),
+//       y = +target.attr("y"),
+//       width = +target.attr("width");
+//   var removebtn = d3.select("g#chart_g").append("rect")
+//     .attr("class", "time-slice-remove")
+//     .attr("id", id)
+//     .attr("x", x+width)
+//     .attr("y", y)
+//     .on("mouseover", function() { removebtn.attr("class", "time-slice-remove hover") })
+//     .on("mouseout", function() { removebtn.attr("class", "time-slice-remove") })
+//     .on("click", function() { hideOptions(id);removeTimeSlice(id) });
+//
+//   var w = 14, h = 20, h_margin = 16;
+//   var left_points = [
+//       [x-w, h_margin+y+h/2].join(","),
+//       [x, h_margin+y].join(","),
+//       [x, h_margin+y+h].join(",")
+//     ].join(" ");
+//   var right_points = [
+//       [x+width+w, h_margin+y+h/2].join(","),
+//       [x+width, h_margin+y].join(","),
+//       [x+width, h_margin+y+h].join(",")
+//     ].join(" ");
+//   var leftbtn, rightbtn;
+//   if (findNextFrame(id, "left") != undefined) {
+//     leftbtn = d3.select("g#chart_g").append("polygon")
+//       .attr("points", left_points)
+//       .attr("class", "time-slice-move-left")
+//       .attr("id", id)
+//       .on("mouseover", function() { leftbtn.attr("class", "time-slice-move-left hover") })
+//       .on("mouseout", function() { leftbtn.attr("class", "time-slice-move-left") })
+//       .on("click", function() { move(id, "left"); hideAllOptions(); });
+//   }
+//   if (findNextFrame(id, "right") != undefined) {
+//     rightbtn = d3.select("g#chart_g").append("polygon")
+//       .attr("points", right_points)
+//       .attr("class", "time-slice-move-right")
+//       .attr("id", id)
+//       .on("mouseover", function() { rightbtn.attr("class", "time-slice-move-right hover") })
+//       .on("mouseout", function() { rightbtn.attr("class", "time-slice-move-right") })
+//       .on("click", function() { move(id, "right"); hideAllOptions(); });
+//   }
+// }
 
 function move(id, direction) {
   var target_frame = findNextFrame(id, direction)
@@ -665,31 +737,35 @@ function move(id, direction) {
   refresh();
 }
 
-function hideOptions(id) {
-  // console.log("hideOptions", "#"+id+".time-slice-remove");
-  var target = $("rect#"+id+".time-slice");
-  target.attr("edit", "off");
-  if (target[0] == undefined) return;
-  target[0].style.fillOpacity = 0.7;
+// function hideOptions(id) {
+//   // console.log("hideOptions", "#"+id+".time-slice-remove");
+//   var target = $("rect#"+id+".time-slice");
+//   target.attr("edit", "off");
+//   if (target[0] == undefined) return;
+//   target[0].style.fillOpacity = 0.7;
+//
+//   var timeframe_text = $("text#"+id+".time-slice");
+//   var axes = timeframe_text.text().split("x")[0];
+//   deselect_rect_line(id, axes);
+//   deselect_rect_trace(id);
+//
+//   $("#"+id+".time-slice-remove").remove();
+//   $("#"+id+".time-slice-move-left").remove();
+//   $("#"+id+".time-slice-move-right").remove();
+// }
 
-  var timeframe_text = $("text#"+id+".time-slice");
-  var axes = timeframe_text.text().split("x")[0];
-  deselect_rect_line(id, axes);
-  deselect_rect_trace(id);
+// function hideAllOptions() {
+//   document.querySelectorAll("div.select_rectangle_highlight").forEach(e => e.className = "select_rectangle");
+//   document.querySelectorAll("div.select_trace_highlight").forEach(e => e.className = "select_trace");
+//
+//   var targets = $("rect.time-slice");
+//   targets.attr("edit", "off");
+//   targets.attr("opacity", 0.7);
+//   $(".time-slice-remove").remove();
+//   $(".time-slice-move-left").remove();
+//   $(".time-slice-move-right").remove();
+// }
 
-  $("#"+id+".time-slice-remove").remove();
-  $("#"+id+".time-slice-move-left").remove();
-  $("#"+id+".time-slice-move-right").remove();
-}
-
-function hideAllOptions() {
-  document.querySelectorAll("div.select_rectangle_highlight").forEach(e => e.className = "select_rectangle");
-  document.querySelectorAll("div.select_trace_highlight").forEach(e => e.className = "select_trace");
-
-  var targets = $("rect.time-slice");
-  targets.attr("edit", "off");
-  targets.attr("opacity", 0.7);
-  $(".time-slice-remove").remove();
-  $(".time-slice-move-left").remove();
-  $(".time-slice-move-right").remove();
-}
+document.addEventListener( "click", function(e) {
+  toggleMenuOff();
+});
