@@ -669,66 +669,6 @@ function muteTFrame(id) {
   deselect_rect_trace(id);
 }
 
-// function showOptions(id) {
-//   hideAllOptions();
-//   var names = id.split("-");
-//   if (names[2] == "p" || names[2] == "e")
-//     return;
-//
-//   var target = $("rect#"+id+".time-slice");
-//   target.attr("edit", "on");
-//   target[0].style.fillOpacity = 1;
-//
-//   var timeframe_text = $("text#"+id+".time-slice");
-//   var axes = timeframe_text.text().split("x")[0];
-//   select_rect_line(id, axes);
-//   select_rect_trace(id);
-//   // console.log("showOption", id, target, target.attr("x"), target.attr("width"));
-//
-//   var x = +target.attr("x"),
-//       y = +target.attr("y"),
-//       width = +target.attr("width");
-//   var removebtn = d3.select("g#chart_g").append("rect")
-//     .attr("class", "time-slice-remove")
-//     .attr("id", id)
-//     .attr("x", x+width)
-//     .attr("y", y)
-//     .on("mouseover", function() { removebtn.attr("class", "time-slice-remove hover") })
-//     .on("mouseout", function() { removebtn.attr("class", "time-slice-remove") })
-//     .on("click", function() { hideOptions(id);removeTimeSlice(id) });
-//
-//   var w = 14, h = 20, h_margin = 16;
-//   var left_points = [
-//       [x-w, h_margin+y+h/2].join(","),
-//       [x, h_margin+y].join(","),
-//       [x, h_margin+y+h].join(",")
-//     ].join(" ");
-//   var right_points = [
-//       [x+width+w, h_margin+y+h/2].join(","),
-//       [x+width, h_margin+y].join(","),
-//       [x+width, h_margin+y+h].join(",")
-//     ].join(" ");
-//   var leftbtn, rightbtn;
-//   if (findNextFrame(id, "left") != undefined) {
-//     leftbtn = d3.select("g#chart_g").append("polygon")
-//       .attr("points", left_points)
-//       .attr("class", "time-slice-move-left")
-//       .attr("id", id)
-//       .on("mouseover", function() { leftbtn.attr("class", "time-slice-move-left hover") })
-//       .on("mouseout", function() { leftbtn.attr("class", "time-slice-move-left") })
-//       .on("click", function() { move(id, "left"); hideAllOptions(); });
-//   }
-//   if (findNextFrame(id, "right") != undefined) {
-//     rightbtn = d3.select("g#chart_g").append("polygon")
-//       .attr("points", right_points)
-//       .attr("class", "time-slice-move-right")
-//       .attr("id", id)
-//       .on("mouseover", function() { rightbtn.attr("class", "time-slice-move-right hover") })
-//       .on("mouseout", function() { rightbtn.attr("class", "time-slice-move-right") })
-//       .on("click", function() { move(id, "right"); hideAllOptions(); });
-//   }
-// }
-
 function move(id, direction) {
   var target_frame = findNextFrame(id, direction)
   if (target_frame == undefined) return;
@@ -736,35 +676,6 @@ function move(id, direction) {
   moveFrameOrder(id, direction);
   refresh();
 }
-
-// function hideOptions(id) {
-//   // console.log("hideOptions", "#"+id+".time-slice-remove");
-//   var target = $("rect#"+id+".time-slice");
-//   target.attr("edit", "off");
-//   if (target[0] == undefined) return;
-//   target[0].style.fillOpacity = 0.7;
-//
-//   var timeframe_text = $("text#"+id+".time-slice");
-//   var axes = timeframe_text.text().split("x")[0];
-//   deselect_rect_line(id, axes);
-//   deselect_rect_trace(id);
-//
-//   $("#"+id+".time-slice-remove").remove();
-//   $("#"+id+".time-slice-move-left").remove();
-//   $("#"+id+".time-slice-move-right").remove();
-// }
-
-// function hideAllOptions() {
-//   document.querySelectorAll("div.select_rectangle_highlight").forEach(e => e.className = "select_rectangle");
-//   document.querySelectorAll("div.select_trace_highlight").forEach(e => e.className = "select_trace");
-//
-//   var targets = $("rect.time-slice");
-//   targets.attr("edit", "off");
-//   targets.attr("opacity", 0.7);
-//   $(".time-slice-remove").remove();
-//   $(".time-slice-move-left").remove();
-//   $(".time-slice-move-right").remove();
-// }
 
 document.addEventListener( "click", function(e) {
   toggleMenuOff();
