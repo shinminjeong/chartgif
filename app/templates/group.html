@@ -236,7 +236,7 @@ if (sessionStorage.storySaved == "true" && performance.navigation.type == perfor
 }
 
 function addEventinLinechart(yrange, group, axes, reason, pattern) {
-  console.log("pattern", pattern)
+  // console.log("pattern", pattern)
   var newname = {
     "nochange": "Plt",
     "increased": "R",
@@ -255,7 +255,7 @@ function addEventinLinechart(yrange, group, axes, reason, pattern) {
 function drawFrame(yrange, group, axes, reason, pattern) {
   testtimeframes.addFrame(yrange, group, axes, reason, pattern);
   testtimeframes.calculateTimeFrames();
-  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
+  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap());
   updateSlider();
 }
 
@@ -268,8 +268,12 @@ function expandChart(flag_expand) {
   refresh();
 }
 
+function resize() {
+  timeline.resizeChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap());
+}
+
 function refresh(resetZoom=false) {
-  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname, resetZoom);
+  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), resetZoom);
   updateSlider();
 }
 
@@ -426,7 +430,7 @@ function removeFrame(id, axes) {
   console.log("removeFrame", id)
   testtimeframes.removeFrame(id);
   testtimeframes.calculateTimeFrames();
-  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), gname);
+  timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap());
   remove_rect_line(id, axes);
   remove_rect_trace(id);
   updateSlider();

@@ -203,6 +203,18 @@ class TimeFrames {
     return this.timeFrameInfo[i];
   }
 
+  editFrameWidth(id, orig_w, new_w) {
+    var frame_info = this.framemap[id];
+    var new_runningtime = (frame_info.tail - frame_info.head) * new_w / orig_w;
+    // console.log("editFrameWidth", frame_info, frame_info.runningtime, new_runningtime)
+
+    frame_info.runningtime = parseInt(new_runningtime);
+    frame_info.tail = frame_info.head + new_runningtime;
+
+    this.calculateOuterbound();
+    this.calculateTimeFrames();
+  }
+
   calculateTimeFrames() {
     this.timeFrames = {};
     this.timeFrameInfo = {};

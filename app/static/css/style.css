@@ -486,3 +486,10 @@ text.time-slice-outer {
 	color: #aaa;
 	background-color: #eee;
 }
+
+.dragbar {
+	fill: #fff;
+	opacity: 0.5;
+	cursor: ew-resize;
+	z-index: 100;
+}

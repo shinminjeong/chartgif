@@ -2,6 +2,7 @@ const zeroPad = (num, places) => String(num).padStart(places, '0');
 var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3, xAxis_year, xAxis_year_h;
 var timeSlices, timeLabels, timeCaptions, chartExpand;
 var selected_tframe;
+var dragbarright, dragbarw = 6;
 
 class TimeLine {
 
@@ -41,32 +42,33 @@ class TimeLine {
 
     var defs = this.svg.append("defs");
     defs.append("pattern")
-     .attr("id", "icon_delete_w")
-     .attr("width", 15)
-     .attr("height", 15)
-     .append("image")
-     .attr("width", 15)
-     .attr("height", 15)
-     .attr("x", 0)
-     .attr("y", 0)
-     .attr("xlink:href", "/static/images/icon_delete_w.png");
-   defs.append("pattern")
-    .attr("id", "icon_delete_h")
-    .attr("width", 15)
-    .attr("height", 15)
-    .append("image")
-    .attr("width", 15)
-    .attr("height", 15)
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("xlink:href", "/static/images/icon_delete_h.png");
+      .attr("id", "icon_delete_w")
+      .attr("width", 15)
+      .attr("height", 15)
+      .append("image")
+      .attr("width", 15)
+      .attr("height", 15)
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("xlink:href", "/static/images/icon_delete_w.png");
+
+    defs.append("pattern")
+      .attr("id", "icon_delete_h")
+      .attr("width", 15)
+      .attr("height", 15)
+      .append("image")
+      .attr("width", 15)
+      .attr("height", 15)
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("xlink:href", "/static/images/icon_delete_h.png");
 
     const extent = [[0,0], [timeScale_width, 0]];
     this.zoom = d3.zoom()
-        .scaleExtent([1, 8])
-        .translateExtent(extent)
-        .extent(extent)
-        .on("zoom", zoomed);
+      .scaleExtent([1, 8])
+      .translateExtent(extent)
+      .extent(extent)
+      .on("zoom", zoomed);
     this.chart_g = this.svg.append('g')
       .attr("id", "chart_g")
       .call(this.zoom);
@@ -91,6 +93,15 @@ class TimeLine {
     this.x_year = this.chart_g.append("g");
     this.x_year_h = this.chart_g.append("g");
     this.framegrid = this.chart_g.append("g").attr("class", "grid");
+
+    this.dragbars = this.svg.append("g");
+    dragbarright = this.dragbars.append("rect")
+      .attr("class", "dragbar")
+      .attr("id", "dragright")
+      .attr("height", this.slice_h)
+      .attr("width", dragbarw)
+      .attr("display", "none")
+      .call(d3.drag().on("drag", rdragresize));
 
     this.setControlPanel();
   }
@@ -128,7 +139,7 @@ class TimeLine {
     this.controlpanel.appendChild(expandBtn);
   }
 
-  updateChart(timeframesmap, forder, fmap, gname, resetZoom=false) {
+  drawFrameGrid() {
     var framelines = [];
     if (chartExpand) {
       this.height = this.l_height;
@@ -155,6 +166,34 @@ class TimeLine {
       .attr("y2", d => d+this.margin.top)
       .attr("stroke", "black")
       .attr("stroke-width", 1);
+  }
+
+  resizeChart(timeframesmap, forder, fmap) {
+    var timeframes = Object.keys(timeframesmap);
+    this.updateXaxis(timeframes, false);
+    for (var f in forder) {
+      var outerbound = forder[f].outerbound;
+      if (outerbound.reason == undefined) {// blank interval
+        timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
+      } else {
+        this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
+        var oframes = Object.keys(outerbound.reason);
+        if (outerbound.start_time != "Init")
+          oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
+        for (var i = 0; i < oframes.length; i++) {
+          var r = oframes[i];
+          if (fmap[r] == undefined) continue;
+          // console.log("fmap", r, fmap[r]);
+          this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+        }
+        getCaption(outerbound);
+      }
+    }
+    this.drawYearTicks();
+  }
+
+  updateChart(timeframesmap, forder, fmap, resetZoom=false) {
+    this.drawFrameGrid();
 
     var timeframes = Object.keys(timeframesmap);
     this.updateXaxis(timeframes, resetZoom);
@@ -410,8 +449,12 @@ class TimeLine {
   createCaptionFrame(gid, f_start, f_end, caption) {
     var s = timeScale(f_start),
         e = timeScale(f_end);
-    var tframe = document.createElement("textarea");
-    tframe.className = "time-caption"
+    var tframe = $("textarea#"+gid+".time-caption")[0];
+    if (tframe == undefined) {
+      tframe = document.createElement("textarea");
+      tframe.className = "time-caption"
+      tframe.id = gid;
+    }
     tframe.id = gid;
     tframe.style.top = 0;
     tframe.style.left = this.margin.left+s;
@@ -574,6 +617,7 @@ function removeTimeSlice(id) {
   var timeframe_text = $("text#"+id+".time-slice");
   var axes = timeframe_text.text().split("x")[0];
   console.log(axes)
+  dragbarright.attr("display", "none");
   timeframe_text.remove();
   $("rect#"+id+".time-slice").remove();
   $("textarea#"+id+".time-caption").remove();
@@ -651,6 +695,12 @@ function highlightTFrame(id) {
   selected_tframe = id;
   var target = $("rect#"+id+".time-slice");
   target[0].style.fillOpacity = 1;
+  // console.log("highlightTFrame", target[0])
+  dragbarright
+    .attr("tframe_id", id)
+    .attr("display", "block")
+    .attr("x", target[0].x.baseVal.value + target[0].width.baseVal.value - (dragbarw/2))
+    .attr("y", target[0].y.baseVal.value);
 
   var timeframe_text = $("text#"+id+".time-slice");
   var axes = timeframe_text.text().split("x")[0];
@@ -673,6 +723,7 @@ function move(id, direction) {
   var target_frame = findNextFrame(id, direction)
   if (target_frame == undefined) return;
   console.log(id, target_frame)
+  dragbarright.attr("display", "none");
   moveFrameOrder(id, direction);
   refresh();
 }
@@ -680,3 +731,20 @@ function move(id, direction) {
 document.addEventListener( "click", function(e) {
   toggleMenuOff();
 });
+
+function rdragresize(d) {
+  var frame_id = d3.select(this).attr("tframe_id");
+  var target = $("rect#"+frame_id+".time-slice");
+  var target_caption = $("textarea#"+frame_id+".time-caption");
+  var dragx = Math.max(target[0].x.baseVal.value + (dragbarw/2), Math.min(target[0].x.baseVal.value + target[0].width.baseVal.value + d3.event.dx));
+
+  width = dragx - target[0].x.baseVal.value;
+  dragbarright.attr("x", function(d) { return dragx - (dragbarw/2) });
+
+  var orig_width = target[0].width.baseVal.value;
+  testtimeframes.editFrameWidth(frame_id, orig_width, width);
+  // target[0].width.baseVal.value = width;
+  // target_caption[0].style.width = width;
+  resize();
+  highlightTFrame(frame_id);
+}
