@@ -407,6 +407,9 @@ caption_panel.addEventListener("change", function(e) {
   // console.log("caption_panel on change", e)
   updateCurrentCaption();
 });
+caption_panel.addEventListener("input", function(e) {
+  pause();
+});
 function updateCaptionPanel(text) {
   caption_panel.value = text==undefined?"":text;
 }
@@ -486,6 +489,14 @@ playon.addEventListener("click", function(e) {
     play_timer = undefined;
   }
 });
+
+function pause() {
+  if (play_timer != undefined) {
+    clearInterval(play_timer);
+    play_timer = undefined;
+  }
+  document.getElementById("play_icon").className = "fa fa-play";
+}
 
 function getCaption(bound) {
   // console.log("getCaption", bound)
@@ -600,6 +611,7 @@ var swtvalues = {
 };
 $('input[type=range]').on('input', function () {
   $(this).trigger('change');
+  pause();
 });
 $("input[type='range']").change(function() {
   el = $(this);
@@ -642,7 +654,7 @@ function changeSlider() {
     .text(curYear);
   el.val(curFrame);
 
-  if (curFrame < preFrame) chart.clear();
+  // if (curFrame < preFrame) chart.clear();
   if (curYear == "init") return;
 
   var frameContent = testtimeframes.getFrameContent(curFrame);
