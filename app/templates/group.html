@@ -70,9 +70,8 @@
         <div class="year-background">
           <span id='infoCurYear'></span>
         </div>
-        <div class="caption-panel">
-          <span id='caption'></span>
-        </div>
+        <textarea id="caption-panel">
+        </textarea>
       </div>
       <div class="col-md-6" style="padding:0 25px 0 40px">
         <div class="event_types">
@@ -403,9 +402,19 @@ function updateBackgoundYear(year) {
   var info_year = document.getElementById("infoCurYear");
   info_year.innerHTML = year;
 }
+var caption_panel = document.getElementById("caption-panel");
+caption_panel.addEventListener("change", function(e) {
+  // console.log("caption_panel on change", e)
+  updateCurrentCaption();
+});
 function updateCaptionPanel(text) {
-  var caption_year = document.getElementById("caption");
-  caption_year.innerHTML = text==undefined?"":text;
+  caption_panel.value = text==undefined?"":text;
+}
+function updateCurrentCaption() {
+  // console.log("caption_panel.value", curFrame, caption_panel.value);
+  var cid = testtimeframes.timeFrameInfo[curFrame];
+  testtimeframes.saveCaption(cid, caption_panel.value);
+  timeline.updateCaption(cid, caption_panel.value);
 }
 
 function drawTraceCharts(numGroup, height) {

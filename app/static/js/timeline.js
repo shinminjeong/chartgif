@@ -170,7 +170,7 @@ class TimeLine {
 
   resizeChart(timeframesmap, forder, fmap) {
     var timeframes = Object.keys(timeframesmap);
-    console.log("resizeChart", timeframes.length);
+    // console.log("resizeChart", timeframes.length);
     this.updateXaxis(timeframes, false);
     for (var f in forder) {
       var outerbound = forder[f].outerbound;
@@ -494,6 +494,11 @@ class TimeLine {
     this.captionpanel.appendChild(tframe);
   }
 
+  updateCaption(frame_id, new_caption) {
+    var tframe = $("textarea#"+frame_id+".time-caption");
+    tframe[0].value = new_caption;
+  }
+
   addBlankCaption(years, frames) {
     var gid = [years[0], years[1], "b"].join("-");
     var caption;
@@ -724,7 +729,7 @@ function muteTFrame(id) {
 function move(id, direction) {
   var target_frame = findNextFrame(id, direction)
   if (target_frame == undefined) return;
-  console.log(id, target_frame)
+  // console.log(id, target_frame)
   dragbarright.attr("display", "none");
   moveFrameOrder(id, direction);
   refresh();

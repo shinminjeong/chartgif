@@ -163,11 +163,12 @@ body {
 	opacity: 0;
 }
 
-.caption-panel {
+#caption-panel {
   color: #000;
 	background-color: #eee;
 	border: 1px solid #aaa;
 	border-radius: .2rem;
+	width: 98%;
 	height: 60px;
 	margin: 0 0 0 20px;
 	padding: 5px 10px;

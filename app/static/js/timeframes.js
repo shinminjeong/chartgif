@@ -170,7 +170,6 @@ class TimeFrames {
         "outerbound": outerbound
       });
     }
-    console.log("@@@@", order)
     return order;
   }
 
