@@ -1,17 +1,6 @@
 import os, sys
 from collections import Counter
 
-# Life expectancy in {Region} increased/decreased by {change in value} years between {time} and {time}
-# Income level in {Region} increased/decreased by {change in value} dollars between {time} and {time}
-# Differences between the countries of the world was wider than ever
-# outlier 표시
-# -{Country} was way behind {Continent}
-# -{Countries} were still poor and sick
-# 일정 구간 trend 표시
-# -{Countries/Continent} get healthier and healthier (or richer)
-# Cluster 안에서 비슷한 나라 표시
-# -{Country} has the same wealth and health as {another country}
-
 name_map = {
     "income": "Income",
     "fertility": "Babies per woman",
