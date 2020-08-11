@@ -386,7 +386,7 @@ class ScatterPlot {
   }
 
   updateFocus(time, swtvalues, innergrp, delay) {
-    console.log("updateFocus", swtvalues, time, pre_group == JSON.stringify(swtvalues))
+    // console.log("updateFocus", swtvalues, time, pre_group == JSON.stringify(swtvalues))
     this.bubble_g.selectAll("*").remove();
     this.bubble_g_h.selectAll("*").remove();
     // this.trace_path_g.selectAll("circle.tbubble").remove();

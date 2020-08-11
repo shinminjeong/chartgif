@@ -170,10 +170,12 @@ class TimeLine {
 
   resizeChart(timeframesmap, forder, fmap) {
     var timeframes = Object.keys(timeframesmap);
+    console.log("resizeChart", timeframes.length);
     this.updateXaxis(timeframes, false);
     for (var f in forder) {
       var outerbound = forder[f].outerbound;
       if (outerbound.reason == undefined) {// blank interval
+        // console.log("blank", [outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
         timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
       } else {
         this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
@@ -449,6 +451,7 @@ class TimeLine {
   createCaptionFrame(gid, f_start, f_end, caption) {
     var s = timeScale(f_start),
         e = timeScale(f_end);
+    // console.log("createCaptionFrame", gid, f_start, f_end, e-s)
     var tframe = $("textarea#"+gid+".time-caption")[0];
     if (tframe == undefined) {
       tframe = document.createElement("textarea");
@@ -492,7 +495,6 @@ class TimeLine {
   }
 
   addBlankCaption(years, frames) {
-    // console.log("addBlankCaption", years, frames)
     var gid = [years[0], years[1], "b"].join("-");
     var caption;
     if (testtimeframes.getCaption(gid) == undefined) {

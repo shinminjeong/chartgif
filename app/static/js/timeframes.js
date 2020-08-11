@@ -128,12 +128,12 @@ class TimeFrames {
       if (outerbound == undefined) {
         var s_t = this.timeseries.indexOf(r[0]),
             e_t = this.timeseries.indexOf(r[1]);
-        // console.log(r, s_t, e_t)
+        // console.log(r, s_t, e_t, this.timeseries.length, runningtime, this.getTimeFrameLength())
         outerbound = {
           "start_time": r[0],
           "end_time": r[1],
           "head": runningtime,
-          "tail": runningtime+(e_t-s_t+1),
+          "tail": runningtime+(e_t-s_t+1)
         }
         runningtime += (e_t-s_t+1);
         // continue;
@@ -143,7 +143,7 @@ class TimeFrames {
         } else if (this.framemap[outerbound.prologue] != undefined){
           var prol = this.framemap[outerbound.prologue];
           outerbound.head = prol.head = runningtime;
-          prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
+          // prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
           runningtime += prol.runningtime;
           prol.tail = runningtime;
         }
@@ -158,7 +158,7 @@ class TimeFrames {
         } else if (this.framemap[outerbound.epilogue] != undefined){
           var epil = this.framemap[outerbound.epilogue];
           epil.head = runningtime;
-          epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
+          // epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
           runningtime += epil.runningtime;
           outerbound.tail = epil.tail = runningtime;
         }
@@ -170,6 +170,7 @@ class TimeFrames {
         "outerbound": outerbound
       });
     }
+    console.log("@@@@", order)
     return order;
   }
 
@@ -205,13 +206,12 @@ class TimeFrames {
 
   editFrameWidth(id, orig_w, new_w) {
     var frame_info = this.framemap[id];
-    var new_runningtime = (frame_info.tail - frame_info.head) * new_w / orig_w;
-    // console.log("editFrameWidth", frame_info, frame_info.runningtime, new_runningtime)
+    var new_runningtime = parseInt(frame_info.runningtime * new_w / orig_w);
+    console.log("editFrameWidth", frame_info, frame_info.runningtime, new_runningtime)
 
-    frame_info.runningtime = parseInt(new_runningtime);
+    frame_info.runningtime = new_runningtime;
     frame_info.tail = frame_info.head + new_runningtime;
 
-    this.calculateOuterbound();
     this.calculateTimeFrames();
   }
 
@@ -251,7 +251,7 @@ class TimeFrames {
         if (this.framemap[r] == undefined) continue;
         var s_idx = this.timeseries.indexOf(this.framemap[r].start_time),
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
-            runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));
+            runtime_unit = Math.round(this.framemap[r].runningtime/(e_idx-s_idx+1));
         i = this.getTimeFrameLength();
         // console.log("o~~~", i, r, this.framemap[r].start_time, this.framemap[r].end_time, s_idx, e_idx, runtime_unit)
         for (var j=s_idx; j<=e_idx; j++) {
