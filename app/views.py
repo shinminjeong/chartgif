@@ -25,10 +25,10 @@ file_map = {
 }
 
 options = {
-    "x": {"id": "income", "name": "Income"},
-    "y": {"id": "lifespan", "name": "Life Expectancy"},
-    "s": {"id": "population", "name": "Population"},
-    "c": {"id": "continent", "name": "Continent"},
+    "x": {"id": "income", "name": "Income", "name_ko": "소득 수준"},
+    "y": {"id": "lifespan", "name": "Life Expectancy", "name_ko": "평균 수명"},
+    "s": {"id": "population", "name": "Population", "name_ko": "인구 수"},
+    "c": {"id": "continent", "name": "Continent", "name_ko": "대륙"},
     "xScale": {"id": "log", "name": "Log"},
     "yScale": {"id": "lin", "name": "Lin"},
 }
@@ -42,8 +42,11 @@ kgroups = None
 countries = None
 timeseries = []
 numTicks = 0
+lang = "en"
 def main(request):
-    global values, kgroups, options, timeseries, numTicks, countries
+    global values, kgroups, options, timeseries, numTicks, countries, lang
+    lang = request.GET.get("lang") if "lang" in request.GET else "en"
+
     for k, v in options.items():
         id = v["id"]
         if k in request.GET:
@@ -100,7 +103,7 @@ def main(request):
         "groups": range(0, K),
         "minmax": minmax
     }
-    initseq, trend = generateInitSeq(options, c_group_inv, avg_v[0])
+    initseq, trend = generateInitSeq(options, c_group_inv, avg_v[0], lang=lang)
     focus_range.extend(initseq)
     # print(kgroups)
     return render(request, "group.html", {
@@ -120,7 +123,7 @@ def main(request):
 
 @csrf_exempt
 def get_caption(request):
-    global values, kgroups, options, timeseries, numTicks, countries
+    global values, kgroups, options, timeseries, numTicks, countries, lang
     outerbound = request.POST
     print()
     head_y = outerbound.get("start_time")
@@ -175,12 +178,12 @@ def get_caption(request):
             groupdesc[g][c] = summarizeGroup(kgroups, [countries[vv] for vv in clist])
 
         axisNames = [options[a.lower()] for a in selectedAxis]
-        caption[id] = generateCaption(groups, g, axisNames, v["reason"][0], v["pattern"][0], yrange[0], yrange[-1], allgroup = reasons)
+        caption[id] = generateCaption(groups, g, axisNames, v["reason"][0], v["pattern"][0], yrange[0], yrange[-1], allgroup=reasons, lang=lang)
     # print(printgrp)
     # print(head_y, tail_y, "-----------------------------")
     # print(groupdesc)
 
-    caption[o_prologue] = generatePrologue(groups, reasons, head_y, tail_y)
+    caption[o_prologue] = generatePrologue(groups, reasons, head_y, tail_y, lang=lang)
     caption[o_epilogue] = ""
 
     return JsonResponse({
