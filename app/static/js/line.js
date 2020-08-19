@@ -172,6 +172,7 @@ class LineChart {
       canvas[selectedAxis[a]].onmouseleave = function(e) {
         this.style.backgroundColor = "transparent";
         line_indicators[e.target.id].style.display = "none";
+        remove_rect_focus();
       }
       canvas[selectedAxis[a]].onclick = function(e) { draw_rect_click (e, this); };
     }
@@ -223,6 +224,13 @@ function remove_rect_trace(id) {
   selectedEvent.remove();
 }
 
+
+function remove_rect_focus() {
+  if (element !== null) {
+    element.remove();
+    element = null;
+  }
+}
 
 function draw_rect_input(yrange, div_id, axes, reason) {
   var y_start = parseInt(yrange[0]),

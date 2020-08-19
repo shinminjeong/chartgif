@@ -1,6 +1,6 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3, xAxis_year, xAxis_year_h;
-var timeSlices, timeLabels, timeCaptions, chartExpand;
+var timeSlices, timeLabels, timeCaptions, frameText, chartExpand;
 var selected_tframe;
 var dragbarright, dragbarw = 6;
 
@@ -20,6 +20,7 @@ class TimeLine {
     timeSlices = [];
     timeLabels = [];
     timeCaptions = [];
+    frameText = [];
     chartExpand = false;
     this.h_years = [];
 
@@ -327,13 +328,18 @@ class TimeLine {
         var f = timeCaptions[i];
         f.remove();
     }
-    for (var i = 0; i < timeLabels.length; i++) {
-        var f = timeLabels[i];
+    // for (var i = 0; i < timeLabels.length; i++) {
+    //     var f = timeLabels[i];
+    //     f.remove();
+    // }
+    for (var i = 0; i < frameText.length; i++) {
+        var f = frameText[i];
         f.remove();
     }
-    timeLabels = [];
+    // timeLabels = [];
     timeSlices = [];
     timeCaptions = [];
+    frameText = [];
   }
 
   addFrame(frange, yrange, gindex, name, reason, pattern, delay) {
@@ -376,7 +382,7 @@ class TimeLine {
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
       .text(name);
-    timeLabels.push(tframe_text);
+    frameText.push(tframe_text);
     if (y_start != "init") {
       var speedrate = delay/(timeseries.indexOf(y_end)-timeseries.indexOf(y_start)+1);
       var tframe_text_speed = this.chart_g.append("text")
@@ -387,7 +393,7 @@ class TimeLine {
         .attr("data-s-time", f_start)
         .attr("data-e-time", f_end)
         .text("x"+parseFloat((1/speedrate).toFixed(2)));
-      timeLabels.push(tframe_text_speed);
+      frameText.push(tframe_text_speed);
       addTFrameListener(tframe_text_speed, frame_id);
     }
     addTFrameListener(tframe_text, frame_id);
@@ -406,7 +412,7 @@ class TimeLine {
         .attr("data-e-time", f_end)
         .style("cursor", "pointer")
         .text([y_start, y_end].join("-"));
-      timeLabels.push(tframe_text_3);
+      frameText.push(tframe_text_3);
       addTFrameListener(tframe_text_3, frame_id);
     }
   }
@@ -445,7 +451,7 @@ class TimeLine {
     // this.h_years.push(obound.end_time);
 
     timeSlices.push(tframe);
-    timeLabels.push(tframe_text);
+    frameText.push(tframe_text);
   }
 
   createCaptionFrame(gid, f_start, f_end, caption) {
@@ -567,6 +573,12 @@ class TimeLine {
     label.style.width = e-s;
     label.style.height = this.caption_h;
     label.innerHTML = name;
+    label.setAttribute("data-s-time", f_start)
+    label.setAttribute("data-e-time", f_end)
+    label.setAttribute("data-o-width", e-s);
+    label.setAttribute("data-o-height", this.caption_h);
+
+    timeLabels.push(label);
     this.labelpanel.appendChild(label);
 
     if (this.nfloorlabels < num_labels)
@@ -592,7 +604,7 @@ function zoomed() {
     d.attr("x", timeScale(d.attr("data-s-time")))
     d.attr("width", timeScale(d.attr("data-e-time"))-timeScale(d.attr("data-s-time")))
   })
-  timeLabels.forEach(function(d) {
+  frameText.forEach(function(d) {
     if (d.attr("data-n-length") != undefined) {
       d.attr("x", 12*d.attr("data-n-length")+timeScale(d.attr("data-s-time")))
     } else {
@@ -600,6 +612,13 @@ function zoomed() {
     }
   })
   timeCaptions.forEach(function(d) {
+    var e = timeScale(d.getAttribute("data-e-time")),
+        s = timeScale(d.getAttribute("data-s-time"));
+    d.style.left = leftTimelineMargin+s;
+    d.style.width = e-s;
+    d.setAttribute("data-o-width", e-s);
+  })
+  timeLabels.forEach(function(d) {
     var e = timeScale(d.getAttribute("data-e-time")),
         s = timeScale(d.getAttribute("data-s-time"));
     d.style.left = leftTimelineMargin+s;
@@ -707,7 +726,7 @@ function highlightTFrame(id) {
     .attr("tframe_id", id)
     .attr("display", "block")
     .attr("x", target[0].x.baseVal.value + target[0].width.baseVal.value - (dragbarw/2))
-    .attr("y", target[0].y.baseVal.value);
+    .attr("y", target[0].y.baseVal.value + timeline.getLabelHeight());
 
   var timeframe_text = $("text#"+id+".time-slice");
   var axes = timeframe_text.text().split("x")[0];
