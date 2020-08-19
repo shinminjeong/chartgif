@@ -24,7 +24,7 @@ label_map = {
     "none": {"desc": "", "high": ""},
 }
 label_map_ko = {
-    "income": {"desc": "부유한 정도", "low": "가난함", "high": "부유함"},
+    "income": {"desc": "소득 수준", "low": "가난함", "high": "부유함"},
     "fertility": {"desc": "가족의 크기", "low": "가족 구성원이 적음", "high": "가족 구성원이 많음"},
     "mortality": {"desc": "아동 사망률", "low": "낮은 아동 사망률", "high": "높은 아동 사망률"},
     "lifespan": {"desc": "평균 수명", "low": "짧은 평균 수명", "high": "긴 평균 수명"},
@@ -185,7 +185,15 @@ def aggrNames(groups, nlist, lang):
         return ", ".join(nlist_ko[:-1])+" 와 "+nlist_ko[-1]
     return ", ".join(nlist[:-1])+" and "+nlist[-1]
 
-def generatePrologue(groups, reasons, head_y, tail_y, lang="en"):
+def aggrAxes(axes, options, lang):
+    if len(axes) == 1:
+        return options[axes[0].lower()]["name"]
+    if lang == "ko":
+        return "과(와) ".join([options[a.lower()]["name"] for a in axes])
+    else:
+        return " and ".join([options[a.lower()]["name"] for a in axes])
+
+def generatePrologue(groups, options, reasons, head_y, tail_y, lang="en"):
     # print("generatePrologue", groups, reasons, head_y, tail_y)
     reason_group = {}
     for r, v in reasons.items():
@@ -196,14 +204,22 @@ def generatePrologue(groups, reasons, head_y, tail_y, lang="en"):
 
     if lang == "ko":
         caption = "{}년부터 {}년까지, ".format(head_y, tail_y)
+        for r, ids in reason_group.items():
+            gnames = [groups[int(g.split("-")[-1])] for g in ids]
+            axis = set([reasons[id]["axis"][0] for id in ids])
+            if r == "mostspread":
+                caption += "{} {}. ".format(aggrNames(groups, gnames, lang), desc_ko[r])
+            else:
+                caption += "{} {}이(가) {}. ".format(aggrNames(groups, gnames, lang), aggrAxes(list(axis), options, lang), desc_ko[r])
     else:
         caption = "From {} to {}, ".format(head_y, tail_y)
-    for r, ids in reason_group.items():
-        gnames = [groups[int(g.split("-")[-1])] for g in ids]
-        if lang == "ko":
-            caption += "{} {}. ".format(aggrNames(groups, gnames, lang), desc[r])
-        else:
-            caption += "{} {}. ".format(aggrNames(groups, gnames, lang), desc_ko[r])
+        for r, ids in reason_group.items():
+            gnames = [groups[int(g.split("-")[-1])] for g in ids]
+            axis = set([reasons[id]["axis"][0] for id in ids])
+            if r == "mostspread":
+                caption += "{} in {}. ".format(desc[r], aggrNames(groups, gnames, lang), )
+            else:
+                caption += "{} in {} {}. ".format(aggrAxes(list(axis), options, lang), aggrNames(groups, gnames, lang), desc[r])
     # print(caption)
     # print()
     return caption

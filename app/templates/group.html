@@ -491,6 +491,7 @@ playon.addEventListener("click", function(e) {
 });
 
 function pause() {
+  playon.setAttribute("aria-pressed", "false");
   if (play_timer != undefined) {
     clearInterval(play_timer);
     play_timer = undefined;
@@ -611,7 +612,7 @@ var swtvalues = {
 };
 $('input[type=range]').on('input', function () {
   $(this).trigger('change');
-  pause();
+  // pause();
 });
 $("input[type='range']").change(function() {
   el = $(this);
@@ -654,7 +655,7 @@ function changeSlider() {
     .text(curYear);
   el.val(curFrame);
 
-  // if (curFrame < preFrame) chart.clear();
+  if (curFrame < preFrame-10) chart.clear();
   if (curYear == "init") return;
 
   var frameContent = testtimeframes.getFrameContent(curFrame);
