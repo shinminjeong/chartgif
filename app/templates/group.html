@@ -655,10 +655,12 @@ function changeSlider() {
     .text(curYear);
   el.val(curFrame);
 
-  if (curFrame < preFrame-10) chart.clear();
+  var frameContent = testtimeframes.getFrameContent(curFrame);
+
+  // console.log("@@@@@@", frameContent, testtimeframes.getFrameContent(preFrame))
+  if (frameContent != testtimeframes.getFrameContent(preFrame)) chart.clear();
   if (curYear == "init") return;
 
-  var frameContent = testtimeframes.getFrameContent(curFrame);
   var focus;
   if (frameContent != undefined) {
     var names = frameContent.split("-");
@@ -686,7 +688,7 @@ function changeSlider() {
     var reason = testtimeframes.framemap[frameContent].reason;
     var delaytime = testtimeframes.default_slowdown[reason]*timeunit;
     var innergrp = testtimeframes.innergrp;
-    chart.updateFocus(curYear, swtvalues, innergrp, delaytime);
+    chart.updateFocus(curYear, swtvalues, innergrp, delaytime, frameContent);
   } else if (preYear != curYear) {
     // console.log("@ changeSlider -- Update", curYear);
     chart.hideDesc(0);

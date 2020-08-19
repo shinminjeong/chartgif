@@ -385,8 +385,12 @@ class ScatterPlot {
     this.hull_label_g.selectAll('line.hull-label-link').remove();
   }
 
-  updateFocus(time, swtvalues, innergrp, delay) {
-    // console.log("updateFocus", swtvalues, time, pre_group == JSON.stringify(swtvalues))
+  cache (swtvalues, frame_id) {
+    return JSON.stringify(swtvalues) + frame_id;
+  }
+
+  updateFocus(time, swtvalues, innergrp, delay, frame_id) {
+    console.log("updateFocus", swtvalues, time, pre_group == this.cache(swtvalues, frame_id))
     this.bubble_g.selectAll("*").remove();
     this.bubble_g_h.selectAll("*").remove();
     // this.trace_path_g.selectAll("circle.tbubble").remove();
@@ -538,7 +542,7 @@ class ScatterPlot {
         .attr("d", drawCluster);
 
     // update hull labels for a new group
-    if (pre_group != JSON.stringify(swtvalues)) {
+    if (pre_group != this.cache(swtvalues, frame_id)) {
       this.hull_label_g.selectAll("text.hull-label").remove();
       hull_labels = this.hull_label_g.selectAll('.hull-label')
           .data(dataCvxHulls)
@@ -596,7 +600,7 @@ class ScatterPlot {
         .attr("y2", points[3])
     })
 
-    pre_group = JSON.stringify(swtvalues);
+    pre_group = this.cache(swtvalues, frame_id);
   }
 }
 

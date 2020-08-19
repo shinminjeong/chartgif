@@ -210,7 +210,7 @@ def generatePrologue(groups, options, reasons, head_y, tail_y, lang="en"):
             if r == "mostspread":
                 caption += "{} {}. ".format(aggrNames(groups, gnames, lang), desc_ko[r])
             else:
-                caption += "{} {}이(가) {}. ".format(aggrNames(groups, gnames, lang), aggrAxes(list(axis), options, lang), desc_ko[r])
+                caption += "{}의 {}이(가) {}. ".format(aggrNames(groups, gnames, lang), aggrAxes(list(axis), options, lang), desc_ko[r])
     else:
         caption = "From {} to {}, ".format(head_y, tail_y)
         for r, ids in reason_group.items():
