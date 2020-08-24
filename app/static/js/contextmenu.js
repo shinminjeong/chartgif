@@ -39,7 +39,6 @@ function toggleMenuOff() {
   menu.classList.remove(activeClassName);
 }
 
-
 var context_items = document.querySelectorAll(".context-menu__item");
 for (var i = 0; i < context_items.length; i++) {
   context_items[i].addEventListener("click", function(e) {
@@ -69,15 +68,17 @@ for (var i = 0; i < context_items.length; i++) {
 
 
 function highlightLabel(e, frame_id) {
-  console.log("highlightLabel", frame_id, e.target);
+  selected_tframe = frame_id;
+  selected_label = e.target.getAttribute("data-item-id");
+  // console.log("highlightLabel", frame_id, selected_label);
   e.target.className = "time-label active";
 }
 function muteLabel(e, frame_id) {
-  console.log("muteLabel", frame_id, e.target);
+  // console.log("muteLabel", frame_id, e.target);
   e.target.className = "time-label";
 }
 function showLabelDelete(e, frame_id) {
-  console.log("showContextMenu", frame_id, e.target);
+  // console.log("showLabelDelete", frame_id, e.target);
   e.preventDefault();
   toggleMenuOff();
   if ( menuState !== 1 || menuId != frame_id) {
@@ -98,4 +99,27 @@ function toggleLabelMenuOn() {
 function toggleLabelMenuOff() {
   menuState = 0;
   labelMenu.classList.remove("context-menu--active");
+}
+
+var label_menu_items = document.querySelectorAll(".context-menu-label__item");
+for (var i = 0; i < label_menu_items.length; i++) {
+  label_menu_items[i].addEventListener("click", function(e) {
+    var target = e.target;
+    if (e.target.tagName == "I") target = e.target.parentNode;
+    // console.log("label_menu_items", target)
+    if (target.classList.contains("context-menu-label__delete")) {
+      removeLabelFrame(selected_tframe, selected_label);
+    }
+    toggleLabelMenuOff();
+  })
+  label_menu_items[i].addEventListener("mouseover", function(e) {
+    var target = e.target;
+    if (e.target.tagName == "I") target = e.target.parentNode;
+    target.classList.add("context-menu__item_active");
+  })
+  label_menu_items[i].addEventListener("mouseout", function(e) {
+    var target = e.target;
+    if (e.target.tagName == "I") target = e.target.parentNode;
+    target.classList.remove("context-menu__item_active");
+  })
 }

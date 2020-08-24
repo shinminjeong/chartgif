@@ -815,17 +815,24 @@ function clickBubbles(d){
     //
   } else {
     var frame_count = timeline.addLabel(curFrame, testtimeframes.getFrameContent(curFrame), d.id, selected.innerHTML);
-    updateLabel(d.id, frame_count[0], frame_count[1]);
+    saveNewLabel(d.id, frame_count[0], frame_count[1]);
 
     selected.setAttribute("data-clicked", "true");
     selected.style.visibility = "visible";
   }
 }
 
-function updateLabel(item_id, from, to) {
+function saveNewLabel(item_id, from, to) {
   for (var i = from; i < to; i++) {
     if (savedLabels[i] == undefined) savedLabels[i] = new Set();
     savedLabels[i].add(item_id);
+  }
+}
+function removeLabel(item_id, from, to) {
+  for (var i = from; i < to; i++) {
+    console.log("if", savedLabels[i], item_id, savedLabels[i].has(item_id))
+    if (savedLabels[i].has(item_id))
+      savedLabels[i].delete(item_id);
   }
 }
 

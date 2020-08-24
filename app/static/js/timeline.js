@@ -1,7 +1,7 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3, xAxis_year, xAxis_year_h;
 var timeSlices, timeLabels, timeCaptions, frameText, chartExpand;
-var selected_tframe;
+var selected_tframe, selected_label;
 var dragbarright, dragbarw = 6;
 
 class TimeLine {
@@ -213,7 +213,7 @@ class TimeLine {
       d.setAttribute("data-o-width", e-s);
 
       var item_id = d.getAttribute("data-item-id");
-      updateLabel(item_id, f_start, f_end);
+      saveNewLabel(item_id, f_start, f_end);
     })
   }
 
@@ -589,7 +589,7 @@ class TimeLine {
       num_labels = 1+parseInt(cur_time_slice.attr("num-labels"));
       cur_time_slice.attr("num-labels", num_labels);
     }
-    console.log("@@@ addLabel", cur_event_id, id)
+    // console.log("@@@ addLabel", cur_event_id, id)
     var label = document.createElement("div");
     label.className = "time-label"
     label.id = cur_event_id;
@@ -751,4 +751,18 @@ function addLabelListener(frame, frame_id) {
   frame.addEventListener("contextmenu", function(e, d) {
     showLabelDelete(e, frame_id)
   });
+}
+
+function removeLabelFrame(frame_id, label_id) {
+  // console.log("removeLabelFrame", frame_id, label_id);
+  var tlabels = $("div#"+frame_id+".time-label");
+  for (var i = 0; i < tlabels.length; i++) {
+    if (tlabels[i].getAttribute("data-item-id") == label_id) {
+      console.log("remove id = ", label_id);
+      var f_start = parseInt(tlabels[i].getAttribute("data-s-time"));
+      var f_end = parseInt(tlabels[i].getAttribute("data-e-time"));
+      removeLabel(label_id, f_start, f_end);
+      tlabels[i].remove();
+    }
+  }
 }

@@ -476,11 +476,13 @@ ul {
   border-color: rgb(116, 116, 116, .5) rgb(109, 109, 109, .5) rgb(86, 86, 86, .5);
 	cursor: pointer;
 }
-.context-menu__items {
+.context-menu__items,
+.context-menu-label__items {
 	padding: 0;
 	list-style-type: none;
 }
-.context-menu__item {
+.context-menu__item,
+.context-menu-label__item {
 	height: 25px;
 	padding: 3px 15px 3px 15px;
 }
