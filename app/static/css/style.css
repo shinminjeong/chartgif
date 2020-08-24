@@ -59,6 +59,7 @@ body {
 	stroke-linejoin: "miter";
 	text-anchor: "start";
 	display: block;
+	cursor: pointer;
 }
 .hull-label-link{
 	stroke: #333;

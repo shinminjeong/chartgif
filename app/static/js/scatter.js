@@ -480,8 +480,14 @@ class ScatterPlot {
         .attr('cx', function(d){ return xScale(d.pre_x);})
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
-        .style('stroke', 'black')
-        .style('stroke-width', 0.2)
+        .style('stroke', function(d) {
+          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return '#007bff80';
+          else return 'black'
+        })
+        .style('stroke-width', function(d) {
+          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return 2;
+          else return 0.2;
+        })
         .style('fill', d => gcolor(d.group))
         .style('opacity', 1)
         .style('display', function(d) {
@@ -503,8 +509,8 @@ class ScatterPlot {
       .merge(bubble_lable)
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble-label g'+d.group; })
-        .attr('x', function(d){return xScale(d.x)-20;})
-        .attr('y', function(d){ return yScale(d.y); })
+        .attr('x', function(d){return xScale(d.pre_x)+6;})
+        .attr('y', function(d){ return yScale(d.pre_y)+4; })
         .text(function(d){ return d.name; })
         .attr('paint-order', 'stroke')
         .style('visibility', function(d) {
@@ -517,8 +523,8 @@ class ScatterPlot {
         .on("mouseout", mouseOutBubbles)
       .transition()
         .duration(delay)
-        .attr("x", function(d){return xScale(d.x)-20;})
-        .attr("y", function(d){ return yScale(d.y); })
+        .attr("x", function(d){return xScale(d.x)+6;})
+        .attr("y", function(d){ return yScale(d.y)+4; })
 
     this.hull_g.selectAll("path.hull").remove();
     this.hull_g.selectAll("path.hull")
@@ -812,8 +818,8 @@ function clickBubbles(d){
       savedLabels[d.id] = [];
     }
     var frame_count = timeline.addLabel(curFrame, testtimeframes.getFrameContent(curFrame), d.id, selected.innerHTML);
-    for (var i = 0; i < frame_count; i++)
-      savedLabels[d.id].push(curFrame+i);
+    for (var i = frame_count[0]; i < frame_count[1]; i++)
+      savedLabels[d.id].push(i);
 
     selected.setAttribute("data-clicked", "true");
     selected.style.visibility = "visible";
@@ -823,6 +829,7 @@ function clickBubbles(d){
 function dimAllBubbles(dimlevel) {
   var bubbles = $("circle.bubble");
   for (var l in bubbles) {
+    if (savedLabels[bubbles[l].id] != undefined) continue;
     if (bubbles[l].style) bubbles[l].style.opacity = ""+dimlevel;
   }
 }

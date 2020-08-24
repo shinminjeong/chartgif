@@ -193,6 +193,23 @@ class TimeLine {
       }
     }
     this.drawYearTicks();
+    this.rescaleLabels();
+  }
+
+  rescaleLabels() {
+    // resize labels
+    timeLabels.forEach(function(d) {
+      var cur_time_slice = $("rect#"+d.getAttribute("id")+".time-slice");
+      var f_start = parseFloat(cur_time_slice.attr("data-s-time"));
+      var f_end = parseFloat(cur_time_slice.attr("data-e-time"));
+      var s = timeScale(f_start),
+          e = timeScale(f_end);
+      d.style.left = leftTimelineMargin+s;
+      d.style.width = e-s;
+      d.setAttribute("data-s-time", f_start)
+      d.setAttribute("data-e-time", f_end)
+      d.setAttribute("data-o-width", e-s);
+    })
   }
 
   updateChart(timeframesmap, forder, fmap, resetZoom=false) {
@@ -224,6 +241,7 @@ class TimeLine {
       }
     }
     this.drawYearTicks();
+    this.rescaleLabels();
   }
 
   calculateTickValues(timeframes) {
@@ -552,8 +570,9 @@ class TimeLine {
     this.chart_g.attr('transform', 'translate(0,'+this.getLabelHeight()+')');
   }
 
-  addLabel(f_start, cur_event_id, id, name) {
+  addLabel(click_point, cur_event_id, id, name) {
     var cur_time_slice = $("rect#"+cur_event_id+".time-slice");
+    var f_start = parseFloat(cur_time_slice.attr("data-s-time"));
     var f_end = parseFloat(cur_time_slice.attr("data-e-time"));
     var s = timeScale(f_start),
         e = timeScale(f_end);
@@ -564,10 +583,10 @@ class TimeLine {
       num_labels = 1+parseInt(cur_time_slice.attr("num-labels"));
       cur_time_slice.attr("num-labels", num_labels);
     }
-    console.log("@@@ addLabel", curFrame, num_labels, f_start, f_end, s, e)
+    console.log("@@@ addLabel", cur_event_id, id)
     var label = document.createElement("div");
     label.className = "time-label"
-    label.id = id;
+    label.id = cur_event_id;
     label.style.top = -this.caption_h*(num_labels-1);
     label.style.left = this.margin.left+s;
     label.style.width = e-s;
@@ -585,7 +604,7 @@ class TimeLine {
       this.nfloorlabels = num_labels;
     this.updateLabelHeight();
 
-    return f_end-f_start;
+    return [f_start, f_end];
   }
 }
 
@@ -647,6 +666,7 @@ function removeTimeSlice(id) {
   timeframe_text.remove();
   $("rect#"+id+".time-slice").remove();
   $("textarea#"+id+".time-caption").remove();
+  $("div#"+id+".time-label").remove();
   removeFrame(id, axes);
 }
 
