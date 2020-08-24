@@ -35,11 +35,19 @@ class TimeLine {
     this.legendpanel = document.getElementById(this.div_id + "-legend");
     this.controlpanel = document.getElementById(this.div_id + "-control");
     this.captionpanel = document.getElementById(this.div_id);
+
+    const extent = [[0,0], [timeScale_width, 0]];
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 8])
+      .translateExtent(extent)
+      .extent(extent)
+      .on("zoom", zoomed);
     this.svg = d3.select("#"+this.div_id_frames)
       .append('svg')
       .attr('width', this.width)
       .attr('height', this.height)
-      .attr('transform', 'translate(' + this.margin.left + ',0)');
+      .attr('transform', 'translate(' + this.margin.left + ',0)')
+      .call(this.zoom);
 
     var defs = this.svg.append("defs");
     defs.append("pattern")
@@ -64,16 +72,8 @@ class TimeLine {
       .attr("y", 0)
       .attr("xlink:href", "/static/images/icon_delete_h.png");
 
-    const extent = [[0,0], [timeScale_width, 0]];
-    this.zoom = d3.zoom()
-      .scaleExtent([1, 8])
-      .translateExtent(extent)
-      .extent(extent)
-      .on("zoom", zoomed);
     this.chart_g = this.svg.append('g')
       .attr("id", "chart_g")
-      .call(this.zoom);
-
     this.background_label = this.svg.append("rect")
       .attr("x", 0)
       .attr("y", this.margin.top)
@@ -198,6 +198,7 @@ class TimeLine {
 
   rescaleLabels() {
     // resize labels
+    savedLabels = [];
     timeLabels.forEach(function(d) {
       var cur_time_slice = $("rect#"+d.getAttribute("id")+".time-slice");
       var f_start = parseFloat(cur_time_slice.attr("data-s-time"));
@@ -209,6 +210,9 @@ class TimeLine {
       d.setAttribute("data-s-time", f_start)
       d.setAttribute("data-e-time", f_end)
       d.setAttribute("data-o-width", e-s);
+
+      var item_id = d.getAttribute("data-item-id");
+      updateLabel(item_id, f_start, f_end);
     })
   }
 
@@ -592,6 +596,7 @@ class TimeLine {
     label.style.width = e-s;
     label.style.height = this.caption_h;
     label.innerHTML = name;
+    label.setAttribute("data-item-id", id)
     label.setAttribute("data-s-time", f_start)
     label.setAttribute("data-e-time", f_end)
     label.setAttribute("data-o-width", e-s);

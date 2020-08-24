@@ -359,7 +359,7 @@ class ScatterPlot {
         .attr('paint-order', 'stroke')
         .style('visibility', function(d) {
           var selected = $("text#"+d.id+".bubble-label")[0];
-          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return "visible";
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return "visible";
           else return "hidden";
         })
         .on("mouseover", mouseOverBubbles)
@@ -390,7 +390,7 @@ class ScatterPlot {
   }
 
   updateFocus(time, swtvalues, innergrp, delay, frame_id) {
-    console.log("updateFocus", swtvalues, time, pre_group == this.cache(swtvalues, frame_id))
+    console.log("updateFocus", swtvalues, innergrp, time, pre_group == this.cache(swtvalues, frame_id))
     this.bubble_g.selectAll("*").remove();
     this.bubble_g_h.selectAll("*").remove();
     // this.trace_path_g.selectAll("circle.tbubble").remove();
@@ -481,11 +481,11 @@ class ScatterPlot {
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
         .style('stroke', function(d) {
-          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return '#007bff80';
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return '#007bff80';
           else return 'black'
         })
         .style('stroke-width', function(d) {
-          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return 2;
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return 2;
           else return 0.2;
         })
         .style('fill', d => gcolor(d.group))
@@ -515,7 +515,7 @@ class ScatterPlot {
         .attr('paint-order', 'stroke')
         .style('visibility', function(d) {
           var selected = $("text#"+d.id+".bubble-label")[0];
-          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return "visible";
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return "visible";
           else return "hidden";
         })
         .on("mouseover", mouseOverBubbles)
@@ -798,7 +798,7 @@ function mouseOutBubbles(d) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="hidden";
   } else {
     dimAllBubbles(1);
-    dimAllCvxHulls(0.2);
+    // dimAllCvxHulls(0.2);
     var labels = $("text.bubble-label.g"+d.group);
     for (var l=0; l < labels.length; l++) {
       if (labels[l].getAttribute("data-clicked") == "true") continue;
@@ -814,22 +814,25 @@ function clickBubbles(d){
   if (selected.getAttribute("data-clicked") == "true") {
     //
   } else {
-    if (savedLabels[d.id] == undefined) {
-      savedLabels[d.id] = [];
-    }
     var frame_count = timeline.addLabel(curFrame, testtimeframes.getFrameContent(curFrame), d.id, selected.innerHTML);
-    for (var i = frame_count[0]; i < frame_count[1]; i++)
-      savedLabels[d.id].push(i);
+    updateLabel(d.id, frame_count[0], frame_count[1]);
 
     selected.setAttribute("data-clicked", "true");
     selected.style.visibility = "visible";
   }
 }
 
+function updateLabel(item_id, from, to) {
+  for (var i = from; i < to; i++) {
+    if (savedLabels[i] == undefined) savedLabels[i] = new Set();
+    savedLabels[i].add(item_id);
+  }
+}
+
 function dimAllBubbles(dimlevel) {
   var bubbles = $("circle.bubble");
   for (var l in bubbles) {
-    if (savedLabels[bubbles[l].id] != undefined) continue;
+    if (savedLabels[curFrame] && savedLabels[curFrame].has(bubbles[l].id)) continue;
     if (bubbles[l].style) bubbles[l].style.opacity = ""+dimlevel;
   }
 }
