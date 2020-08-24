@@ -369,9 +369,9 @@ text.time-slice-outer {
 }
 .time-label {
 	position: absolute;
-	background-color: #FCA503;
+	background-color: #FDC04F;
 	border-radius: .2rem;
-	border: .2px solid rgba(0,0,0,.3);
+	border: .2px solid rgba(0,0,0,.2);
 	color: #000;
 	font-size: 10px;
 	padding: 1px 2px 2px 2px;
@@ -379,6 +379,10 @@ text.time-slice-outer {
 	white-space: nowrap;
 	opacity: 1;
 	resize: none;
+	cursor: pointer;
+}
+.time-label.active {
+	background-color: #FCA503;
 }
 .time-caption {
 	position: absolute;
@@ -454,12 +458,16 @@ text.time-slice-outer {
   clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 52% 100%, 48% 100%, 0% 65%);
 }
 
-.context-menu {
+ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.context-menu,
+.context-menu-label {
 	display: none;
   position: absolute;
   z-index: 500;
 	width: 120px;
-	height: 75px;
 	background-color: white;
 	font-size: 12px;
 	border-radius: .2rem;
@@ -473,6 +481,7 @@ text.time-slice-outer {
 	list-style-type: none;
 }
 .context-menu__item {
+	height: 25px;
 	padding: 3px 15px 3px 15px;
 }
 .context-menu__item_active {

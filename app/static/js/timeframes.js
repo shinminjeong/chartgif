@@ -4,6 +4,7 @@ class TimeFrames {
     this.gname = gname;
     this.playtime = 0; // times timeunit is the playtime
     this.framearr = []; // order of outerbound
+    this.rorder = {}; // order of reasons
     this.framemap = {}; // info of inner frames for each outerbound
     this.yearmap = {};
     this.innergrp = {};
@@ -30,6 +31,7 @@ class TimeFrames {
     this.gname = data.gname;
     this.playtime = data.playtime;
     this.framearr = data.framearr;
+    this.rorder = data.rorder;
     this.framemap = data.framemap;
     this.yearmap = data.yearmap;
     this.captions = data.captions;
@@ -66,7 +68,8 @@ class TimeFrames {
             "start_time": head_y,
             "end_time": end_t,
             "groups": Array.from(new Set(groups)).sort(),
-            "reason": reasons
+            "reason": reasons,
+            "order": Object.keys(reasons)
           }
           bound["prologue"] = this.createPrologue(bound);
           bound["epilogue"] = this.createEpilogue(bound);
@@ -119,6 +122,7 @@ class TimeFrames {
   }
 
   getFrameOrder() {
+    // console.log("getFrameOrder")
     var order = [];
     var idx = 0;
     var runningtime = 0;
@@ -148,7 +152,8 @@ class TimeFrames {
           prol.tail = runningtime;
         }
 
-        for (var b in outerbound.reason) {
+        for (var j=0; j < outerbound.order.length; j++) {
+          var b = outerbound.order[j];
           this.framemap[b].head = runningtime;
           this.framemap[b].tail = runningtime + this.framemap[b].runningtime;
           runningtime += this.framemap[b].runningtime;
@@ -243,7 +248,7 @@ class TimeFrames {
       }
 
       this.framearr.push([outerb.start_time, outerb.end_time]);
-      var arr = [outerb.prologue, ...Object.keys(outerb.reason), outerb.epilogue];
+      var arr = [outerb.prologue, ...outerb.order, outerb.epilogue];
       for (var a in arr) {
         var r = arr[a];
         // console.log(r, this.framemap[r])
@@ -293,6 +298,7 @@ class TimeFrames {
         "start_time": "Init",
         "caption": "Init",
         "reason": {},
+        "order": [],
         "runningtime": 0,
       }
     }
@@ -310,6 +316,7 @@ class TimeFrames {
     this.framemap[id] = frame;
     this.framemap.init.runningtime += initdelay[axis[0]];
     this.framemap.init.reason[id] = frame;
+    this.framemap.init.order.push(id);
   }
 
   addFrames(data_focus_range) {

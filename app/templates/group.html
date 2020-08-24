@@ -141,6 +141,13 @@
       </li>
     </ul>
   </nav>
+  <nav class="context-menu-label">
+    <ul class="context-menu__items">
+      <li class="context-menu__item context-menu__delete">
+        <i class="fa fa-times"></i> Delete
+      </li>
+    </ul>
+  </nav>
 </body>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -267,11 +274,6 @@ function expandChart(flag_expand) {
   refresh();
 }
 
-function resize() {
-  timeline.resizeChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap());
-  updateSlider();
-}
-
 function refresh(resetZoom=false) {
   timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap(), resetZoom);
   updateSlider();
@@ -284,21 +286,18 @@ var swapArrayElements = function(arr, indexA, indexB) {
 };
 function moveFrameOrder(id, direction) {
   var obound = testtimeframes.framemap[id].outerbound;
-  var reason_order = Object.keys(testtimeframes.outerbound[obound].reason);
+  var reason_order = testtimeframes.outerbound[obound].order;
   // console.log("moveFrameOrder", id, reason_order, reason_order.indexOf(id));
   var pos = reason_order.indexOf(id);
   if (direction == "left") swapArrayElements(reason_order, pos, pos-1)
   if (direction == "right") swapArrayElements(reason_order, pos, pos+1)
-  // console.log("result", reason_order)
-  var neworder = {};
-  for (var r in reason_order) {
-    neworder[reason_order[r]] = testtimeframes.outerbound[obound].reason[reason_order[r]];
-  }
-  testtimeframes.outerbound[obound].reason = neworder;
+  testtimeframes.outerbound[obound].order = reason_order;
+  testtimeframes.calculateTimeFrames();
 }
+
 function findNextFrame(id, direction) {
   var obound = testtimeframes.framemap[id].outerbound;
-  var reason_order = Object.keys(testtimeframes.outerbound[obound].reason);
+  var reason_order = testtimeframes.outerbound[obound].order;
   var pos = reason_order.indexOf(id);
   if (direction == "left") return reason_order[pos-1];
   if (direction == "right") return reason_order[pos+1];
@@ -440,7 +439,7 @@ function updateSlider() {
 }
 
 function removeFrame(id, axes) {
-  console.log("removeFrame", id)
+  // console.log("removeFrame", id)
   testtimeframes.removeFrame(id);
   testtimeframes.calculateTimeFrames();
   timeline.updateChart(testtimeframes.getTimeFrames(), testtimeframes.getFrameOrder(), testtimeframes.getFrameMap());

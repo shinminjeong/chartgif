@@ -390,7 +390,7 @@ class ScatterPlot {
   }
 
   updateFocus(time, swtvalues, innergrp, delay, frame_id) {
-    console.log("updateFocus", swtvalues, innergrp, time, pre_group == this.cache(swtvalues, frame_id))
+    // console.log("updateFocus", swtvalues, innergrp, time, pre_group == this.cache(swtvalues, frame_id))
     this.bubble_g.selectAll("*").remove();
     this.bubble_g_h.selectAll("*").remove();
     // this.trace_path_g.selectAll("circle.tbubble").remove();

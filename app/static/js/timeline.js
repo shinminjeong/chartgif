@@ -102,6 +102,7 @@ class TimeLine {
       .attr("height", this.slice_h)
       .attr("width", dragbarw)
       .attr("display", "none")
+      .on("contextmenu", function() { d3.event.preventDefault(); })
       .call(d3.drag().on("drag", rdragresize));
 
     this.setControlPanel();
@@ -129,7 +130,7 @@ class TimeLine {
       chartExpand = !chartExpand;
       var target = e.target;
       if (e.target.tagName == "I") target = e.target.parentNode;
-      console.log("expand button clicked!", chartExpand, target);
+      // console.log("expand button clicked!", chartExpand, target);
       if (chartExpand) target.innerHTML = "<i class='fa fa-chevron-up'></i>";
       else target.innerHTML = "<i class='fa fa-chevron-down'></i>";
       toggleMenuOff();
@@ -223,7 +224,7 @@ class TimeLine {
     this.updateXaxis(timeframes, resetZoom);
     for (var f in forder) {
       var outerbound = forder[f].outerbound;
-      // console.log("outerbound", outerbound);
+      // console.log("outerbound", f, outerbound);
       if (outerbound.reason == undefined) {// blank interval
         timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
       } else {
@@ -260,11 +261,11 @@ class TimeLine {
   }
 
   updateXaxis(timeframes, resetZoom=false) {
-    var zoomTransform = d3.zoomTransform(this.chart_g.node());
-    // console.log("updateXaxis", timeframes.length, 0, this.width, zoomTransform)
+    var zoomTransform = d3.zoomTransform(this.svg.node());
+    // console.log("updateXaxis", resetZoom, timeframes.length, 0, this.width, zoomTransform)
     if (resetZoom) {
       zoomTransform = d3.zoomIdentity;
-      this.chart_g.call(this.zoom.transform, d3.zoomIdentity);
+      this.svg.call(this.zoom.transform, d3.zoomIdentity);
     }
 
     this.calculateTickValues(timeframes);
@@ -575,6 +576,7 @@ class TimeLine {
   }
 
   addLabel(click_point, cur_event_id, id, name) {
+    dragbarright.attr("display", "none");
     var cur_time_slice = $("rect#"+cur_event_id+".time-slice");
     var f_start = parseFloat(cur_time_slice.attr("data-s-time"));
     var f_end = parseFloat(cur_time_slice.attr("data-e-time"));
@@ -603,6 +605,7 @@ class TimeLine {
     label.setAttribute("data-o-height", this.caption_h);
 
     timeLabels.push(label);
+    addLabelListener(label, cur_event_id);
     this.labelpanel.appendChild(label);
 
     if (this.nfloorlabels < num_labels)
@@ -623,6 +626,7 @@ function timeScaleInvert(value) {
 }
 
 function zoomed() {
+  dragbarright.attr("display", "none");
   timeScale.range([0, timeScale_width].map(d => d3.event.transform.applyX(d)));
   timeSlices.forEach(function(d) {
     d.attr("x", timeScale(d.attr("data-s-time")))
@@ -663,10 +667,10 @@ function zoomed() {
 }
 
 function removeTimeSlice(id) {
-  console.log("removebutton clicked", id)
+  // console.log("removebutton clicked", id)
   var timeframe_text = $("text#"+id+".time-slice");
   var axes = timeframe_text.text().split("x")[0];
-  console.log(axes)
+  // console.log(axes)
   dragbarright.attr("display", "none");
   timeframe_text.remove();
   $("rect#"+id+".time-slice").remove();
@@ -687,7 +691,12 @@ var menu = document.querySelector(".context-menu");
 var menuId = 0, menuState = 0;
 var activeClassName = "context-menu--active";
 function showContextMenu(id) {
-  // console.log("showContextMenu")
+  // console.log("showContextMenu", id)
+  var e = d3.event;
+  e.preventDefault();
+  var names = id.split("-");
+  if (names[0] == "init" || names[2] == "I" || names[2] == "O") return;
+
   if (findNextFrame(id, "left") == undefined) {
     document.querySelector(".context-menu__moveleft").classList.add("disable");
   } else {
@@ -699,9 +708,8 @@ function showContextMenu(id) {
     document.querySelector(".context-menu__moveright").classList.remove("disable");
   }
 
-  var e = d3.event;
+  toggleLabelMenuOff();
   if ( menuState !== 1 || menuId != id) {
-    e.preventDefault();
     setMousePosition(e)
     toggleMenuOn();
   } else {
@@ -723,21 +731,27 @@ function toggleMenuOff() {
 var context_items = document.querySelectorAll(".context-menu__item");
 for (var i = 0; i < context_items.length; i++) {
   context_items[i].addEventListener("click", function(e) {
-    console.log("selected_tframe", selected_tframe)
-    if (e.target.classList.contains("context-menu__moveleft")) {
+    var target = e.target;
+    if (e.target.tagName == "I") target = e.target.parentNode;
+    // console.log("selected_tframe", selected_tframe, target)
+    if (target.classList.contains("context-menu__moveleft")) {
       move(selected_tframe, "left");
-    } else if (e.target.classList.contains("context-menu__moveright")) {
+    } else if (target.classList.contains("context-menu__moveright")) {
       move(selected_tframe, "right");
-    } else if (e.target.classList.contains("context-menu__delete")) {
+    } else if (target.classList.contains("context-menu__delete")) {
       removeTimeSlice(selected_tframe);
     }
     toggleMenuOff();
   })
   context_items[i].addEventListener("mouseover", function(e) {
-    e.target.classList.add("context-menu__item_active");
+    var target = e.target;
+    if (e.target.tagName == "I") target = e.target.parentNode;
+    target.classList.add("context-menu__item_active");
   })
   context_items[i].addEventListener("mouseout", function(e) {
-    e.target.classList.remove("context-menu__item_active");
+    var target = e.target;
+    if (e.target.tagName == "I") target = e.target.parentNode;
+    target.classList.remove("context-menu__item_active");
   })
 }
 
@@ -796,6 +810,46 @@ function rdragresize(d) {
   testtimeframes.editFrameWidth(frame_id, orig_width, width);
   // target[0].width.baseVal.value = width;
   // target_caption[0].style.width = width;
-  resize();
+  refresh(false);
   highlightTFrame(frame_id);
+}
+
+function addLabelListener(frame, frame_id) {
+  frame.addEventListener("mouseover", function(e) { highlightLabel(e, frame_id); });
+  frame.addEventListener("mouseout", function(e) { muteLabel(e, frame_id); });
+  frame.addEventListener("contextmenu", function(e, d) {
+    showLabelDelete(e, frame_id)
+  });
+}
+
+function highlightLabel(e, frame_id) {
+  console.log("highlightLabel", frame_id, e.target);
+  e.target.className = "time-label active";
+}
+function muteLabel(e, frame_id) {
+  console.log("muteLabel", frame_id, e.target);
+  e.target.className = "time-label";
+}
+function showLabelDelete(e, frame_id) {
+  console.log("showContextMenu", frame_id, e.target);
+  e.preventDefault();
+  toggleMenuOff();
+  if ( menuState !== 1 || menuId != frame_id) {
+    setMousePosition(e)
+    toggleLabelMenuOn();
+  } else {
+    toggleLabelMenuOff();
+  }
+  menuId = frame_id;
+}
+var labelMenu = document.querySelector(".context-menu-label");
+function toggleLabelMenuOn() {
+  menuState = 1;
+  labelMenu.classList.add("context-menu--active");
+  labelMenu.style.left = mouse.x;
+  labelMenu.style.top = mouse.y;
+}
+function toggleLabelMenuOff() {
+  menuState = 0;
+  labelMenu.classList.remove("context-menu--active");
 }
