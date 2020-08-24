@@ -810,7 +810,7 @@ function mouseOutBubbles(d) {
 function clickBubbles(d){
   d3.select(this).style("cursor", "pointer");
   var selected = $("text#"+d.id+".bubble-label")[0];
-  console.log("clickBubble", d.id)
+  // console.log("clickBubble", d.id)
   if (selected.getAttribute("data-clicked") == "true") {
     //
   } else {
@@ -830,7 +830,6 @@ function saveNewLabel(item_id, from, to) {
 }
 function removeLabel(item_id, from, to) {
   for (var i = from; i < to; i++) {
-    console.log("if", savedLabels[i], item_id, savedLabels[i].has(item_id))
     if (savedLabels[i].has(item_id))
       savedLabels[i].delete(item_id);
   }

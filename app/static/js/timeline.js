@@ -392,6 +392,7 @@ class TimeLine {
       .attr("height", this.slice_h)
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
+      .attr("num-labels", $("div#"+frame_id+".time-label").length)
       .style("fill", gcolor(gid));
 
     addTFrameListener(tframe, frame_id);
@@ -451,6 +452,7 @@ class TimeLine {
         e = timeScale(y_end);
 
     // console.log("addOuterBound", y_start, y_end, s, e)
+    var frameHeight = chartExpand?this.slice_h*legendCount+this.year_h:this.slice_h+this.year_h;
     var tframe = this.chart_g.append("rect")
       .attr("class", "time-slice-outer")
       .attr("data-s-time", y_start)
@@ -458,7 +460,7 @@ class TimeLine {
       .attr("x", s+timeScale.bandwidth()/2)
       .attr("y", this.margin.top+this.caption_h)
       .attr("width", e-s)
-      .attr("height", chartExpand?this.slice_h*legendCount+this.year_h:this.slice_h+this.year_h);
+      .attr("height", frameHeight);
 
     var name = obound.start_time;
     if (obound.end_time != undefined) name += "-"+obound.end_time;
@@ -467,7 +469,7 @@ class TimeLine {
       .attr("data-s-time", y_start)
       .attr("data-e-time", y_end)
       .attr("x", s+timeScale.bandwidth()/2)
-      .attr("y", this.height-this.getLabelHeight()-this.margin.bottom-3)
+      .attr("y", frameHeight+this.margin.top+this.caption_h-3)
       .text(name);
 
     this.h_years.push(obound.start_time);
@@ -553,11 +555,16 @@ class TimeLine {
   }
 
   getLabelHeight() {
+    var maxHeight = 0;
+    $.each($("rect.time-slice"), function(k, v) {
+      if (v.getAttribute("num-labels")) maxHeight = Math.max(maxHeight, v.getAttribute("num-labels"))
+    });
+    this.nfloorlabels = maxHeight;
     return this.nfloorlabels*this.caption_h;
   }
 
   updateLabelHeight() {
-    console.log("increaseLabelHeight")
+    // console.log("updateLabelHeight")
     this.captionpanel.style.marginTop = this.getLabelHeight();
 
     this.s_height = this.getLabelHeight()+this.slice_h+this.caption_h+this.year_h+this.margin.top+this.margin.bottom;
@@ -608,10 +615,7 @@ class TimeLine {
     addLabelListener(label, cur_event_id);
     this.labelpanel.appendChild(label);
 
-    if (this.nfloorlabels < num_labels)
-      this.nfloorlabels = num_labels;
     this.updateLabelHeight();
-
     return [f_start, f_end];
   }
 }
@@ -755,14 +759,27 @@ function addLabelListener(frame, frame_id) {
 
 function removeLabelFrame(frame_id, label_id) {
   // console.log("removeLabelFrame", frame_id, label_id);
-  var tlabels = $("div#"+frame_id+".time-label");
-  for (var i = 0; i < tlabels.length; i++) {
-    if (tlabels[i].getAttribute("data-item-id") == label_id) {
-      console.log("remove id = ", label_id);
-      var f_start = parseInt(tlabels[i].getAttribute("data-s-time"));
-      var f_end = parseInt(tlabels[i].getAttribute("data-e-time"));
-      removeLabel(label_id, f_start, f_end);
-      tlabels[i].remove();
-    }
+  var tlabel = $("div#"+frame_id+".time-label[data-item-id="+label_id+"]")[0];
+  var f_start = parseInt(tlabel.getAttribute("data-s-time"));
+  var f_end = parseInt(tlabel.getAttribute("data-e-time"));
+  removeLabel(label_id, f_start, f_end);
+  timeLabels.splice(timeLabels.indexOf(tlabel), 1);
+  tlabel.remove();
+
+  // remove and re-add other labels
+  var otherlabels = $("div#"+frame_id+".time-label");
+  var names = [];
+  for (var i = 0; i < otherlabels.length; i++) {
+    names.push([otherlabels[i].getAttribute("data-item-id"), otherlabels[i].innerText]);
+    timeLabels.splice(timeLabels.indexOf(otherlabels[i]), 1);
+    otherlabels[i].remove();
   }
+  console.log("otherlabels", names);
+  var cur_time_slice = $("rect#"+frame_id+".time-slice")[0];
+  cur_time_slice.setAttribute("num-labels", 0);
+
+  for (var i = 0; i < names.length; i++) {
+    timeline.addLabel(curFrame, frame_id, names[i][0], names[i][1]);
+  }
+  timeline.updateLabelHeight();
 }
