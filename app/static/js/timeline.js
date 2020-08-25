@@ -396,7 +396,6 @@ class TimeLine {
       .attr("height", this.slice_h)
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
-      .attr("num-labels", $("div#"+frame_id+".time-label").length)
       .style("fill", gcolor(gid));
 
     addTFrameListener(tframe, frame_id);
@@ -500,6 +499,7 @@ class TimeLine {
     tframe.style.height = this.caption_h;
     tframe.value = caption;
 
+    tframe.setAttribute("num-labels", $("div#"+gid+".time-label").length)
     tframe.setAttribute("data-s-time", f_start);
     tframe.setAttribute("data-e-time", f_end);
     tframe.setAttribute("data-o-width", e-s);
@@ -560,7 +560,7 @@ class TimeLine {
 
   getLabelHeight() {
     var maxHeight = 0;
-    $.each($("rect.time-slice"), function(k, v) {
+    $.each($("textarea.time-caption"), function(k, v) {
       if (v.getAttribute("num-labels")) maxHeight = Math.max(maxHeight, v.getAttribute("num-labels"))
     });
     this.nfloorlabels = maxHeight;
@@ -588,7 +588,7 @@ class TimeLine {
 
   addLabel(click_point, cur_event_id, id, name) {
     dragbarright.attr("display", "none");
-    var cur_time_slice = $("rect#"+cur_event_id+".time-slice");
+    var cur_time_slice = $("textarea#"+cur_event_id+".time-caption");
     var f_start = parseFloat(cur_time_slice.attr("data-s-time"));
     var f_end = parseFloat(cur_time_slice.attr("data-e-time"));
     var s = timeScale(f_start),
@@ -789,8 +789,8 @@ function removeLabelFrame(frame_id, label_id) {
     timeLabels.splice(timeLabels.indexOf(otherlabels[i]), 1);
     otherlabels[i].remove();
   }
-  console.log("otherlabels", names);
-  var cur_time_slice = $("rect#"+frame_id+".time-slice")[0];
+  // console.log("otherlabels", names);
+  var cur_time_slice = $("textarea#"+frame_id+".time-caption")[0];
   cur_time_slice.setAttribute("num-labels", 0);
 
   for (var i = 0; i < names.length; i++) {

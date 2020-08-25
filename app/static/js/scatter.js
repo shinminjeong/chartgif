@@ -323,12 +323,18 @@ class ScatterPlot {
       .merge(bubble)
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble g'+d.group; })
-        .attr('cx', function(d){ return xScale(d.x);})
-        .attr('cy', function(d){ return yScale(d.y); })
+        .attr('cx', function(d){ return xScale(d.pre_x);})
+        .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1; })
         .style('opacity', 1)
-        .style('stroke', 'black')
-        .style('stroke-width', 0.2)
+        .style('stroke', function(d) {
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return '#007bff80';
+          else return 'black';
+        })
+        .style('stroke-width', function(d) {
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return 2;
+          else return 0.2;
+        })
         .style('fill', function(d){
           // console.log(d.group);
           if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
@@ -353,8 +359,8 @@ class ScatterPlot {
       .merge(bubble_label)
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble-label g'+d.group; })
-        .attr('x', function(d){return xScale(d.x)-20;})
-        .attr('y', function(d){ return yScale(d.y); })
+        .attr('x', function(d){return xScale(d.pre_x)+6;})
+        .attr('y', function(d){ return yScale(d.pre_y)+4; })
         .text(function(d){ return d.name; })
         .attr('paint-order', 'stroke')
         .style('visibility', function(d) {
@@ -364,7 +370,11 @@ class ScatterPlot {
         })
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
-        .on("mouseout", mouseOutBubbles);
+        .on("mouseout", mouseOutBubbles)
+      .transition()
+        .duration(timeunit)
+        .attr("x", function(d){return xScale(d.x)+6;})
+        .attr("y", function(d){ return yScale(d.y)+4; })
 
     pre_group = undefined;
   }
@@ -780,7 +790,7 @@ function mouseOverBubbles(d) {
   if (d.group == -1) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   } else {
-    console.log("mouseOverBubbles", d.id, d.group)
+    // console.log("mouseOverBubbles", d.id, d.group)
     dimAllBubbles(0.5);
     // dimAllCvxHulls(0.01);
     var circles = $("circle.bubble.g"+d.group);
