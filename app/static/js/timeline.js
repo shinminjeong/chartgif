@@ -205,7 +205,7 @@ class TimeLine {
     // resize labels
     savedLabels = [];
     timeLabels.forEach(function(d) {
-      var cur_time_slice = $("rect#"+d.getAttribute("id")+".time-slice");
+      var cur_time_slice = $("textarea#"+d.getAttribute("id")+".time-caption");
       var f_start = parseFloat(cur_time_slice.attr("data-s-time"));
       var f_end = parseFloat(cur_time_slice.attr("data-e-time"));
       var s = timeScale(f_start),
