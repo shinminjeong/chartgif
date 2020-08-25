@@ -67,7 +67,7 @@ class TraceChart {
       t_xScale = d3.scaleLinear().range([0, this.trace_width]).domain(xrange).nice();
     }
     if (data_options["yScale"]["id"] == "log") {
-      t_yScale = d3.scaleLog().range([this.trace_height, 0]).domain(yrange).nice();
+      t_yScale = d3.scaleLog().range([this.trace_height, 0]).domain(yrange);
     } else {
       t_yScale = d3.scaleLinear().range([this.trace_height, 0]).domain(yrange).nice();
     }
