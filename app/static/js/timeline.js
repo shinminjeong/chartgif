@@ -103,7 +103,11 @@ class TimeLine {
       .attr("width", dragbarw)
       .attr("display", "none")
       .on("contextmenu", function() { d3.event.preventDefault(); })
-      .call(d3.drag().on("drag", rdragresize));
+      .call(d3.drag()
+        .on("drag", rdragResize)
+        .on("start", rdragResizeStart)
+        .on("end", rdragResizeEnd)
+      );
 
     this.setControlPanel();
   }
@@ -732,21 +736,32 @@ document.addEventListener( "click", function(e) {
   toggleMenuOff();
 });
 
-function rdragresize(d) {
-  var frame_id = d3.select(this).attr("tframe_id");
-  var target = $("rect#"+frame_id+".time-slice");
-  var target_caption = $("textarea#"+frame_id+".time-caption");
+var drag_frame_id = undefined;
+function rdragResizeStart(d) {
+  // console.log("Start) rdragresize", drag_frame_id)
+  drag_frame_id = d3.select(this).attr("tframe_id");
+}
+
+function rdragResize(d) {
+  // console.log("Drag) rdragresize", drag_frame_id)
+  var target = $("rect#"+drag_frame_id+".time-slice");
+  var target_caption = $("textarea#"+drag_frame_id+".time-caption");
   var dragx = Math.max(target[0].x.baseVal.value + (dragbarw/2), Math.min(target[0].x.baseVal.value + target[0].width.baseVal.value + d3.event.dx));
 
   width = dragx - target[0].x.baseVal.value;
   dragbarright.attr("x", function(d) { return dragx - (dragbarw/2) });
 
   var orig_width = target[0].width.baseVal.value;
-  testtimeframes.editFrameWidth(frame_id, orig_width, width);
+  testtimeframes.editFrameWidth(drag_frame_id, orig_width, width);
   // target[0].width.baseVal.value = width;
   // target_caption[0].style.width = width;
   refresh(false);
-  highlightTFrame(frame_id);
+  highlightTFrame(drag_frame_id);
+}
+
+function rdragResizeEnd(d) {
+  // console.log("End) rdragresize", drag_frame_id)
+  drag_frame_id = undefined;
 }
 
 function addLabelListener(frame, frame_id) {
