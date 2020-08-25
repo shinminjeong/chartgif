@@ -211,7 +211,7 @@ class TimeFrames {
   editFrameWidth(id, orig_w, new_w) {
     var frame_info = this.framemap[id];
     var new_runningtime = parseInt(frame_info.runningtime * new_w / orig_w);
-    console.log("editFrameWidth", frame_info, frame_info.runningtime, new_runningtime)
+    // console.log("editFrameWidth", frame_info, frame_info.runningtime, new_runningtime)
 
     frame_info.runningtime = new_runningtime;
     frame_info.tail = frame_info.head + new_runningtime;
