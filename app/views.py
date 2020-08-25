@@ -25,10 +25,10 @@ file_map = {
 }
 
 options = {
-    "x": {"id": "income", "name": "Income", "name_ko": "소득 수준"},
-    "y": {"id": "lifespan", "name": "Life Expectancy", "name_ko": "평균 수명"},
-    "s": {"id": "population", "name": "Population", "name_ko": "인구 수"},
-    "c": {"id": "continent", "name": "Continent", "name_ko": "대륙"},
+    "x": {"id": "income", "name": "Income"},
+    "y": {"id": "lifespan", "name": "Life Expectancy"},
+    "s": {"id": "population", "name": "Population"},
+    "c": {"id": "continent", "name": "Continent"},
     "xScale": {"id": "log", "name": "Log"},
     "yScale": {"id": "lin", "name": "Lin"},
 }
@@ -103,7 +103,7 @@ def main(request):
         "groups": range(0, K),
         "minmax": minmax
     }
-    initseq, trend = generateInitSeq(options, c_group_inv, avg_v[0], lang=lang)
+    initseq, trend = generateInitSeq(options, c_group_inv, avg_v[0], lang)
     focus_range.extend(initseq)
     # print(kgroups)
     return render(request, "group.html", {

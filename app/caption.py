@@ -142,12 +142,12 @@ def cap_trend(options, x_move, y_move, lang="en"):
 def cap_size(a, options, lang="en"):
     key = a.lower()
     if lang == "ko":
-        return "버블의 크기는 {}의 크기를 의미합니다.".format(options[key]["name_ko"].lower())
+        return "버블의 크기는 {}의 크기를 의미합니다.".format(label_map_ko[options[key]["id"]]["desc"])
     else:
         return "The size of the bubbles shows the size of the {}.".format(options[key]["name"].lower())
 
 def generateInitSeq(options, groups, values, lang="en"):
-    print("generateInitSeq", groups, options)
+    # print("generateInitSeq", groups, options, lang)
     output = []
 
     # X and Y axes
