@@ -8,7 +8,7 @@ var savedCaptions, savedLabels;
 class ScatterPlot {
 
   constructor(div_id, w, h) {
-    this.margin = {top: 5, right: 5, bottom: 20, left:30};
+    this.margin = {top: 5+desc_h, right: 5, bottom: 20, left:25};
     this.width = w - this.margin.left - this.margin.right;
     this.height = h - this.margin.top - this.margin.bottom;
     this.div_id = div_id;
@@ -139,6 +139,31 @@ class ScatterPlot {
         .attr("text-anchor", "end")
         .attr('transform', 'rotate(-90)')
         .text(data_options["y"]["name"]);
+
+    //size axis
+    this.slegend = this.svg.append('g');
+    this.slegend.append("text")
+      .attr('x', this.width-100)
+      .attr('y', -21)
+      .attr("text-anchor", "end")
+      .attr('font-size', '14px')
+      .text(data_options["s"]["name"])
+    var slegend = [500, 10000, 30000], spadding = [80, 50, 15];
+    for (var i = 0; i < 3; i++) {
+      this.slegend.append("circle")
+        .attr('cx', this.width-spadding[i])
+        .attr('cy', -25)
+        .attr('r', radius(slegend[i]))
+        .style('stroke', 'black')
+        .style('stroke-width', 0.5)
+        .style('fill', 'white');
+      this.slegend.append("text")
+        .attr('x', this.width-spadding[i])
+        .attr('y', -10)
+        .attr("text-anchor", "middle")
+        .attr('font-size', '0.6em')
+        .text(kFormatter(slegend[i]*1000))
+    }
 
     this.saxis = this.svg.append('g').attr("class", "chart-desc");
     this.saxis.append("text")
@@ -298,12 +323,18 @@ class ScatterPlot {
       .merge(bubble)
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble g'+d.group; })
-        .attr('cx', function(d){ return xScale(d.x);})
-        .attr('cy', function(d){ return yScale(d.y); })
+        .attr('cx', function(d){ return xScale(d.pre_x);})
+        .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.population)*1.3+1; })
         .style('opacity', 1)
-        .style('stroke', 'black')
-        .style('stroke-width', 0.2)
+        .style('stroke', function(d) {
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return '#007bff80';
+          else return 'black';
+        })
+        .style('stroke-width', function(d) {
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return 2;
+          else return 0.2;
+        })
         .style('fill', function(d){
           // console.log(d.group);
           if (d.group == -1) return color[continent.indexOf(this.continentMap[d.id])];
@@ -328,18 +359,22 @@ class ScatterPlot {
       .merge(bubble_label)
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble-label g'+d.group; })
-        .attr('x', function(d){return xScale(d.x)-20;})
-        .attr('y', function(d){ return yScale(d.y); })
+        .attr('x', function(d){return xScale(d.pre_x)+6;})
+        .attr('y', function(d){ return yScale(d.pre_y)+4; })
         .text(function(d){ return d.name; })
         .attr('paint-order', 'stroke')
         .style('visibility', function(d) {
           var selected = $("text#"+d.id+".bubble-label")[0];
-          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return "visible";
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return "visible";
           else return "hidden";
         })
         .on("mouseover", mouseOverBubbles)
         .on("click", clickBubbles)
-        .on("mouseout", mouseOutBubbles);
+        .on("mouseout", mouseOutBubbles)
+      .transition()
+        .duration(timeunit)
+        .attr("x", function(d){return xScale(d.x)+6;})
+        .attr("y", function(d){ return yScale(d.y)+4; })
 
     pre_group = undefined;
   }
@@ -360,8 +395,12 @@ class ScatterPlot {
     this.hull_label_g.selectAll('line.hull-label-link').remove();
   }
 
-  updateFocus(time, swtvalues, innergrp, delay) {
-    console.log("updateFocus", swtvalues, time, pre_group == JSON.stringify(swtvalues))
+  cache (swtvalues, frame_id) {
+    return JSON.stringify(swtvalues) + frame_id;
+  }
+
+  updateFocus(time, swtvalues, innergrp, delay, frame_id) {
+    // console.log("updateFocus", swtvalues, innergrp, time, pre_group == this.cache(swtvalues, frame_id))
     this.bubble_g.selectAll("*").remove();
     this.bubble_g_h.selectAll("*").remove();
     // this.trace_path_g.selectAll("circle.tbubble").remove();
@@ -451,8 +490,14 @@ class ScatterPlot {
         .attr('cx', function(d){ return xScale(d.pre_x);})
         .attr('cy', function(d){ return yScale(d.pre_y); })
         .attr('r', function(d){ return radius(d.pre_population)*1.3+1; })
-        .style('stroke', 'black')
-        .style('stroke-width', 0.2)
+        .style('stroke', function(d) {
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return '#007bff80';
+          else return 'black'
+        })
+        .style('stroke-width', function(d) {
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return 2;
+          else return 0.2;
+        })
         .style('fill', d => gcolor(d.group))
         .style('opacity', 1)
         .style('display', function(d) {
@@ -474,13 +519,13 @@ class ScatterPlot {
       .merge(bubble_lable)
         .attr('id', function(d){return d.id;})
         .attr('class', function(d){ return 'bubble-label g'+d.group; })
-        .attr('x', function(d){return xScale(d.x)-20;})
-        .attr('y', function(d){ return yScale(d.y); })
+        .attr('x', function(d){return xScale(d.pre_x)+6;})
+        .attr('y', function(d){ return yScale(d.pre_y)+4; })
         .text(function(d){ return d.name; })
         .attr('paint-order', 'stroke')
         .style('visibility', function(d) {
           var selected = $("text#"+d.id+".bubble-label")[0];
-          if (savedLabels[d.id] && savedLabels[d.id].indexOf(curFrame) != -1) return "visible";
+          if (savedLabels[curFrame] && savedLabels[curFrame].has(d.id)) return "visible";
           else return "hidden";
         })
         .on("mouseover", mouseOverBubbles)
@@ -488,8 +533,8 @@ class ScatterPlot {
         .on("mouseout", mouseOutBubbles)
       .transition()
         .duration(delay)
-        .attr("x", function(d){return xScale(d.x)-20;})
-        .attr("y", function(d){ return yScale(d.y); })
+        .attr("x", function(d){return xScale(d.x)+6;})
+        .attr("y", function(d){ return yScale(d.y)+4; })
 
     this.hull_g.selectAll("path.hull").remove();
     this.hull_g.selectAll("path.hull")
@@ -513,7 +558,7 @@ class ScatterPlot {
         .attr("d", drawCluster);
 
     // update hull labels for a new group
-    if (pre_group != JSON.stringify(swtvalues)) {
+    if (pre_group != this.cache(swtvalues, frame_id)) {
       this.hull_label_g.selectAll("text.hull-label").remove();
       hull_labels = this.hull_label_g.selectAll('.hull-label')
           .data(dataCvxHulls)
@@ -572,7 +617,7 @@ class ScatterPlot {
         .attr("y2", points[3])
     })
 
-    pre_group = JSON.stringify(swtvalues);
+    pre_group = this.cache(swtvalues, frame_id);
   }
 
   drawAllTrace(id){
@@ -714,8 +759,8 @@ function convexHulls(nodes, index, offset, pre) {
   // create convex hulls
   var hullset = [];
   for (i in hulls) {
-    var hid = ((desc[i].split(" ").join("-")).split(",").join("-")).split(";").join("-")+"-"+hulls[i].length;
-    console.log("hid", hid, hulls[i][0][0], hulls[i][0][1])
+    var hid = (desc[i].split(" ").join("-")).split(";").join("-")+"-"+hulls[i].length;
+    // console.log("hid", hid, hulls[i][0][0], hulls[i][0][1])
     if (pre) {
       hullset.push({
         id: hid,
@@ -767,7 +812,7 @@ function mouseOverBubbles(d) {
   if (d.group == -1) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="visible";
   } else {
-    console.log("mouseOverBubbles", d.id, d.group)
+    // console.log("mouseOverBubbles", d.id, d.group)
     dimAllBubbles(0.5);
     // dimAllCvxHulls(0.01);
     var circles = $("circle.bubble.g"+d.group);
@@ -785,7 +830,7 @@ function mouseOutBubbles(d) {
     $("text#"+d.id+".bubble-label")[0].style.visibility="hidden";
   } else {
     dimAllBubbles(1);
-    dimAllCvxHulls(0.2);
+    // dimAllCvxHulls(0.2);
     var labels = $("text.bubble-label.g"+d.group);
     for (var l=0; l < labels.length; l++) {
       if (labels[l].getAttribute("data-clicked") == "true") continue;
@@ -797,26 +842,35 @@ function mouseOutBubbles(d) {
 function clickBubbles(d){
   d3.select(this).style("cursor", "pointer");
   var selected = $("text#"+d.id+".bubble-label")[0];
-  console.log("clickBubble", d.id)
+  // console.log("clickBubble", d.id)
   if (selected.getAttribute("data-clicked") == "true") {
     //
   } else {
-    if (savedLabels[d.id] == undefined) {
-      savedLabels[d.id] = [];
-    }
     var frame_count = timeline.addLabel(curFrame, testtimeframes.getFrameContent(curFrame), d.id, selected.innerHTML);
-    for (var i = 0; i < frame_count; i++)
-      savedLabels[d.id].push(curFrame+i);
+    saveNewLabel(d.id, frame_count[0], frame_count[1]);
 
     selected.setAttribute("data-clicked", "true");
     selected.style.visibility = "visible";
-    chart.drawAllTrace(d.id);
+  }
+}
+
+function saveNewLabel(item_id, from, to) {
+  for (var i = from; i < to; i++) {
+    if (savedLabels[i] == undefined) savedLabels[i] = new Set();
+    savedLabels[i].add(item_id);
+  }
+}
+function removeLabel(item_id, from, to) {
+  for (var i = from; i < to; i++) {
+    if (savedLabels[i].has(item_id))
+      savedLabels[i].delete(item_id);
   }
 }
 
 function dimAllBubbles(dimlevel) {
   var bubbles = $("circle.bubble");
   for (var l in bubbles) {
+    if (savedLabels[curFrame] && savedLabels[curFrame].has(bubbles[l].id)) continue;
     if (bubbles[l].style) bubbles[l].style.opacity = ""+dimlevel;
   }
 }

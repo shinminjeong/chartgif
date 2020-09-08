@@ -1,11 +1,13 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 var timeScale, timeScale_width, xAxis_1, xAxis_2, xAxis_3, xAxis_year, xAxis_year_h;
-var timeSlices, timeLabels, timeCaptions, chartExpand;
+var timeSlices, timeLabels, timeCaptions, frameText, chartExpand;
+var selected_tframe, selected_label;
+var dragbarright, dragbarw = 6;
 
 class TimeLine {
 
   constructor(div_id, w) {
-    this.margin = {top: 25, right: 45, bottom: 25, left:leftTimelineMargin};
+    this.margin = {top: 25, right: 60, bottom: 25, left:leftTimelineMargin};
     this.width = timeScale_width = w - this.margin.left - this.margin.right;
     this.div_id_frames = div_id + "-background";
     this.div_id = div_id;
@@ -18,6 +20,7 @@ class TimeLine {
     timeSlices = [];
     timeLabels = [];
     timeCaptions = [];
+    frameText = [];
     chartExpand = false;
     this.h_years = [];
 
@@ -26,29 +29,63 @@ class TimeLine {
     this.height = this.s_height;
   }
 
-  initChart(timeframesmap, forder, fmap, gname) {
-    var timeframes = Object.keys(timeframesmap);
-    console.log("Timeline -- initchart", timeframes, gname);
+  initChart() {
+    console.log("Timeline -- initchart");
     this.labelpanel = document.getElementById(this.div_id + "-label");
     this.legendpanel = document.getElementById(this.div_id + "-legend");
     this.controlpanel = document.getElementById(this.div_id + "-control");
     this.captionpanel = document.getElementById(this.div_id);
+
+    const extent = [[0,0], [timeScale_width, 0]];
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 8])
+      .translateExtent(extent)
+      .extent(extent)
+      .on("zoom", zoomed);
     this.svg = d3.select("#"+this.div_id_frames)
       .append('svg')
-      .attr('width', this.width + this.margin.left + this.margin.right)
+      .attr('width', this.width)
       .attr('height', this.height)
-      .attr('transform', 'translate(' + this.margin.left + ',0)');
+      .attr('transform', 'translate(' + this.margin.left + ',0)')
+      .call(this.zoom);
 
-    this.background = this.svg.append("rect")
+    var defs = this.svg.append("defs");
+    defs.append("pattern")
+      .attr("id", "icon_delete_w")
+      .attr("width", 15)
+      .attr("height", 15)
+      .append("image")
+      .attr("width", 15)
+      .attr("height", 15)
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("xlink:href", "/static/images/icon_delete_w.png");
+
+    defs.append("pattern")
+      .attr("id", "icon_delete_h")
+      .attr("width", 15)
+      .attr("height", 15)
+      .append("image")
+      .attr("width", 15)
+      .attr("height", 15)
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("xlink:href", "/static/images/icon_delete_h.png");
+
+    this.chart_g = this.svg.append('g')
+      .attr("id", "chart_g")
+    this.background_label = this.svg.append("rect")
+      .attr("x", 0)
+      .attr("y", this.margin.top)
+      .attr("width", this.width)
+      .attr("height", 0)
+      .style("fill", "#e3e3e3");
+    this.background = this.chart_g.append("rect")
       .attr("x", 0)
       .attr("y", this.margin.top)
       .attr("width", this.width)
       .attr("height", this.height-this.margin.top-this.margin.bottom)
-      .style("fill", "#d3d3d3");
-
-    this.chart_g = this.svg.append('g')
-      .attr("id", "chart_g")
-      .call(zoom);
+      .style("fill", "#e3e3e3");
 
     this.grid = this.svg.append("g");
     this.x_1 = this.grid.append("g");
@@ -57,67 +94,50 @@ class TimeLine {
     this.x_year = this.chart_g.append("g");
     this.x_year_h = this.chart_g.append("g");
     this.framegrid = this.chart_g.append("g").attr("class", "grid");
-    this.framegrid
-      .selectAll("line")
-      .data([this.caption_h, this.caption_h+this.slice_h])
-    .enter().append("line")
-      .attr("x1", 0)
-      .attr("y1", d => d+this.margin.top)
-      .attr("x2", this.width)
-      .attr("y2", d => d+this.margin.top)
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
+
+    this.dragbars = this.svg.append("g");
+    dragbarright = this.dragbars.append("rect")
+      .attr("class", "dragbar")
+      .attr("id", "dragright")
+      .attr("height", this.slice_h)
+      .attr("width", dragbarw)
+      .attr("display", "none")
+      .on("contextmenu", function() { d3.event.preventDefault(); })
+      .call(d3.drag()
+        .on("drag", rdragResize)
+        .on("start", rdragResizeStart)
+        .on("end", rdragResizeEnd)
+      );
 
     this.setControlPanel();
-    this.updateXaxis(timeframes);
-    for (var f in forder) {
-      var outerbound = forder[f].outerbound;
-      // console.log("outerbound", outerbound, outerbound.head, outerbound.tail);
-      if (outerbound.reason == undefined) {// blank interval
-        timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
-      } else {
-        this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
-        var oframes = Object.keys(outerbound.reason);
-        if (outerbound.start_time != "Init")
-          oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
-        for (var i = 0; i < oframes.length; i++) {
-          var r = oframes[i];
-          // console.log("fmap", r, fmap[r]);
-          this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
-          if (fmap[r].group == "p" || fmap[r].group == "e") continue;
-          addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason, fmap[r].pattern);
-        }
-        createNewCaption(outerbound);
-      }
-    }
-    this.drawYearTicks();
   }
 
   setControlPanel() {
     this.legendpanel.style.width = this.margin.left;
     this.legendpanel.style.height = this.height;
-    this.controlpanel.style.marginLeft = this.width+this.margin.left;
+    this.controlpanel.style.marginLeft = this.width+this.margin.left+20;
     this.controlpanel.style.width = this.margin.right;
     this.controlpanel.style.height = this.height;
 
     var resetBtn = document.createElement("button");
-    resetBtn.className = "control-bottom control-bottom-reset";
-    resetBtn.innerText = "reset";
+    resetBtn.className = "control-buttom control-buttom-reset";
+    resetBtn.innerText = "Reset zoom";
     resetBtn.addEventListener("click", function() {
       console.log("reset button clicked!");
-      refresh();
+      refresh(true);
     });
 
     var expandBtn = document.createElement("button");
-    expandBtn.className = "control-bottom control-bottom-expand";
+    expandBtn.className = "control-buttom control-buttom-expand";
     expandBtn.innerHTML = "<i class='fa fa-chevron-down'></i>";
     expandBtn.addEventListener("click", function(e) {
       chartExpand = !chartExpand;
       var target = e.target;
       if (e.target.tagName == "I") target = e.target.parentNode;
-      console.log("expand button clicked!", chartExpand, target);
+      // console.log("expand button clicked!", chartExpand, target);
       if (chartExpand) target.innerHTML = "<i class='fa fa-chevron-up'></i>";
       else target.innerHTML = "<i class='fa fa-chevron-down'></i>";
+      toggleMenuOff();
       expandChart(chartExpand);
     });
 
@@ -125,8 +145,7 @@ class TimeLine {
     this.controlpanel.appendChild(expandBtn);
   }
 
-
-  updateChart(timeframesmap, forder, fmap, gname) {
+  drawFrameGrid() {
     var framelines = [];
     if (chartExpand) {
       this.height = this.l_height;
@@ -137,7 +156,7 @@ class TimeLine {
       this.height = this.s_height;
       framelines = [this.caption_h, this.caption_h+this.slice_h];
       this.svg.attr('height', this.height);
-      this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+      this.background.attr("height", this.height-this.getLabelHeight()-this.margin.top-this.margin.bottom);
     }
     this.legendpanel.style.height = this.height;
     this.controlpanel.style.height = this.height;
@@ -153,17 +172,19 @@ class TimeLine {
       .attr("y2", d => d+this.margin.top)
       .attr("stroke", "black")
       .attr("stroke-width", 1);
+  }
 
+  resizeChart(timeframesmap, forder, fmap) {
     var timeframes = Object.keys(timeframesmap);
-    this.updateXaxis(timeframes);
+    // console.log("resizeChart", timeframes.length);
+    this.updateXaxis(timeframes, false);
     for (var f in forder) {
       var outerbound = forder[f].outerbound;
-      // console.log("outerbound", outerbound);
       if (outerbound.reason == undefined) {// blank interval
+        // console.log("blank", [outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
         timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
       } else {
         this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
-
         var oframes = Object.keys(outerbound.reason);
         if (outerbound.start_time != "Init")
           oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
@@ -177,6 +198,59 @@ class TimeLine {
       }
     }
     this.drawYearTicks();
+    this.rescaleLabels();
+  }
+
+  rescaleLabels() {
+    // resize labels
+    savedLabels = [];
+    timeLabels.forEach(function(d) {
+      var cur_time_slice = $("textarea#"+d.getAttribute("id")+".time-caption");
+      var f_start = parseFloat(cur_time_slice.attr("data-s-time"));
+      var f_end = parseFloat(cur_time_slice.attr("data-e-time"));
+      var s = timeScale(f_start),
+          e = timeScale(f_end);
+      d.style.left = leftTimelineMargin+s;
+      d.style.width = e-s;
+      d.setAttribute("data-s-time", f_start)
+      d.setAttribute("data-e-time", f_end)
+      d.setAttribute("data-o-width", e-s);
+
+      var item_id = d.getAttribute("data-item-id");
+      saveNewLabel(item_id, f_start, f_end);
+    })
+  }
+
+  updateChart(timeframesmap, forder, fmap, resetZoom=false) {
+    this.drawFrameGrid();
+
+    var timeframes = Object.keys(timeframesmap);
+    this.updateXaxis(timeframes, resetZoom);
+    for (var f in forder) {
+      var outerbound = forder[f].outerbound;
+      // console.log("outerbound", f, outerbound);
+      if (outerbound.reason == undefined) {// blank interval
+        timeline.addBlankCaption([outerbound.start_time, outerbound.end_time], [outerbound.head, outerbound.tail]);
+      } else {
+        this.addOuterBound([outerbound.head, outerbound.tail], outerbound)
+
+        var oframes = Object.keys(outerbound.reason);
+        if (outerbound.start_time != "Init")
+          oframes = [outerbound.prologue, ...Object.keys(outerbound.reason), outerbound.epilogue];
+        for (var i = 0; i < oframes.length; i++) {
+          var r = oframes[i];
+          if (fmap[r] == undefined) continue;
+          // console.log("fmap", r, fmap[r]);
+          this.addFrame([fmap[r].head, fmap[r].tail], [fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].name, fmap[r].reason, fmap[r].pattern, fmap[r].runningtime)
+
+          if (fmap[r].group == "p" || fmap[r].group == "e") continue;
+          addEventinLinechart([fmap[r].start_time, fmap[r].end_time], fmap[r].group, fmap[r].axis, fmap[r].reason, fmap[r].pattern);
+        }
+        getCaption(outerbound);
+      }
+    }
+    this.drawYearTicks();
+    this.rescaleLabels();
   }
 
   calculateTickValues(timeframes) {
@@ -190,13 +264,18 @@ class TimeLine {
     }
   }
 
-  updateXaxis(timeframes) {
-    // console.log("updateXaxis", timeframes.length)
-    this.calculateTickValues(timeframes);
+  updateXaxis(timeframes, resetZoom=false) {
+    var zoomTransform = d3.zoomTransform(this.svg.node());
+    // console.log("updateXaxis", resetZoom, timeframes.length, 0, this.width, zoomTransform)
+    if (resetZoom) {
+      zoomTransform = d3.zoomIdentity;
+      this.svg.call(this.zoom.transform, d3.zoomIdentity);
+    }
 
+    this.calculateTickValues(timeframes);
     timeScale = d3.scaleBand()
       .domain(timeframes)
-      .range([ 0, this.width ])
+      .range([ zoomTransform.x, zoomTransform.x+zoomTransform.k*this.width ])
       .paddingInner(0)
       .paddingOuter(0);
 
@@ -276,13 +355,18 @@ class TimeLine {
         var f = timeCaptions[i];
         f.remove();
     }
-    for (var i = 0; i < timeLabels.length; i++) {
-        var f = timeLabels[i];
+    // for (var i = 0; i < timeLabels.length; i++) {
+    //     var f = timeLabels[i];
+    //     f.remove();
+    // }
+    for (var i = 0; i < frameText.length; i++) {
+        var f = frameText[i];
         f.remove();
     }
-    timeLabels = [];
+    // timeLabels = [];
     timeSlices = [];
     timeCaptions = [];
+    frameText = [];
   }
 
   addFrame(frange, yrange, gindex, name, reason, pattern, delay) {
@@ -292,7 +376,7 @@ class TimeLine {
         y_end = yrange[yrange.length-1];
     var s = timeScale(f_start),
         e = timeScale(f_end);
-    console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
+    // console.log("addFrame", gindex, f_start, f_end, y_start, y_end, s, e, delay);
 
     var top = this.margin.top+this.caption_h,
         left = s+timeScale.bandwidth()/2;
@@ -314,13 +398,7 @@ class TimeLine {
       .attr("data-e-time", f_end)
       .style("fill", gcolor(gid));
 
-    if (y_start != "init") {
-      tframe.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
-      });
-    }
+    addTFrameListener(tframe, frame_id);
     timeSlices.push(tframe);
 
     var tframe_text = this.chart_g.append("text")
@@ -331,7 +409,7 @@ class TimeLine {
       .attr("data-s-time", f_start)
       .attr("data-e-time", f_end)
       .text(name);
-    timeLabels.push(tframe_text);
+    frameText.push(tframe_text);
     if (y_start != "init") {
       var speedrate = delay/(timeseries.indexOf(y_end)-timeseries.indexOf(y_start)+1);
       var tframe_text_speed = this.chart_g.append("text")
@@ -342,18 +420,10 @@ class TimeLine {
         .attr("data-s-time", f_start)
         .attr("data-e-time", f_end)
         .text("x"+parseFloat((1/speedrate).toFixed(2)));
-      timeLabels.push(tframe_text_speed);
-      tframe_text_speed.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
-      });
-      tframe_text.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
-      });
+      frameText.push(tframe_text_speed);
+      addTFrameListener(tframe_text_speed, frame_id);
     }
+    addTFrameListener(tframe_text, frame_id);
 
     if (pattern != undefined) {
       var tframe_text_3 = this.chart_g.append("image")
@@ -369,12 +439,8 @@ class TimeLine {
         .attr("data-e-time", f_end)
         .style("cursor", "pointer")
         .text([y_start, y_end].join("-"));
-      timeLabels.push(tframe_text_3);
-      tframe_text_3.on("click", function() {
-        var d = $("rect#"+frame_id+".time-slice");
-        if (d.attr("edit") == "on") hideOptions(frame_id);
-        else if (d.attr("edit") == "off") showOptions("chart_g", frame_id);
-      });
+      frameText.push(tframe_text_3);
+      addTFrameListener(tframe_text_3, frame_id);
     }
   }
 
@@ -388,7 +454,8 @@ class TimeLine {
     var s = timeScale(y_start),
         e = timeScale(y_end);
 
-    console.log("addOuterBound", y_start, y_end, s, e)
+    // console.log("addOuterBound", y_start, y_end, s, e)
+    var frameHeight = chartExpand?this.slice_h*legendCount+this.year_h:this.slice_h+this.year_h;
     var tframe = this.chart_g.append("rect")
       .attr("class", "time-slice-outer")
       .attr("data-s-time", y_start)
@@ -396,7 +463,7 @@ class TimeLine {
       .attr("x", s+timeScale.bandwidth()/2)
       .attr("y", this.margin.top+this.caption_h)
       .attr("width", e-s)
-      .attr("height", chartExpand?this.slice_h*legendCount+this.year_h:this.slice_h+this.year_h);
+      .attr("height", frameHeight);
 
     var name = timemap[obound.start_time];
     if (obound.end_time != undefined) name += "-"+timemap[obound.end_time];
@@ -405,21 +472,26 @@ class TimeLine {
       .attr("data-s-time", y_start)
       .attr("data-e-time", y_end)
       .attr("x", s+timeScale.bandwidth()/2)
-      .attr("y", this.height-this.getLabelHeight()-this.margin.bottom-3)
+      .attr("y", frameHeight+this.margin.top+this.caption_h-3)
       .text(name);
 
     this.h_years.push(obound.start_time);
     // this.h_years.push(obound.end_time);
 
     timeSlices.push(tframe);
-    timeLabels.push(tframe_text);
+    frameText.push(tframe_text);
   }
 
   createCaptionFrame(gid, f_start, f_end, caption) {
     var s = timeScale(f_start),
         e = timeScale(f_end);
-    var tframe = document.createElement("textarea");
-    tframe.className = "time-caption"
+    // console.log("createCaptionFrame", gid, f_start, f_end, e-s)
+    var tframe = $("textarea#"+gid+".time-caption")[0];
+    if (tframe == undefined) {
+      tframe = document.createElement("textarea");
+      tframe.className = "time-caption"
+      tframe.id = gid;
+    }
     tframe.id = gid;
     tframe.style.top = 0;
     tframe.style.left = this.margin.left+s;
@@ -427,6 +499,7 @@ class TimeLine {
     tframe.style.height = this.caption_h;
     tframe.value = caption;
 
+    tframe.setAttribute("num-labels", $("div#"+gid+".time-label").length)
     tframe.setAttribute("data-s-time", f_start);
     tframe.setAttribute("data-e-time", f_end);
     tframe.setAttribute("data-o-width", e-s);
@@ -444,7 +517,7 @@ class TimeLine {
       e.target.style.whiteSpace = "nowrap";
       e.target.style.width = e.target.getAttribute("data-o-width");
       e.target.style.height = e.target.getAttribute("data-o-height");
-      e.target.style.zIndex = 8;
+      e.target.style.zIndex = 3;
       e.target.style.backgroundColor = "#002654";
     });
     tframe.addEventListener("change", function(e) {
@@ -456,12 +529,17 @@ class TimeLine {
     this.captionpanel.appendChild(tframe);
   }
 
+  updateCaption(frame_id, new_caption) {
+    var tframe = $("textarea#"+frame_id+".time-caption");
+    tframe[0].value = new_caption;
+  }
+
   addBlankCaption(years, frames) {
-    // console.log("addBlankCaption", years, frames)
     var gid = [years[0], years[1], "b"].join("-");
     var caption;
     if (testtimeframes.getCaption(gid) == undefined) {
-      caption = "From "+timemap[years[0]]+" to "+timemap[years[1]]+", here is the general trends.";
+      caption = ""
+      // caption = "From "+years[0]+" to "+years[1]+", here is the general trends.";
     } else {
       caption = testtimeframes.getCaption(gid);
     }
@@ -481,11 +559,16 @@ class TimeLine {
   }
 
   getLabelHeight() {
+    var maxHeight = 0;
+    $.each($("textarea.time-caption"), function(k, v) {
+      if (v.getAttribute("num-labels")) maxHeight = Math.max(maxHeight, v.getAttribute("num-labels"))
+    });
+    this.nfloorlabels = maxHeight;
     return this.nfloorlabels*this.caption_h;
   }
 
   updateLabelHeight() {
-    console.log("increaseLabelHeight")
+    // console.log("updateLabelHeight")
     this.captionpanel.style.marginTop = this.getLabelHeight();
 
     this.s_height = this.getLabelHeight()+this.slice_h+this.caption_h+this.year_h+this.margin.top+this.margin.bottom;
@@ -499,12 +582,14 @@ class TimeLine {
     document.getElementsByClassName("timeline-slider-extend")[0].style.height = this.height;
 
     this.svg.attr("height", this.height);
-    this.background.attr("height", this.height-this.margin.top-this.margin.bottom);
+    this.background_label.attr("height", this.getLabelHeight());
     this.chart_g.attr('transform', 'translate(0,'+this.getLabelHeight()+')');
   }
 
-  addLabel(f_start, cur_event_id, id, name) {
-    var cur_time_slice = $("rect#"+cur_event_id+".time-slice");
+  addLabel(click_point, cur_event_id, id, name) {
+    dragbarright.attr("display", "none");
+    var cur_time_slice = $("textarea#"+cur_event_id+".time-caption");
+    var f_start = parseFloat(cur_time_slice.attr("data-s-time"));
     var f_end = parseFloat(cur_time_slice.attr("data-e-time"));
     var s = timeScale(f_start),
         e = timeScale(f_end);
@@ -515,22 +600,27 @@ class TimeLine {
       num_labels = 1+parseInt(cur_time_slice.attr("num-labels"));
       cur_time_slice.attr("num-labels", num_labels);
     }
-    console.log("@@@ addLabel", curFrame, num_labels, f_start, f_end, s, e)
+    // console.log("@@@ addLabel", cur_event_id, id)
     var label = document.createElement("div");
     label.className = "time-label"
-    label.id = id;
+    label.id = cur_event_id;
     label.style.top = -this.caption_h*(num_labels-1);
     label.style.left = this.margin.left+s;
     label.style.width = e-s;
     label.style.height = this.caption_h;
     label.innerHTML = name;
+    label.setAttribute("data-item-id", id)
+    label.setAttribute("data-s-time", f_start)
+    label.setAttribute("data-e-time", f_end)
+    label.setAttribute("data-o-width", e-s);
+    label.setAttribute("data-o-height", this.caption_h);
+
+    timeLabels.push(label);
+    addLabelListener(label, cur_event_id);
     this.labelpanel.appendChild(label);
 
-    if (this.nfloorlabels < num_labels)
-      this.nfloorlabels = num_labels;
     this.updateLabelHeight();
-
-    return f_end-f_start;
+    return [f_start, f_end];
   }
 }
 
@@ -543,115 +633,168 @@ function timeScaleInvert(value) {
   return domain[Math.max(0,Math.min(index, domain.length-1))];
 }
 
-function zoom(svg) {
-  const extent = [[0,0], [timeScale_width, 0]];
-  svg.call(d3.zoom()
-      .scaleExtent([1, 8])
-      .translateExtent(extent)
-      .extent(extent)
-      .on("zoom", zoomed));
+function zoomed() {
+  dragbarright.attr("display", "none");
+  timeScale.range([0, timeScale_width].map(d => d3.event.transform.applyX(d)));
+  timeSlices.forEach(function(d) {
+    d.attr("x", timeScale(d.attr("data-s-time")))
+    d.attr("width", timeScale(d.attr("data-e-time"))-timeScale(d.attr("data-s-time")))
+  })
+  frameText.forEach(function(d) {
+    if (d.attr("data-n-length") != undefined) {
+      d.attr("x", 12*d.attr("data-n-length")+timeScale(d.attr("data-s-time")))
+    } else {
+      d.attr("x", 4+timeScale(d.attr("data-s-time")))
+    }
+  })
+  timeCaptions.forEach(function(d) {
+    var e = timeScale(d.getAttribute("data-e-time")),
+        s = timeScale(d.getAttribute("data-s-time"));
+    d.style.left = leftTimelineMargin+s;
+    d.style.width = e-s;
+    d.setAttribute("data-o-width", e-s);
+  })
+  timeLabels.forEach(function(d) {
+    var e = timeScale(d.getAttribute("data-e-time")),
+        s = timeScale(d.getAttribute("data-s-time"));
+    d.style.left = leftTimelineMargin+s;
+    d.style.width = e-s;
+    d.setAttribute("data-o-width", e-s);
+  })
+  toggleMenuOff();
+  d3.selectAll(".timeline-x-axis-min").call(xAxis_1);
+  d3.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
+  d3.selectAll(".timeline-x-axis-grid").call(xAxis_3);
+  d3.selectAll(".timeline-x-axis-year").call(xAxis_year);
+  d3.selectAll(".timeline-x-axis-year-h").call(xAxis_year_h);
 
-  function zoomed() {
-    timeScale.range([0, timeScale_width].map(d => d3.event.transform.applyX(d)));
-    timeSlices.forEach(function(d) {
-      d.attr("x", timeScale(d.attr("data-s-time")))
-      d.attr("width", timeScale(d.attr("data-e-time"))-timeScale(d.attr("data-s-time")))
-      hideOptions(d.attr("id"));
-    })
-    timeLabels.forEach(function(d) {
-      if (d.attr("data-n-length") != undefined) {
-        d.attr("x", 12*d.attr("data-n-length")+timeScale(d.attr("data-s-time")))
-      } else {
-        d.attr("x", 4+timeScale(d.attr("data-s-time")))
-      }
-    })
-    timeCaptions.forEach(function(d) {
-      var e = timeScale(d.getAttribute("data-e-time")),
-          s = timeScale(d.getAttribute("data-s-time"));
-      d.style.left = leftTimelineMargin+s;
-      d.style.width = e-s;
-      d.setAttribute("data-o-width", e-s);
-    })
-    svg.selectAll(".timeline-x-axis-min").call(xAxis_1);
-    svg.selectAll(".timeline-x-axis-20sec").call(xAxis_2);
-    svg.selectAll(".timeline-x-axis-grid").call(xAxis_3);
-    svg.selectAll(".timeline-x-axis-year").call(xAxis_year);
-    svg.selectAll(".timeline-x-axis-year-h").call(xAxis_year_h);
-
-    // update slider year
-    updateSlider();
-  }
+  // update slider year
+  var el = $("input[type='range']");
+  curFrame = parseInt(el.val());
+  updateSlider();
 }
 
 function removeTimeSlice(id) {
-  console.log("removebutton clicked", id)
+  // console.log("removebutton clicked", id)
+  var timeframe_text = $("text#"+id+".time-slice");
+  var axes = timeframe_text.text().split("x")[0];
+  // console.log(axes)
+  dragbarright.attr("display", "none");
+  timeframe_text.remove();
   $("rect#"+id+".time-slice").remove();
-  $("text#"+id+".time-slice").remove();
   $("textarea#"+id+".time-caption").remove();
-  removeFrame(id);
+  $("div#"+id+".time-label").remove();
+  removeFrame(id, axes);
 }
 
-function showOptions(chart_id, id) {
+function addTFrameListener(frame, frame_id) {
+  frame.on("mouseover", function(e) { highlightTFrame(frame_id); });
+  frame.on("mouseout", function(e) { muteTFrame(frame_id); });
+  frame.on("contextmenu", function(d, i) {
+    showContextMenu(frame_id)
+  });
+}
+
+function highlightTFrame(id) {
+  selected_tframe = id;
   var target = $("rect#"+id+".time-slice");
-  target.attr("edit", "on");
   target[0].style.fillOpacity = 1;
-  // console.log("showOption", id, target, target.attr("x"), target.attr("width"));
+  // console.log("highlightTFrame", target[0])
+  dragbarright
+    .attr("tframe_id", id)
+    .attr("display", "block")
+    .attr("x", target[0].x.baseVal.value + target[0].width.baseVal.value - (dragbarw/2))
+    .attr("y", target[0].y.baseVal.value + timeline.getLabelHeight());
 
-  var x = +target.attr("x"),
-      y = +target.attr("y"),
-      width = +target.attr("width");
-  var removebtn = d3.select("g#"+chart_id).append("rect")
-    .attr("class", "time-slice-remove")
-    .attr("id", id)
-    .attr("x", x+width)
-    .attr("y", y)
-    .on("click", function() { hideOptions(id);removeTimeSlice(id) });
-  var removebtn_x = d3.select("g#"+chart_id).append("image")
-    .attr("class", "time-slice-remove")
-    .attr("id", id)
-    .attr("href", "/static/images/icon_delete.png")
-    .attr("x", x+width)
-    .attr("y", y)
-    .on("click", function() { hideOptions(id);removeTimeSlice(id) });
+  var timeframe_text = $("text#"+id+".time-slice");
+  var axes = timeframe_text.text().split("x")[0];
+  select_rect_line(id, axes);
+  select_rect_trace(id);
+}
 
-  var w = 14, h = 20, h_margin = 16;
-  var left_points = [
-      [x-w, h_margin+y+h/2].join(","),
-      [x, h_margin+y].join(","),
-      [x, h_margin+y+h].join(",")
-    ].join(" ");
-  var right_points = [
-      [x+width+w, h_margin+y+h/2].join(","),
-      [x+width, h_margin+y].join(","),
-      [x+width, h_margin+y+h].join(",")
-    ].join(" ");
-  var leftbtn = d3.select("g#"+chart_id).append("polygon")
-    .attr("points", left_points)
-    .attr("class", "time-slice-move-left")
-    .attr("id", id)
-    .on("click", function() { hideOptions(id); move(id, "left") });
-  var rightbtn = d3.select("g#"+chart_id).append("polygon")
-    .attr("points", right_points)
-    .attr("class", "time-slice-move-right")
-    .attr("id", id)
-    .on("click", function() { hideOptions(id); move(id, "right") });
+function muteTFrame(id) {
+  var target = $("rect#"+id+".time-slice");
+  if (target[0] == undefined) return;
+  target[0].style.fillOpacity = 0.7;
+
+  var timeframe_text = $("text#"+id+".time-slice");
+  var axes = timeframe_text.text().split("x")[0];
+  deselect_rect_line(id, axes);
+  deselect_rect_trace(id);
 }
 
 function move(id, direction) {
   var target_frame = findNextFrame(id, direction)
   if (target_frame == undefined) return;
-  console.log(id, target_frame)
+  // console.log(id, target_frame)
+  dragbarright.attr("display", "none");
   moveFrameOrder(id, direction);
   refresh();
 }
 
-function hideOptions(id) {
-  // console.log("hideOptions", "#"+id+".time-slice-remove");
-  var target = $("rect#"+id+".time-slice");
-  target.attr("edit", "off");
-  if (target[0] == undefined) return;
-  target[0].style.fillOpacity = 0.7;
-  $("#"+id+".time-slice-remove").remove();
-  $("#"+id+".time-slice-move-left").remove();
-  $("#"+id+".time-slice-move-right").remove();
+document.addEventListener( "click", function(e) {
+  toggleMenuOff();
+});
+
+var drag_frame_id = undefined;
+function rdragResizeStart(d) {
+  // console.log("Start) rdragresize", drag_frame_id)
+  drag_frame_id = d3.select(this).attr("tframe_id");
+}
+
+function rdragResize(d) {
+  // console.log("Drag) rdragresize", drag_frame_id)
+  var target = $("rect#"+drag_frame_id+".time-slice");
+  var target_caption = $("textarea#"+drag_frame_id+".time-caption");
+  var dragx = Math.max(target[0].x.baseVal.value + (dragbarw/2), Math.min(target[0].x.baseVal.value + target[0].width.baseVal.value + d3.event.dx));
+
+  width = dragx - target[0].x.baseVal.value;
+  dragbarright.attr("x", function(d) { return dragx - (dragbarw/2) });
+
+  var orig_width = target[0].width.baseVal.value;
+  testtimeframes.editFrameWidth(drag_frame_id, orig_width, width);
+  // target[0].width.baseVal.value = width;
+  // target_caption[0].style.width = width;
+  refresh(false);
+  highlightTFrame(drag_frame_id);
+}
+
+function rdragResizeEnd(d) {
+  // console.log("End) rdragresize", drag_frame_id)
+  drag_frame_id = undefined;
+}
+
+function addLabelListener(frame, frame_id) {
+  frame.addEventListener("mouseover", function(e) { highlightLabel(e, frame_id); });
+  frame.addEventListener("mouseout", function(e) { muteLabel(e, frame_id); });
+  frame.addEventListener("contextmenu", function(e, d) {
+    showLabelDelete(e, frame_id)
+  });
+}
+
+function removeLabelFrame(frame_id, label_id) {
+  // console.log("removeLabelFrame", frame_id, label_id);
+  var tlabel = $("div#"+frame_id+".time-label[data-item-id="+label_id+"]")[0];
+  var f_start = parseInt(tlabel.getAttribute("data-s-time"));
+  var f_end = parseInt(tlabel.getAttribute("data-e-time"));
+  removeLabel(label_id, f_start, f_end);
+  timeLabels.splice(timeLabels.indexOf(tlabel), 1);
+  tlabel.remove();
+
+  // remove and re-add other labels
+  var otherlabels = $("div#"+frame_id+".time-label");
+  var names = [];
+  for (var i = 0; i < otherlabels.length; i++) {
+    names.push([otherlabels[i].getAttribute("data-item-id"), otherlabels[i].innerText]);
+    timeLabels.splice(timeLabels.indexOf(otherlabels[i]), 1);
+    otherlabels[i].remove();
+  }
+  // console.log("otherlabels", names);
+  var cur_time_slice = $("textarea#"+frame_id+".time-caption")[0];
+  cur_time_slice.setAttribute("num-labels", 0);
+
+  for (var i = 0; i < names.length; i++) {
+    timeline.addLabel(curFrame, frame_id, names[i][0], names[i][1]);
+  }
+  timeline.updateLabelHeight();
 }

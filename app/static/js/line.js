@@ -39,45 +39,6 @@ class LineChart {
         .tickSize(this.height)
         .tickFormat("")
       );
-    var defs = svg.append("defs");
-    // var filter = defs.append("filter")
-    //   .attr("id", "drop-shadow")
-    //   .attr("filterUnits", "objectBoundingBox")
-    //   .attr("x", "-10%")
-    //   .attr("y", "-10%")
-    //   .attr("width", "150%")
-    //   .attr("height", "150%");
-    //
-    // filter.append("feGaussianBlur")
-    //   .attr("in", "SourceAlpha")
-    //   .attr("stdDeviation", 1)
-    //   .attr("result", "blur")
-    // var feLight = filter.append("feSpecularLighting")
-    //   .attr("in", "blur")
-    //   .attr("surfaceScale", 5)
-    //   .attr("specularConstant", 0.5)
-    //   .attr("specularExponent", 10)
-    //   .attr("result", "specOut")
-    //   .attr("lighting-color", "white");
-    // feLight.append("fePointLight")
-    //   .attr("x", -5000)
-    //   .attr("y", -10000)
-    //   .attr("z", "0000");
-    // filter.append("feComposite")
-    //   .attr("in", "specOut")
-    //   .attr("in2", "SourceAlpha")
-    //   .attr("operator", "in")
-    //   .attr("result", "specOut2");
-    // filter.append("feComposite")
-    //   .attr("in", "SourceGraphic")
-    //   .attr("in2", "specOut2")
-    //   .attr("operator", "arithmetic")
-    //   .attr("k1", 0)
-    //   .attr("k2", 1)
-    //   .attr("k3", 1)
-    //   .attr("k4", 0)
-    //   .attr("result", "litPaint");
-
     // common y axis for display
     var y = d3.scaleLinear()
       .domain([0, 1])
@@ -145,7 +106,7 @@ class LineChart {
         .attr("axis", axis)
         .attr("fill", "#000")
         .attr("font-family", "Helvetica Neue")
-        .attr("font-size", 9)
+        .attr("font-size", 10)
         .attr("textLength", name_len)
         .attr("lengthAdjust", "spacing")
         .attr("text-anchor", "end")
@@ -211,6 +172,7 @@ class LineChart {
       canvas[selectedAxis[a]].onmouseleave = function(e) {
         this.style.backgroundColor = "transparent";
         line_indicators[e.target.id].style.display = "none";
+        remove_rect_focus();
       }
       canvas[selectedAxis[a]].onclick = function(e) { draw_rect_click (e, this); };
     }
@@ -224,26 +186,71 @@ var mouse = {
   startX: 0,
   startY: 0
 };
-function remove_all_rect() {
 
+function select_rect_line(id, axes) {
+  var a = axes.split(",");
+  for (var i = 0; i < a.length; i++) {
+    var selectedEvent = document.getElementById(id+"-"+a[i]);
+    if (selectedEvent) selectedEvent.className = 'select_rectangle select_rectangle_highlight';
+  }
 }
+function select_rect_trace(id) {
+  var selectedEvent = document.getElementById(id+"-trace");
+  if (selectedEvent) selectedEvent.className = 'select_trace select_trace_highlight';
+}
+
+function deselect_rect_line(id, axes) {
+  var a = axes.split(",");
+  for (var i = 0; i < a.length; i++) {
+    var selectedEvent = document.getElementById(id+"-"+a[i]);
+    if (selectedEvent) selectedEvent.className = 'select_rectangle';
+  }
+}
+function deselect_rect_trace(id) {
+  var selectedEvent = document.getElementById(id+"-trace");
+  if (selectedEvent) selectedEvent.className = 'select_trace';
+}
+
+function remove_rect_line(id, axes) {
+  var a = axes.split(",");
+  for (var i = 0; i < a.length; i++) {
+    var selectedEvent = document.getElementById(id+"-"+a[i]);
+    selectedEvent.remove();
+  }
+}
+function remove_rect_trace(id) {
+  var selectedEvent = document.getElementById(id+"-trace");
+  selectedEvent.remove();
+}
+
+
+function remove_rect_focus() {
+  if (element !== null) {
+    element.remove();
+    element = null;
+  }
+}
+
 function draw_rect_input(yrange, div_id, axes, reason) {
-  var y_start = yrange[0],
-      y_end = yrange[yrange.length-1];
-  var ys = line_xscale(y_start)-0.5,
-      ye = line_xscale(y_end)+0.5;
-  console.log("draw_rect_input", yrange, ys, ye, div_id, axes);
+  var y_start = parseInt(yrange[0]),
+      y_end = parseInt(yrange[yrange.length-1]);
+  var ys = line_xscale(y_start),
+      ye = line_xscale(y_end-1);
+  // console.log("draw_rect_input", yrange, ys, ye, div_id, axes, reason);
   for (var i in axes) {
     var names = div_id.split("_");
     var canvas = document.getElementById(div_id+"_"+axes[i]);
+    var rect_id = [y_start, y_end, names[1], axes[i]].join("-");
+    if (document.getElementById(rect_id) != undefined) continue;
+
     var e = document.createElement('div');
-    // console.log("select_rectangle_", reason)
-    e.className = 'select_rectangle select_rectangle_'+reason;
-    e.id = [y_start, y_end, names[1], selectedAxis[i]].join("-");
+    // e.className = 'select_rectangle select_rectangle_'+reason;
+    e.className = 'select_rectangle';
+    e.id = rect_id;
     e.style.left = ys;
     e.style.top = 0;
     e.style.width = Math.abs(ye - ys);
-    e.style.paddingLeft = Math.abs(ye - ys)+2;
+    e.style.paddingLeft = Math.abs(ye - ys)+3;
     e.style.height = "100%";
     e.innerHTML = reason;
     canvas.appendChild(e)
@@ -259,27 +266,29 @@ function draw_rect_move(e, canvas) {
     element.style.top = 0;
   }
 }
+
 function draw_rect_click(e, canvas) {
   var rect = canvas.getBoundingClientRect();
-  var reason = "Usr"
+  var reason = "usr";
   setMousePosition(e);
-  // console.log("draw_rect_click", rect);
+  // console.log("draw_rect_click", reason);
   if (element !== null) {
     names = canvas.id.split("_");
-    console.log("draw_rect_click", names);
+    // console.log("draw_rect_click", names);
     left = +element.style.left.split("px")[0];
     width = +element.style.width.split("px")[0];
     element.style.paddingLeft = width+2;
-    element.innerHTML = reason;
+    element.innerHTML = "U";
     startYear = Math.floor(line_xscale.invert(left));
     endYear = Math.floor(line_xscale.invert(left+width));
-    // console.log("selectedYears", startYear, endYear);
     years = Array.from(new Array(endYear-startYear+1), (x,i) => i + startYear)
     drawFrame(years, names[1], [names[2]], reason, reason);
     draw_rect_trace(years, names[1], reason);
     canvas.style.cursor = "default";
     // console.log("finsihed.", element);
+    element.remove();
     element = null;
+
   } else {
     mouse.startX = mouse.x;
     mouse.startY = mouse.y;
@@ -290,21 +299,24 @@ function draw_rect_click(e, canvas) {
     element.style.height = "100%";
     // element.style.top = mouse.y - rect.y + 'px';
     startYear = Math.floor(line_xscale.invert(mouse.x-rect.x));
-    // console.log("begun.", element, startYear);
+    // console.log("begun.", canvas, element, startYear);
     canvas.appendChild(element)
     // canvas.style.cursor = "crosshair";
   }
 }
+
 function setMousePosition(e) {
+  var content = document.getElementsByClassName("content");
+  var navbar_h = 45-content[0].getBoundingClientRect().top;
   var ev = e || window.event; //Moz || IE
   if (ev.pageX) { //Moz
     mouse.x = ev.pageX + window.pageXOffset;
-    mouse.y = ev.pageY + window.pageYOffset;
+    mouse.y = ev.pageY + window.pageYOffset-navbar_h;
   } else if (ev.clientX) { //IE
     mouse.x = ev.clientX + document.body.scrollLeft;
-    mouse.y = ev.clientY + document.body.scrollTop;
+    mouse.y = ev.clientY + document.body.scrollTop-navbar_h;
   }
-  // console.log(mouse)
+  // console.log("navbar_h", navbar_h)
 }
 
 function mouseOverPaths(d) {

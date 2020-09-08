@@ -67,7 +67,7 @@ class TraceChart {
       t_xScale = d3.scaleLinear().range([0, this.trace_width]).domain(xrange).nice();
     }
     if (data_options["yScale"]["id"] == "log") {
-      t_yScale = d3.scaleLog().range([this.trace_height, 0]).domain(yrange).nice();
+      t_yScale = d3.scaleLog().range([this.trace_height, 0]).domain(yrange);
     } else {
       t_yScale = d3.scaleLinear().range([this.trace_height, 0]).domain(yrange).nice();
     }
@@ -114,11 +114,17 @@ function draw_rect_trace(yrange, group, reason) {
   if (yrange[0] == "init") return;
   var y_start = ""+yrange[0],
       y_end = ""+yrange[yrange.length-1];
+  var rect_id = [y_start, y_end, group, "trace"].join("-");
+  if (document.getElementById(rect_id) != undefined)
+    return;
+
   var years = [];
   for (var i=timeseries.indexOf(y_start); i<=timeseries.indexOf(y_end); i++) {
     years.push(timeseries[i]);
   }
-  console.log("draw_rect_trace", yrange, years, group, reason)
+  // console.log("draw_rect_trace", yrange, years, group, reason)
+  var content = document.getElementsByClassName("content");
+  var navbar_h = content[0].getBoundingClientRect().top;
   var canvas = document.getElementById("trace_chart_"+group);
   var rect = canvas.getBoundingClientRect();
   var offset = 5;
@@ -133,10 +139,11 @@ function draw_rect_trace(yrange, group, reason) {
     }
   }
   var e = document.createElement('div');
-  e.className = 'select_trace select_trace_'+reason;
-  e.id = [y_start, y_end, group, "trace"].join("-");
-  e.style.left = Math.min(...xs)+10+trace_offset_l;
-  e.style.top = rect.y+Math.min(...ys)-10+trace_offset_t;
+  // e.className = 'select_trace select_trace_'+reason;
+  e.className = 'select_trace';
+  e.id = rect_id;
+  e.style.left = Math.min(...xs)+20;
+  e.style.top = Math.min(...ys)+rect.top-navbar_h-15;
   e.style.width = Math.max(...xs)-Math.min(...xs);
   e.style.height = Math.max(...ys)-Math.min(...ys);
   e.style.paddingTop = Math.max(...ys)-Math.min(...ys)-5;

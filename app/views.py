@@ -34,7 +34,7 @@ file_map = {
 
 options = {
     "x": {"id": "numdays", "name": "Num days since 100th case"},
-    "y": {"id": "confirmed", "name": "Confirmed"},
+    "y": {"id": "newcases", "name": "New cases"},
     "s": {"id": "size", "name": "Population"},
     "c": {"id": "continent", "name": "Continent"},
     "xScale": {"id": "lin", "name": "Lin"},
@@ -51,8 +51,11 @@ countries = None
 timeseries = []
 timemap = {}
 numTicks = 0
+lang = "en"
 def main(request):
-    global values, kgroups, options, timemap, timeseries, numTicks, countries
+    global values, kgroups, options, timemap, timeseries, numTicks, countries, lang
+    lang = request.GET.get("lang") if "lang" in request.GET else "en"
+
     for k, v in options.items():
         id = v["id"]
         if k in request.GET:
@@ -136,7 +139,7 @@ def main(request):
 
 @csrf_exempt
 def get_caption(request):
-    global values, kgroups, options, timemap, timeseries, numTicks, countries
+    global values, kgroups, options, timemap, timeseries, numTicks, countries, lang
     outerbound = request.POST
     print()
     head_y = outerbound.get("start_time")
@@ -197,7 +200,7 @@ def get_caption(request):
     # print(groupdesc)
 
     caption[o_prologue] = generatePrologue(groups, reasons, timemap[head_y], timemap[tail_y])
-    caption[o_epilogue] = generatePrologue(groups, reasons, timemap[head_y], timemap[tail_y])
+    caption[o_epilogue] = ""
 
     return JsonResponse({
         "head": head_y,

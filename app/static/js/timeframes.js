@@ -4,8 +4,10 @@ class TimeFrames {
     this.gname = gname;
     this.playtime = 0; // times timeunit is the playtime
     this.framearr = []; // order of outerbound
+    this.rorder = {}; // order of reasons
     this.framemap = {}; // info of inner frames for each outerbound
     this.yearmap = {};
+    this.innergrp = {};
     for (var t = 0; t < timeseries.length; t++) {
       var y = this.timeseries[t];
       this.yearmap[y] = {
@@ -22,6 +24,21 @@ class TimeFrames {
       "sum": 2,
     };
     this.captions = {};
+  }
+
+  loadData(data) {
+    this.timeseries = data.timeseries;
+    this.gname = data.gname;
+    this.playtime = data.playtime;
+    this.framearr = data.framearr;
+    this.rorder = data.rorder;
+    this.framemap = data.framemap;
+    this.yearmap = data.yearmap;
+    this.captions = data.captions;
+    this.innergrp = data.innergrp;
+    this.outerbound = data.outerbound;
+    this.timeFrames = data.timeFrames;
+    this.timeFrameInfo = data.timeFrameInfo;
   }
 
   calculateOuterbound() {
@@ -51,7 +68,8 @@ class TimeFrames {
             "start_time": head_y,
             "end_time": end_t,
             "groups": Array.from(new Set(groups)).sort(),
-            "reason": reasons
+            "reason": reasons,
+            "order": Object.keys(reasons)
           }
           bound["prologue"] = this.createPrologue(bound);
           bound["epilogue"] = this.createEpilogue(bound);
@@ -71,7 +89,8 @@ class TimeFrames {
       "start_time": head_y,
       "end_time": end_t,
       "groups": Array.from(new Set(groups)).sort(),
-      "reason": reasons
+      "reason": reasons,
+      "order": Object.keys(reasons)
     }
     bound["prologue"] = this.createPrologue(bound);
     bound["epilogue"] = this.createEpilogue(bound);
@@ -118,6 +137,7 @@ class TimeFrames {
   }
 
   getFrameOrder() {
+    // console.log("getFrameOrder")
     var order = [];
     var idx = 0;
     var runningtime = 0;
@@ -127,12 +147,12 @@ class TimeFrames {
       if (outerbound == undefined) {
         var s_t = this.timeseries.indexOf(r[0]),
             e_t = this.timeseries.indexOf(r[1]);
-        // console.log(r, s_t, e_t)
+        // console.log(r, s_t, e_t, this.timeseries.length, runningtime, this.getTimeFrameLength())
         outerbound = {
           "start_time": r[0],
           "end_time": r[1],
           "head": runningtime,
-          "tail": runningtime+(e_t-s_t+1),
+          "tail": runningtime+(e_t-s_t+1)
         }
         runningtime += (e_t-s_t+1);
         // continue;
@@ -142,12 +162,13 @@ class TimeFrames {
         } else if (this.framemap[outerbound.prologue] != undefined){
           var prol = this.framemap[outerbound.prologue];
           outerbound.head = prol.head = runningtime;
-          prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
+          // prol.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(prol.end_time)-this.timeseries.indexOf(prol.start_time));
           runningtime += prol.runningtime;
           prol.tail = runningtime;
         }
 
-        for (var b in outerbound.reason) {
+        for (var j=0; j < outerbound.order.length; j++) {
+          var b = outerbound.order[j];
           this.framemap[b].head = runningtime;
           this.framemap[b].tail = runningtime + this.framemap[b].runningtime;
           runningtime += this.framemap[b].runningtime;
@@ -157,7 +178,7 @@ class TimeFrames {
         } else if (this.framemap[outerbound.epilogue] != undefined){
           var epil = this.framemap[outerbound.epilogue];
           epil.head = runningtime;
-          epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
+          // epil.runningtime = this.default_slowdown["sum"]*(1+this.timeseries.indexOf(epil.end_time)-this.timeseries.indexOf(epil.start_time));
           runningtime += epil.runningtime;
           outerbound.tail = epil.tail = runningtime;
         }
@@ -170,6 +191,12 @@ class TimeFrames {
       });
     }
     return order;
+  }
+
+  saveInnerGroupInfo(head, tail, groupinfo) {
+    for (var y = head; y <= tail; y++) {
+      this.innergrp[y] = groupinfo;
+    }
   }
 
   saveCaption(gid, text){
@@ -194,6 +221,17 @@ class TimeFrames {
 
   getFrameContent(i) {
     return this.timeFrameInfo[i];
+  }
+
+  editFrameWidth(id, orig_w, new_w) {
+    var frame_info = this.framemap[id];
+    var new_runningtime = parseInt(frame_info.runningtime * new_w / orig_w);
+    // console.log("editFrameWidth", frame_info, frame_info.runningtime, new_runningtime)
+
+    frame_info.runningtime = new_runningtime;
+    frame_info.tail = frame_info.head + new_runningtime;
+
+    this.calculateTimeFrames();
   }
 
   calculateTimeFrames() {
@@ -225,14 +263,14 @@ class TimeFrames {
       }
 
       this.framearr.push([outerb.start_time, outerb.end_time]);
-      var arr = [outerb.prologue, ...Object.keys(outerb.reason), outerb.epilogue];
+      var arr = [outerb.prologue, ...outerb.order, outerb.epilogue];
       for (var a in arr) {
         var r = arr[a];
         // console.log(r, this.framemap[r])
         if (this.framemap[r] == undefined) continue;
         var s_idx = this.timeseries.indexOf(this.framemap[r].start_time),
             e_idx = this.timeseries.indexOf(this.framemap[r].end_time),
-            runtime_unit = parseInt(this.framemap[r].runningtime/(e_idx-s_idx+1));
+            runtime_unit = Math.round(this.framemap[r].runningtime/(e_idx-s_idx+1));
         i = this.getTimeFrameLength();
         // console.log("o~~~", i, r, this.framemap[r].start_time, this.framemap[r].end_time, s_idx, e_idx, runtime_unit)
         for (var j=s_idx; j<=e_idx; j++) {
@@ -275,6 +313,7 @@ class TimeFrames {
         "start_time": "Init",
         "caption": "Init",
         "reason": {},
+        "order": [],
         "runningtime": 0,
       }
     }
@@ -292,6 +331,7 @@ class TimeFrames {
     this.framemap[id] = frame;
     this.framemap.init.runningtime += initdelay[axis[0]];
     this.framemap.init.reason[id] = frame;
+    this.framemap.init.order.push(id);
   }
 
   addFrames(data_focus_range) {
@@ -362,7 +402,7 @@ class TimeFrames {
         this.yearmap[y]["reason"] = {};
       }
     }
-    // console.log("RemoveFrame", id)
+    // console.log("removeFrame -- delete frame", id)
     delete this.framemap[id];
     this.calculateOuterbound();
   }
