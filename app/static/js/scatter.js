@@ -842,6 +842,7 @@ function mouseOutBubbles(d) {
 function clickBubbles(d){
   d3.select(this).style("cursor", "pointer");
   var selected = $("text#"+d.id+".bubble-label")[0];
+  chart.drawAllTrace(d.id);
   // console.log("clickBubble", d.id)
   if (selected.getAttribute("data-clicked") == "true") {
     //

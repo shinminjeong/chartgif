@@ -142,8 +142,8 @@ function draw_rect_trace(yrange, group, reason) {
   // e.className = 'select_trace select_trace_'+reason;
   e.className = 'select_trace';
   e.id = rect_id;
-  e.style.left = Math.min(...xs)+20;
-  e.style.top = Math.min(...ys)+rect.top-navbar_h-15;
+  e.style.left = Math.min(...xs)+35;
+  e.style.top = Math.min(...ys)+rect.top-navbar_h-10;
   e.style.width = Math.max(...xs)-Math.min(...xs);
   e.style.height = Math.max(...ys)-Math.min(...ys);
   e.style.paddingTop = Math.max(...ys)-Math.min(...ys)-5;
